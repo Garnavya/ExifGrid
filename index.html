@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExifGrid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-text">ExifGrid</span>
+    <span class="logo-tag">client-side</span>
+  </div>
+  <div class="header-actions">
+    <button class="btn" id="clear-btn" onclick="clearAll()">Clear all</button>
+    <button class="btn btn-accent" onclick="document.getElementById('file-input').click()">Add photos</button>
+    <input type="file" id="file-input" accept="image/*" multiple onchange="handleFiles(this.files)">
+  </div>
+</header>
+
+<div id="stats-bar">
+  <div class="stat-item">
+    <span class="stat-dot"></span>
+    <span class="stat-val" id="stat-count">0</span>
+    <span>&nbsp;photos</span>
+  </div>
+  <div class="stat-item" id="stat-exif-wrap">
+    <span class="stat-val" id="stat-exif">0</span>
+    <span>&nbsp;with EXIF</span>
+  </div>
+  <div class="stat-item" id="stat-camera-wrap" style="display:none">
+    <span>cameras: </span>
+    <span class="stat-val" id="stat-cameras">—</span>
+  </div>
+</div>
+
+<div id="drop-zone"
+  onclick="document.getElementById('file-input').click()"
+  ondragover="onDragOver(event)"
+  ondragleave="onDragLeave(event)"
+  ondrop="onDrop(event)">
+  <div class="drop-inner">
+    <div class="drop-icon">📷</div>
+    <div>
+      <div class="drop-title">Drop your photos here</div>
+      <div class="drop-sub" style="margin-top:10px">
+        Reads EXIF metadata directly in the browser.<br>
+        Nothing is uploaded. Everything is private.
+      </div>
+    </div>
+    <div class="drop-hints">
+      <span class="hint-pill">JPEG &middot; TIFF</span>
+      <span class="hint-pill">No upload</span>
+      <span class="hint-pill">Multiple files</span>
+      <span class="hint-pill">Click or drag</span>
+    </div>
+  </div>
+</div>
+
+<div id="gallery"></div>
+
+<div id="lightbox">
+  <div class="lb-header">
+    <div class="lb-title" id="lb-filename">—</div>
+    <button class="lb-close" onclick="closeLightbox()">✕</button>
+  </div>
+  <div class="lb-body">
+    <div class="lb-img-wrap">
+      <img id="lb-img" src="" alt="">
+    </div>
+    <div class="lb-meta" id="lb-meta"></div>
+  </div>
+</div>
+
+<footer>
+  <span class="footer-text">ExifGrid — all processing is local. Zero bytes leave your device.</span>
+  <span class="footer-text" id="footer-version">v1.0</span>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

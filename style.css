@@ -28,7 +28,7 @@ body {
   flex-direction: column;
 }
 
-/* ─── HEADER ─── */
+/* HEADER */
 header {
   position: sticky; top: 0; z-index: 100;
   background: rgba(12,12,11,0.85);
@@ -99,7 +99,7 @@ header {
 
 #clear-btn { display: none; }
 
-/* ─── STATS BAR ─── */
+/* STATS BAR */
 #stats-bar {
   display: none;
   padding: 10px 32px;
@@ -121,7 +121,7 @@ header {
 }
 .stat-val { color: var(--text); font-weight: 500; }
 
-/* ─── DROP ZONE ─── */
+/* DROP ZONE */
 #drop-zone {
   flex: 1;
   display: flex;
@@ -211,7 +211,7 @@ header {
 
 #file-input { display: none; }
 
-/* ─── GRID ─── */
+/* GRID */
 #gallery {
   display: none;
   padding: 28px 28px 48px;
@@ -333,7 +333,7 @@ header {
 
 .photo-card:hover .camera-badge { opacity: 1; }
 
-/* ─── LIGHTBOX ─── */
+/* LIGHTBOX */
 #lightbox {
   display: none;
   position: fixed; inset: 0; z-index: 1000;
@@ -472,7 +472,7 @@ header {
   border-color: rgba(143,184,158,0.5);
 }
 
-/* ─── EMPTY & LOADING ─── */
+/* EMPTY & LOADING */
 .card-loading {
   width: 100%;
   aspect-ratio: 3/4;
@@ -492,7 +492,7 @@ header {
   to   { transform: translateX(100%); }
 }
 
-/* ─── FOOTER ─── */
+/* FOOTER */
 footer {
   padding: 16px 32px;
   border-top: 1px solid var(--border);
@@ -508,12 +508,12 @@ footer {
   letter-spacing: 0.08em;
 }
 
-/* ─── SCROLLBAR ─── */
+/* SCROLLBAR */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
-/* ─── RESPONSIVE ─── */
+/* RESPONSIVE */
 @media (max-width: 700px) {
   #gallery { columns: 2 140px; padding: 16px 16px 32px; }
   .lb-meta { display: none; }

@@ -1,9 +1,9 @@
-// ─── STATE ───────────────────────────────────────────────────────────────────
+//STATE 
 const photos = [];
 let exifCount = 0;
 const camerasSet = new Set();
 
-// ─── DRAG & DROP ─────────────────────────────────────────────────────────────
+//DRAG & DROP
 function onDragOver(e) {
   e.preventDefault();
   document.getElementById('drop-zone').classList.add('drag-over');
@@ -17,7 +17,7 @@ function onDrop(e) {
   handleFiles(e.dataTransfer.files);
 }
 
-// ─── FILE HANDLING ────────────────────────────────────────────────────────────
+//FILE HANDLING
 function handleFiles(files) {
   if (!files || files.length === 0) return;
   showGallery();
@@ -50,9 +50,9 @@ function createLoadingCard() {
   return div;
 }
 
-// ─── EXIF READING ─────────────────────────────────────────────────────────────
+//EXIF READING
 function readExif(file, src, idx, placeholder) {
-  // Use EXIF.js to read tags from the file
+  // Using EXIF.js to only read he tags of image/file
   const img = new Image();
   img.onload = function() {
     EXIF.getData(img, function() {
@@ -79,7 +79,7 @@ function readExif(file, src, idx, placeholder) {
   img.src = src;
 }
 
-// ─── BUILD CARD ───────────────────────────────────────────────────────────────
+//BUILD CARD (Gemini helped)
 function buildCard(idx) {
   const p = photos[idx];
   const exif = p.exif || {};
@@ -149,7 +149,7 @@ function buildCard(idx) {
   return card;
 }
 
-// ─── LIGHTBOX ─────────────────────────────────────────────────────────────────
+//LIGHTBOX
 function openLightbox(idx) {
   const p = photos[idx];
   const exif = p.exif || {};
@@ -195,7 +195,7 @@ function openLightbox(idx) {
   if (exif.DateTimeDigitized) dtFields.push({ k: 'Digitized', v: formatExifDate(exif.DateTimeDigitized) });
   if (dtFields.length) meta.appendChild(metaSection('Date & Time', dtFields));
 
-  // GPS
+  // GPS (Added the gps link for fun)
   if (exif.GPSLatitude && exif.GPSLongitude) {
     const lat = convertDMStoDD(exif.GPSLatitude, exif.GPSLatitudeRef);
     const lon = convertDMStoDD(exif.GPSLongitude, exif.GPSLongitudeRef);
@@ -243,7 +243,7 @@ function lbKeydown(e) {
   if (e.key === 'Escape') closeLightbox();
 }
 
-// ─── STATS ────────────────────────────────────────────────────────────────────
+//STATS
 function updateStats() {
   document.getElementById('stat-count').textContent = photos.length;
   document.getElementById('stat-exif').textContent = exifCount;
@@ -254,7 +254,7 @@ function updateStats() {
   }
 }
 
-// ─── CLEAR ────────────────────────────────────────────────────────────────────
+//CLEAR
 function clearAll() {
   photos.length = 0;
   exifCount = 0;
@@ -268,7 +268,7 @@ function clearAll() {
   updateStats();
 }
 
-// ─── FORMATTERS ───────────────────────────────────────────────────────────────
+//FORMATTERS
 function formatAperture(v) {
   if (!v) return null;
   const n = typeof v === 'object' ? v.numerator / v.denominator : v;

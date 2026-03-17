@@ -3,8 +3,7 @@
 A fast, privacy-first, client-side EXIF metadata viewer.
 
 ## The Problem
-I needed a quick way to check the camera metadata (aperture, shutter speed, ISO, etc.) of my photos without having to just click on arrow keys of my Gallery. ExifGrid solves this by processing everything locally in the browser. Zero bytes leave your device.
-
+I was tired of endlessly clicking the arrow keys in my default photo gallery just to check basic camera metadata (like aperture, shutter speed, and ISO) for a bunch of photos. I wanted a quicker way to see everything at a glance. ExifGrid solves this by letting you drag and drop multiple images to view their EXIF data instantly. Plus, it processes everything locally right in the browser—zero bytes ever leave your device.
 ## Features
 * **100% Client-Side:** Uses the HTML5 `FileReader` API.
 * **Drag and Drop:** Quickly inspect multiple photos at once. (Since the processing is done locally I advise to not put up thousands of images at once on the browser. It will depend on the specifications of the device too for the processing.)

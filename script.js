@@ -24,15 +24,16 @@ function handleFiles(files) {
   Array.from(files).forEach((file, i) => {
     if (!file.type.startsWith('image/')) return;
     const idx = photos.length;
-    photos.push({ file, exif: null });
+    
+    // Create a lightweight pointer instead of a massive Base64 string
+    const objectURL = URL.createObjectURL(file);
+    
+    photos.push({ file, src: objectURL, exif: null });
     const card = createLoadingCard();
     document.getElementById('gallery').appendChild(card);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const src = e.target.result;
-      readExif(file, src, idx, card);
-    };
-    reader.readAsDataURL(file);
+    
+    // Pass the raw file directly to our EXIF reader
+    readExif(file, objectURL, idx, card);
   });
 }
 
@@ -52,17 +53,18 @@ function createLoadingCard() {
 
 //EXIF READING
 function readExif(file, src, idx, placeholder) {
-  // Using EXIF.js to only read he tags of image/file
-  const img = new Image();
-  img.onload = function() {
-    EXIF.getData(img, function() {
-      const data = EXIF.getAllTags(this);
-      photos[idx].exif = data;
-      photos[idx].src = src;
-      photos[idx].name = file.name;
-      photos[idx].size = file.size;
-      photos[idx].naturalW = img.naturalWidth;
-      photos[idx].naturalH = img.naturalHeight;
+  // 1. Pass the raw File directly to EXIF.js
+  EXIF.getData(file, function() {
+    const data = EXIF.getAllTags(this);
+    photos[idx].exif = data;
+    photos[idx].name = file.name;
+    photos[idx].size = file.size;
+
+    // 2. We still need image dimensions, so we load the lightweight objectURL briefly
+    const tempImg = new Image();
+    tempImg.onload = function() {
+      photos[idx].naturalW = tempImg.naturalWidth;
+      photos[idx].naturalH = tempImg.naturalHeight;
 
       if (data && Object.keys(data).length > 0) {
         exifCount++;
@@ -74,9 +76,9 @@ function readExif(file, src, idx, placeholder) {
       const card = buildCard(idx);
       placeholder.replaceWith(card);
       updateStats();
-    });
-  };
-  img.src = src;
+    };
+    tempImg.src = src; // Uses the lightweight objectURL
+  });
 }
 
 //BUILD CARD (Gemini helped)
@@ -256,6 +258,11 @@ function updateStats() {
 
 //CLEAR
 function clearAll() {
+  // Tell the browser to free up the memory for every image we loaded
+  photos.forEach(p => {
+    if (p.src) URL.revokeObjectURL(p.src);
+  });
+
   photos.length = 0;
   exifCount = 0;
   camerasSet.clear();

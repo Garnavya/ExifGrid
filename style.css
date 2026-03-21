@@ -616,7 +616,7 @@ footer {
   /* 3. Terminal Typewriter Styles */
   .typewriter-text {
     font-family: monospace, 'Courier New', Courier;
-    color: #00ffcc !important;
+    color: #ffffff !important;
     font-size: 13px !important;
     letter-spacing: 1px;
     text-shadow: 0 0 5px rgba(0, 255, 204, 0.4);

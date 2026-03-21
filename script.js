@@ -288,20 +288,10 @@ function updateStats() {
 
 //CLEAR
 function clearAll() {
-  // Tell the browser to free up the memory for every image we loaded
-  photos.forEach(p => {
-    if (p.src) URL.revokeObjectURL(p.src);
-  });
-
-  photos.length = 0;
-  exifCount = 0;
-  camerasSet.clear();
+  // Loop through and destroy all memory links
+  photos.forEach(photo => URL.revokeObjectURL(photo.src)); 
+  photos.length = 0; // Empty the array
   document.getElementById('gallery').innerHTML = '';
-  document.getElementById('gallery').style.display = 'none';
-  document.getElementById('stats-bar').style.display = 'none';
-  document.getElementById('drop-zone').style.display = 'flex';
-  document.getElementById('clear-btn').style.display = 'none';
-  document.getElementById('file-input').value = '';
   updateStats();
 }
 
@@ -364,20 +354,12 @@ function convertDMStoDD(dms, ref) {
 
 // ─── REMOVE PHOTO LOGIC ───────────────────────────────────────────────────────
 function removePhoto(id, cardElement) {
-  // 1. Find the photo in the array using its unique ID
   const index = photos.findIndex(p => p.id === id);
-  
-  if (index > -1) {
-      // Free up the RAM immediately!
-      URL.revokeObjectURL(photos[index].src);
-      // Remove it from the JavaScript array
-      photos.splice(index, 1);
+  if (index !== -1) {
+    URL.revokeObjectURL(photos[index].src); // Destroy memory ONLY when deleting
+    photos.splice(index, 1);
   }
-
-  // 2. Remove the HTML element from the screen visually
   cardElement.remove();
-
-  // 3. Update the stats bar so the count goes down
   updateStats();
 }
 

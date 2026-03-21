@@ -21,19 +21,24 @@ function onDrop(e) {
 function handleFiles(files) {
   if (!files || files.length === 0) return;
   showGallery();
-  Array.from(files).forEach((file, i) => {
+  
+  Array.from(files).forEach((file) => {
     if (!file.type.startsWith('image/')) return;
-    const idx = photos.length;
     
-    // Create a lightweight pointer instead of a massive Base64 string
+    // Generate a unique ID for this specific photo (allows for safe removal later)
+    const id = Math.random().toString(36).substring(2, 9);
+    
+    // Create a lightweight pointer instead of a massive Base64 string to save RAM
     const objectURL = URL.createObjectURL(file);
     
-    photos.push({ file, src: objectURL, exif: null });
+    // Store the photo data, including the unique ID and the lightweight pointer
+    photos.push({ id, file, src: objectURL, exif: null });
+    
     const card = createLoadingCard();
     document.getElementById('gallery').appendChild(card);
     
-    // Pass the raw file directly to our EXIF reader
-    readExif(file, objectURL, idx, card);
+    // Pass the raw file directly to our EXIF reader, referencing it by its unique ID
+    readExif(file, objectURL, id, card);
   });
 }
 
@@ -52,45 +57,60 @@ function createLoadingCard() {
 }
 
 //EXIF READING
-function readExif(file, src, idx, placeholder) {
-  // 1. Pass the raw File directly to EXIF.js
+function readExif(file, src, id, placeholder) {
+  // 1. Pass the raw File directly to EXIF.js for faster processing
   EXIF.getData(file, function() {
     const data = EXIF.getAllTags(this);
-    photos[idx].exif = data;
-    photos[idx].name = file.name;
-    photos[idx].size = file.size;
+    
+    // Find the right photo by unique ID instead of array index
+    const p = photos.find(photo => photo.id === id);
+    if (!p) return; // Safeguard: Stop if the user clicked 'x' before the EXIF data finished loading
+    
+    p.exif = data;
+    p.name = file.name;
+    p.size = file.size;
 
     // 2. We still need image dimensions, so we load the lightweight objectURL briefly
     const tempImg = new Image();
     tempImg.onload = function() {
-      photos[idx].naturalW = tempImg.naturalWidth;
-      photos[idx].naturalH = tempImg.naturalHeight;
+      p.naturalW = tempImg.naturalWidth;
+      p.naturalH = tempImg.naturalHeight;
 
-      if (data && Object.keys(data).length > 0) {
-        exifCount++;
-        const make = data.Make || '';
-        const model = data.Model || '';
-        if (make) camerasSet.add((make + ' ' + model).trim());
-      }
-
-      const card = buildCard(idx);
+      // Build the card and replace the loading placeholder
+      const card = buildCard(id);
       placeholder.replaceWith(card);
+      
+      // Update the stats bar (this now dynamically counts the remaining EXIF data)
       updateStats();
     };
-    tempImg.src = src; // Uses the lightweight objectURL
+    tempImg.src = src; // Uses the lightweight objectURL from memory
   });
 }
 
 //BUILD CARD (Gemini helped)
-function buildCard(idx) {
-  const p = photos[idx];
+function buildCard(id) {
+  // Find the right photo by unique ID
+  const p = photos.find(photo => photo.id === id);
+  // Get the current array index to keep the staggered loading animation working
+  const idx = photos.findIndex(photo => photo.id === id); 
+  
   const exif = p.exif || {};
   const hasExif = Object.keys(exif).length > 0;
 
   const card = document.createElement('div');
   card.className = 'photo-card';
-  card.style.animationDelay = (idx * 40) + 'ms';
-  card.onclick = () => openLightbox(idx);
+  card.style.animationDelay = (idx * 40) + 'ms'; // Retains the cascading load effect
+  card.onclick = () => openLightbox(id);
+
+  // --- NEW: Remove Button ---
+  const removeBtn = document.createElement('button');
+  removeBtn.className = 'remove-btn';
+  removeBtn.innerHTML = '✕';
+  removeBtn.onclick = (e) => {
+    e.stopPropagation(); // Stops the lightbox from opening when clicking 'x'
+    removePhoto(id, card);
+  };
+  card.appendChild(removeBtn);
 
   const img = document.createElement('img');
   img.src = p.src;
@@ -152,8 +172,11 @@ function buildCard(idx) {
 }
 
 //LIGHTBOX
-function openLightbox(idx) {
-  const p = photos[idx];
+function openLightbox(id) {
+  // Find the right photo using the unique ID
+  const p = photos.find(photo => photo.id === id);
+  if (!p) return; // Safety check: stops the function if the photo was already deleted
+  
   const exif = p.exif || {};
 
   document.getElementById('lb-filename').textContent = p.name;
@@ -197,7 +220,7 @@ function openLightbox(idx) {
   if (exif.DateTimeDigitized) dtFields.push({ k: 'Digitized', v: formatExifDate(exif.DateTimeDigitized) });
   if (dtFields.length) meta.appendChild(metaSection('Date & Time', dtFields));
 
-  // GPS (Added the gps link for fun)
+  // GPS
   if (exif.GPSLatitude && exif.GPSLongitude) {
     const lat = convertDMStoDD(exif.GPSLatitude, exif.GPSLatitudeRef);
     const lon = convertDMStoDD(exif.GPSLongitude, exif.GPSLongitudeRef);
@@ -330,4 +353,51 @@ function convertDMStoDD(dms, ref) {
   let dd = d + m/60 + s/3600;
   if (ref === 'S' || ref === 'W') dd = -dd;
   return dd;
+}
+
+// ─── REMOVE PHOTO LOGIC ───────────────────────────────────────────────────────
+function removePhoto(id, cardElement) {
+  // 1. Find the photo in the array using its unique ID
+  const index = photos.findIndex(p => p.id === id);
+  
+  if (index > -1) {
+      // Free up the RAM immediately!
+      URL.revokeObjectURL(photos[index].src);
+      // Remove it from the JavaScript array
+      photos.splice(index, 1);
+  }
+
+  // 2. Remove the HTML element from the screen visually
+  cardElement.remove();
+
+  // 3. Update the stats bar so the count goes down
+  updateStats();
+}
+
+function updateStats() {
+  // Recalculate accurately based on the remaining photos
+  exifCount = photos.filter(p => p.exif && Object.keys(p.exif).length > 0).length;
+  camerasSet.clear();
+  
+  photos.forEach(p => {
+     if (p.exif && p.exif.Make) {
+         camerasSet.add((p.exif.Make + ' ' + (p.exif.Model || '')).trim());
+     }
+  });
+
+  document.getElementById('stat-count').textContent = photos.length;
+  document.getElementById('stat-exif').textContent = exifCount;
+  
+  if (camerasSet.size > 0) {
+    document.getElementById('stat-camera-wrap').style.display = 'flex';
+    const cams = Array.from(camerasSet).slice(0, 3).join(', ');
+    document.getElementById('stat-cameras').textContent = cams + (camerasSet.size > 3 ? ` +${camerasSet.size-3}` : '');
+  } else {
+    document.getElementById('stat-camera-wrap').style.display = 'none';
+  }
+
+  // If the user manually clicks 'x' on the very last photo, clear everything and reset the UI
+  if (photos.length === 0) {
+     clearAll();
+  }
 }

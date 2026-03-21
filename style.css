@@ -231,6 +231,34 @@ header {
   animation: cardIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* REMOVE BUTTON */
+.remove-btn {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 28px; height: 28px;
+  background: rgba(8,8,7,0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border2);
+  border-radius: 50%;
+  color: var(--text-muted);
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.remove-btn:hover {
+  color: var(--red);
+  border-color: var(--red);
+  background: rgba(201, 107, 90, 0.1);
+}
+
+.photo-card:hover .remove-btn { 
+  opacity: 1; 
+}
+
 @keyframes cardIn {
   from { opacity: 0; transform: translateY(18px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0)    scale(1); }

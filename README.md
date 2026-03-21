@@ -17,7 +17,7 @@ I was tired of endlessly clicking the arrow keys in my default photo gallery jus
 * [EXIF.js](https://github.com/exif-js/exif-js)
 
 ## Development Process
-This project was built to practice architectural layout and client-side file handling as well as to create a peronal pinterest inspired gallery of personally clicked images. The core UI boilerplate and vanilla JavaScript logic were generated using AI assistance. I acted as the architect—defining the privacy-first requirements, handling prompt engineering, splitting the codebase into a maintainable structure, and refining the final UI/UX.
+This project was built to practice architectural layout and client-side file handling as well as to create a peronal pinterest inspired gallery of personally clicked images. The core UI boilerplate and vanilla JavaScript logic were generated using AI assistance. I acted as the architect—defining the privacy-first requirements, splitting the codebase into a maintainable structure, and refining the final UI/UX.
 
 ## Setup
 Simply clone the repository and open `index.html` in any modern web browser. No build steps or local servers required.

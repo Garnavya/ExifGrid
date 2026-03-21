@@ -173,6 +173,10 @@ function buildCard(id) {
 
 //LIGHTBOX
 function openLightbox(id) {
+
+const sidebar = document.getElementById('lb-sidebar');
+if (sidebar) sidebar.classList.remove('drawer-open');
+
   // Find the right photo using the unique ID
   const p = photos.find(photo => photo.id === id);
   if (!p) return; // Safety check: stops the function if the photo was already deleted
@@ -246,6 +250,9 @@ function openLightbox(id) {
 
   document.getElementById('lightbox').classList.add('active');
   document.addEventListener('keydown', lbKeydown);
+  
+  // TRIGGER THE TYPEWRITER HUD ON MOBILE
+  runTypewriterHUD(); 
 }
 
 function metaSection(title, rows) {
@@ -396,8 +403,42 @@ function updateStats() {
     document.getElementById('stat-camera-wrap').style.display = 'none';
   }
 
-  // If the user manually clicks 'x' on the very last photo, clear everything and reset the UI
+  /// Safe UI Reset when gallery is empty
   if (photos.length === 0) {
-     clearAll();
+     document.getElementById('gallery').innerHTML = ''; 
+     // Add any other visual resets here, like showing the drop-zone again
   }
+}
+
+// ─── CINEMATIC MOBILE TYPEWRITER EFFECT ──────────────────────────────────────
+function runTypewriterHUD() {
+  // Only trigger this cool effect on mobile screens (under 768px wide)
+  if (window.innerWidth > 768) return;
+
+  const metaContainer = document.getElementById('lb-meta');
+  // Grab all the data values (f/5.0, ISO 1600, etc.)
+  const values = metaContainer.querySelectorAll('.meta-value');
+  
+  values.forEach((el, index) => {
+    const originalText = el.textContent;
+    el.textContent = ''; // Erase the text instantly
+    el.classList.add('typewriter-text'); // Apply the terminal CSS
+    
+    // Stagger the animations so row 2 waits for row 1 to finish
+    setTimeout(() => {
+      el.classList.add('typing-cursor'); // Turn on the blinking block
+      let i = 0;
+      
+      const typing = setInterval(() => {
+        if (i < originalText.length) {
+          el.textContent += originalText.charAt(i); // Add one letter
+          i++;
+        } else {
+          clearInterval(typing); // Stop typing
+          el.classList.remove('typing-cursor'); // Remove cursor and move to next row
+        }
+      }, 35); // Speed of the typing (35ms per letter)
+      
+    }, index * 400); // 400ms delay before the next line starts printing
+  });
 }

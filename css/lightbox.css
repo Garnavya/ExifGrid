@@ -1,0 +1,142 @@
+/* ─── LIGHTBOX ───────────────────────────────────────────────────────────────── */
+#lightbox {
+  display: none;
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(8,8,7,0.96);
+  backdrop-filter: blur(4px);
+  flex-direction: column;
+  animation: fadeIn 0.2s ease both;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+#lightbox.active { display: flex; }
+
+/* ─── LIGHTBOX HEADER ────────────────────────────────────────────────────────── */
+.lb-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.lb-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+.lb-close {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  transition: all var(--transition);
+  line-height: 1;
+}
+
+.lb-close:hover { background: var(--surface2); color: var(--text); }
+
+/* ─── LIGHTBOX BODY ──────────────────────────────────────────────────────────── */
+.lb-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.lb-img-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: hidden;
+}
+
+.lb-img-wrap img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--radius);
+  animation: imgIn 0.3s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+@keyframes imgIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ─── META SIDEBAR ───────────────────────────────────────────────────────────── */
+.lb-meta {
+  width: 300px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--border);
+  padding: 28px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.meta-section-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.meta-key {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.meta-value {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+  text-align: right;
+  word-break: break-all;
+}
+
+.meta-accent { color: var(--accent); }
+
+/* ─── GPS LINK ───────────────────────────────────────────────────────────────── */
+.gps-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent2);
+  text-decoration: none;
+  border: 1px solid rgba(143,184,158,0.25);
+  padding: 4px 10px;
+  border-radius: 2px;
+  margin-top: 4px;
+  transition: all var(--transition);
+}
+
+.gps-link:hover {
+  background: rgba(143,184,158,0.08);
+  border-color: rgba(143,184,158,0.5);
+}

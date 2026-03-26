@@ -1,0 +1,23 @@
+/* ─── STATS BAR ──────────────────────────────────────────────────────────────── */
+#stats-bar {
+  display: none;
+  padding: 10px 32px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  gap: 28px;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.stat-item { display: flex; align-items: center; gap: 6px; }
+
+.stat-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent2);
+}
+
+.stat-val { color: var(--text); font-weight: 500; }

@@ -1,0 +1,90 @@
+/* ─── MOBILE: LIGHTBOX STACK (≤ 400px) ──────────────────────────────────────── */
+@media (max-width: 400px) {
+
+  /* Force the lb-body container to stack vertically */
+  *:has(> #lb-img-wrap) {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    height: 100% !important;
+  }
+
+  #lb-img-wrap {
+    width: 100% !important;
+    height: 40vh !important;
+    min-height: 250px !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  #lb-img {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+  }
+
+  #lb-sidebar {
+    width: 100% !important;
+    flex-shrink: 0 !important;
+    padding: 20px !important;
+    overflow-y: visible !important;
+  }
+}
+
+/* ─── MOBILE: STACKED LAYOUT & TYPEWRITER (≤ 768px) ─────────────────────────── */
+@media (max-width: 768px) {
+
+  /* Force the lb-body container to stack vertically */
+  *:has(> #lb-img-wrap) {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    height: 100% !important;
+  }
+
+  #lb-img-wrap {
+    width: 100% !important;
+    height: 40vh !important;
+    min-height: 250px !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 10px;
+  }
+
+  #lb-img {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+  }
+
+  #lb-sidebar {
+    width: 100% !important;
+    flex-shrink: 0 !important;
+    padding: 20px !important;
+  }
+
+  /* ── Terminal Typewriter Effect ── */
+  .typewriter-text {
+    font-family: monospace, 'Courier New', Courier;
+    color: #ffffff !important;
+    font-size: 13px !important;
+    letter-spacing: 1px;
+    text-shadow: 0 0 5px rgba(0, 255, 204, 0.4);
+  }
+
+  .typing-cursor::after {
+    content: '█';
+    animation: blink 0.8s step-end infinite;
+    margin-left: 4px;
+    color: #00ffcc;
+  }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}

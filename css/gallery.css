@@ -20,8 +20,14 @@
 }
 
 @keyframes cardIn {
-  from { opacity: 0; transform: translateY(18px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0)    scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .photo-card img {
@@ -29,7 +35,7 @@
   height: auto;
   display: block;
   object-fit: cover;
-  transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .photo-card:hover img {
@@ -39,15 +45,19 @@
 /* ─── REMOVE BUTTON ──────────────────────────────────────────────────────────── */
 .remove-btn {
   position: absolute;
-  top: 10px; right: 10px;
-  width: 28px; height: 28px;
-  background: rgba(8,8,7,0.75);
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  background: rgba(8, 8, 7, 0.75);
   backdrop-filter: blur(8px);
   border: 1px solid var(--border2);
   border-radius: 50%;
   color: var(--text-muted);
   font-size: 14px;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   opacity: 0;
   transition: all 0.2s;
@@ -60,17 +70,26 @@
   background: rgba(201, 107, 90, 0.1);
 }
 
-.photo-card:hover .remove-btn { opacity: 1; }
+.photo-card:hover .remove-btn {
+  opacity: 1;
+}
 
 /* ─── HOVER OVERLAY ──────────────────────────────────────────────────────────── */
 .photo-overlay {
   position: absolute;
-  bottom: 0; left: 0; right: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
   padding: 40px 14px 14px;
-  background: linear-gradient(to top, rgba(8,8,7,0.92) 0%, rgba(8,8,7,0.6) 50%, transparent 100%);
+  background: linear-gradient(
+    to top,
+    rgba(8, 8, 7, 0.92) 0%,
+    rgba(8, 8, 7, 0.6) 50%,
+    transparent 100%
+  );
   transform: translateY(4px);
   opacity: 0;
-  transition: all 0.28s cubic-bezier(0.4,0,0.2,1);
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .photo-card:hover .photo-overlay {
@@ -105,7 +124,7 @@
 .exif-label {
   font-family: var(--font-mono);
   font-size: 9px;
-  color: rgba(255,255,255,0.35);
+  color: rgba(255, 255, 255, 0.35);
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -132,8 +151,9 @@
 /* ─── CAMERA BADGE (top-left corner) ────────────────────────────────────────── */
 .camera-badge {
   position: absolute;
-  top: 10px; left: 10px;
-  background: rgba(8,8,7,0.75);
+  top: 10px;
+  left: 10px;
+  background: rgba(8, 8, 7, 0.75);
   backdrop-filter: blur(8px);
   border: 1px solid var(--border2);
   border-radius: 2px;
@@ -147,4 +167,6 @@
   transition: opacity 0.25s;
 }
 
-.photo-card:hover .camera-badge { opacity: 1; }
+.photo-card:hover .camera-badge {
+  opacity: 1;
+}

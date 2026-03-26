@@ -33,7 +33,7 @@ export function handleFiles(files) {
     if (!file.type.startsWith('image/')) return;
 
     // Unique ID for safe async removal
-    const id        = Math.random().toString(36).substring(2, 9);
+    const id = Math.random().toString(36).substring(2, 9);
     // Lightweight Object URL — avoids keeping a full base64 string in RAM
     const objectURL = URL.createObjectURL(file);
 
@@ -82,7 +82,7 @@ export function updateStats() {
   });
 
   document.getElementById('stat-count').textContent = photos.length;
-  document.getElementById('stat-exif').textContent  = newExifCount;
+  document.getElementById('stat-exif').textContent = newExifCount;
 
   const cameraWrap = document.getElementById('stat-camera-wrap');
   if (camerasSet.size > 0) {
@@ -104,15 +104,15 @@ export function updateStats() {
 // ── Private UI helpers ────────────────────────────────────────────────────────
 
 function _showGallery() {
-  document.getElementById('drop-zone').style.display  = 'none';
-  document.getElementById('gallery').style.display    = 'block';
-  document.getElementById('stats-bar').style.display  = 'flex';
-  document.getElementById('clear-btn').style.display  = 'block';
+  document.getElementById('drop-zone').style.display = 'none';
+  document.getElementById('gallery').style.display = 'block';
+  document.getElementById('stats-bar').style.display = 'flex';
+  document.getElementById('clear-btn').style.display = 'block';
 }
 
 function _hideGallery() {
-  document.getElementById('drop-zone').style.display  = '';
-  document.getElementById('gallery').style.display    = 'none';
-  document.getElementById('stats-bar').style.display  = 'none';
-  document.getElementById('clear-btn').style.display  = 'none';
+  document.getElementById('drop-zone').style.display = '';
+  document.getElementById('gallery').style.display = 'none';
+  document.getElementById('stats-bar').style.display = 'none';
+  document.getElementById('clear-btn').style.display = 'none';
 }

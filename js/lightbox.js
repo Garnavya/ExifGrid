@@ -30,34 +30,34 @@ export function openLightbox(id) {
 
   // File info
   meta.appendChild(_metaSection('File', [
-    { k: 'Name',       v: p.name },
-    { k: 'Size',       v: formatBytes(p.size) },
+    { k: 'Name', v: p.name },
+    { k: 'Size', v: formatBytes(p.size) },
     { k: 'Dimensions', v: p.naturalW + ' × ' + p.naturalH + ' px' },
   ]));
 
   // Camera
   const cameraFields = [];
-  if (exif.Make)      cameraFields.push({ k: 'Make',  v: exif.Make });
-  if (exif.Model)     cameraFields.push({ k: 'Model', v: exif.Model });
-  if (exif.LensModel) cameraFields.push({ k: 'Lens',  v: exif.LensModel });
+  if (exif.Make) cameraFields.push({ k: 'Make', v: exif.Make });
+  if (exif.Model) cameraFields.push({ k: 'Model', v: exif.Model });
+  if (exif.LensModel) cameraFields.push({ k: 'Lens', v: exif.LensModel });
   if (cameraFields.length) meta.appendChild(_metaSection('Camera', cameraFields));
 
   // Exposure
   const expFields = [];
-  if (exif.FNumber)              expFields.push({ k: 'Aperture',    v: formatAperture(exif.FNumber),           accent: true });
-  if (exif.ExposureTime)         expFields.push({ k: 'Shutter',     v: formatShutter(exif.ExposureTime),        accent: true });
-  if (exif.ISOSpeedRatings)      expFields.push({ k: 'ISO',         v: 'ISO ' + exif.ISOSpeedRatings,           accent: true });
-  if (exif.FocalLength)          expFields.push({ k: 'Focal',       v: exif.FocalLength.toFixed(0) + 'mm',      accent: true });
-  if (exif.FocalLengthIn35mmFilm)expFields.push({ k: '35mm eq.',    v: exif.FocalLengthIn35mmFilm + 'mm' });
-  if (exif.ExposureBiasValue !== undefined) expFields.push({ k: 'Exp. bias',    v: formatEV(exif.ExposureBiasValue) });
-  if (exif.Flash !== undefined)  expFields.push({ k: 'Flash',       v: getFlashDesc(exif.Flash) });
+  if (exif.FNumber) expFields.push({ k: 'Aperture', v: formatAperture(exif.FNumber), accent: true });
+  if (exif.ExposureTime) expFields.push({ k: 'Shutter', v: formatShutter(exif.ExposureTime), accent: true });
+  if (exif.ISOSpeedRatings) expFields.push({ k: 'ISO', v: 'ISO ' + exif.ISOSpeedRatings, accent: true });
+  if (exif.FocalLength) expFields.push({ k: 'Focal', v: exif.FocalLength.toFixed(0) + 'mm', accent: true });
+  if (exif.FocalLengthIn35mmFilm) expFields.push({ k: '35mm eq.', v: exif.FocalLengthIn35mmFilm + 'mm' });
+  if (exif.ExposureBiasValue !== undefined) expFields.push({ k: 'Exp. bias', v: formatEV(exif.ExposureBiasValue) });
+  if (exif.Flash !== undefined) expFields.push({ k: 'Flash', v: getFlashDesc(exif.Flash) });
   if (exif.WhiteBalance !== undefined) expFields.push({ k: 'White balance', v: exif.WhiteBalance === 0 ? 'Auto' : 'Manual' });
-  if (exif.MeteringMode !== undefined) expFields.push({ k: 'Metering',     v: getMeteringMode(exif.MeteringMode) });
+  if (exif.MeteringMode !== undefined) expFields.push({ k: 'Metering', v: getMeteringMode(exif.MeteringMode) });
   if (expFields.length) meta.appendChild(_metaSection('Exposure', expFields));
 
   // Date & Time
   const dtFields = [];
-  if (exif.DateTimeOriginal)  dtFields.push({ k: 'Taken',     v: formatExifDate(exif.DateTimeOriginal) });
+  if (exif.DateTimeOriginal) dtFields.push({ k: 'Taken', v: formatExifDate(exif.DateTimeOriginal) });
   if (exif.DateTimeDigitized) dtFields.push({ k: 'Digitized', v: formatExifDate(exif.DateTimeDigitized) });
   if (dtFields.length) meta.appendChild(_metaSection('Date & Time', dtFields));
 

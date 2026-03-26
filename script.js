@@ -7,9 +7,9 @@ import { handleFiles, clearAll, onDragOver, onDragLeave, onDrop } from './js/gal
 import { closeLightbox } from './js/lightbox.js';
 
 // Attach to window so inline HTML event attributes can still reach them
-window.handleFiles  = handleFiles;
-window.clearAll     = clearAll;
-window.onDragOver   = onDragOver;
-window.onDragLeave  = onDragLeave;
-window.onDrop       = onDrop;
+window.handleFiles = handleFiles;
+window.clearAll = clearAll;
+window.onDragOver = onDragOver;
+window.onDragLeave = onDragLeave;
+window.onDrop = onDrop;
 window.closeLightbox = closeLightbox;

@@ -12,12 +12,20 @@
   flex-wrap: wrap;
 }
 
-.stat-item { display: flex; align-items: center; gap: 6px; }
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
 .stat-dot {
-  width: 6px; height: 6px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--accent2);
 }
 
-.stat-val { color: var(--text); font-weight: 500; }
+.stat-val {
+  color: var(--text);
+  font-weight: 500;
+}

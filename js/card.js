@@ -20,10 +20,10 @@ export function createLoadingCard() {
  * @returns {HTMLElement}
  */
 export function buildCard(id) {
-  const p   = photos.find(photo => photo.id === id);
+  const p = photos.find(photo => photo.id === id);
   const idx = photos.findIndex(photo => photo.id === id);
 
-  const exif    = p.exif || {};
+  const exif = p.exif || {};
   const hasExif = Object.keys(exif).length > 0;
 
   const card = document.createElement('div');
@@ -43,15 +43,15 @@ export function buildCard(id) {
 
   // ── Thumbnail ──
   const img = document.createElement('img');
-  img.src     = p.src;
-  img.alt     = p.name;
+  img.src = p.src;
+  img.alt = p.name;
   img.loading = 'lazy';
   card.appendChild(img);
 
   // ── Camera badge (top-left) ──
   if (exif.Make) {
     const badge = document.createElement('div');
-    badge.className   = 'camera-badge';
+    badge.className = 'camera-badge';
     badge.textContent = (exif.Make + (exif.Model ? ' ' + exif.Model : '')).trim().substring(0, 24);
     card.appendChild(badge);
   }
@@ -61,7 +61,7 @@ export function buildCard(id) {
   overlay.className = 'photo-overlay';
 
   const fname = document.createElement('div');
-  fname.className   = 'photo-filename';
+  fname.className = 'photo-filename';
   fname.textContent = p.name;
   overlay.appendChild(fname);
 
@@ -71,9 +71,9 @@ export function buildCard(id) {
 
     const fields = [
       { label: 'Aperture', val: formatAperture(exif.FNumber) },
-      { label: 'Shutter',  val: formatShutter(exif.ExposureTime) },
-      { label: 'ISO',      val: exif.ISOSpeedRatings ? 'ISO ' + exif.ISOSpeedRatings : null },
-      { label: 'Focal',    val: exif.FocalLength ? exif.FocalLength.toFixed(0) + 'mm' : null },
+      { label: 'Shutter', val: formatShutter(exif.ExposureTime) },
+      { label: 'ISO', val: exif.ISOSpeedRatings ? 'ISO ' + exif.ISOSpeedRatings : null },
+      { label: 'Focal', val: exif.FocalLength ? exif.FocalLength.toFixed(0) + 'mm' : null },
     ].filter(f => f.val);
 
     fields.forEach(f => {
@@ -87,13 +87,13 @@ export function buildCard(id) {
       overlay.appendChild(grid);
     } else {
       const nb = document.createElement('span');
-      nb.className   = 'no-exif-badge';
+      nb.className = 'no-exif-badge';
       nb.textContent = 'EXIF found';
       overlay.appendChild(nb);
     }
   } else {
     const nb = document.createElement('span');
-    nb.className   = 'no-exif-badge';
+    nb.className = 'no-exif-badge';
     nb.textContent = 'No EXIF';
     overlay.appendChild(nb);
   }

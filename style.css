@@ -1,11 +1,11 @@
 /* ─── ExifGrid Stylesheet ────────────────────────────────────────────────────── */
 /* Import order matters: base tokens must load before anything that uses them.   */
 
-@import url('css/base.css');       /* reset, :root variables, html/body          */
-@import url('css/header.css');     /* header, logo, .btn                         */
-@import url('css/stats.css');      /* #stats-bar                                 */
-@import url('css/dropzone.css');   /* #drop-zone, .hint-pill                     */
-@import url('css/gallery.css');    /* #gallery, .photo-card, overlays, badges    */
-@import url('css/lightbox.css');   /* #lightbox, .lb-meta, .gps-link             */
-@import url('css/utils.css');      /* .card-loading, footer, scrollbar           */
-@import url('css/mobile.css');     /* @media queries, typewriter, blink          */
+@import url("css/base.css"); /* reset, :root variables, html/body          */
+@import url("css/header.css"); /* header, logo, .btn                         */
+@import url("css/stats.css"); /* #stats-bar                                 */
+@import url("css/dropzone.css"); /* #drop-zone, .hint-pill                     */
+@import url("css/gallery.css"); /* #gallery, .photo-card, overlays, badges    */
+@import url("css/lightbox.css"); /* #lightbox, .lb-meta, .gps-link             */
+@import url("css/utils.css"); /* .card-loading, footer, scrollbar           */
+@import url("css/mobile.css"); /* @media queries, typewriter, blink          */

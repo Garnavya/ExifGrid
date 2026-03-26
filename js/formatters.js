@@ -15,7 +15,7 @@ export function formatShutter(v) {
 }
 
 export function formatBytes(bytes) {
-  if (bytes < 1024)        return bytes + ' B';
+  if (bytes < 1024) return bytes + ' B';
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
 }
@@ -32,7 +32,7 @@ export function formatExifDate(str) {
   if (parts.length < 2) return str;
   const dateParts = parts[0].split(':');
   if (dateParts.length < 3) return str;
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const m = parseInt(dateParts[1], 10);
   return `${dateParts[2]} ${months[m - 1] || m} ${dateParts[0]}, ${parts[1]}`;
 }
@@ -42,7 +42,7 @@ export function getFlashDesc(v) {
 }
 
 export function getMeteringMode(v) {
-  const modes = { 0:'Unknown',1:'Average',2:'Center-weighted',3:'Spot',4:'Multi-spot',5:'Pattern',6:'Partial' };
+  const modes = { 0: 'Unknown', 1: 'Average', 2: 'Center-weighted', 3: 'Spot', 4: 'Multi-spot', 5: 'Pattern', 6: 'Partial' };
   return modes[v] || 'Unknown';
 }
 

@@ -1,20 +1,33 @@
 /* ─── LIGHTBOX ───────────────────────────────────────────────────────────────── */
 #lightbox {
   display: none;
-  position: fixed; inset: 0; z-index: 1000;
-  background: rgba(8,8,7,0.96);
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(8, 8, 7, 0.96);
   backdrop-filter: blur(4px);
   flex-direction: column;
   animation: fadeIn 0.2s ease both;
 }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
-#lightbox.active { display: flex; }
+#lightbox.active {
+  display: flex;
+}
 
 /* ─── LIGHTBOX HEADER ────────────────────────────────────────────────────────── */
 .lb-header {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 16px 24px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
@@ -28,8 +41,11 @@
 }
 
 .lb-close {
-  width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--border2);
   border-radius: var(--radius);
   background: transparent;
@@ -40,7 +56,10 @@
   line-height: 1;
 }
 
-.lb-close:hover { background: var(--surface2); color: var(--text); }
+.lb-close:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
 
 /* ─── LIGHTBOX BODY ──────────────────────────────────────────────────────────── */
 .lb-body {
@@ -63,12 +82,18 @@
   max-height: 100%;
   object-fit: contain;
   border-radius: var(--radius);
-  animation: imgIn 0.3s cubic-bezier(0.22,1,0.36,1) both;
+  animation: imgIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes imgIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* ─── META SIDEBAR ───────────────────────────────────────────────────────────── */
@@ -100,7 +125,7 @@
   align-items: flex-start;
   gap: 12px;
   padding: 5px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .meta-key {
@@ -118,7 +143,9 @@
   word-break: break-all;
 }
 
-.meta-accent { color: var(--accent); }
+.meta-accent {
+  color: var(--accent);
+}
 
 /* ─── GPS LINK ───────────────────────────────────────────────────────────────── */
 .gps-link {
@@ -129,7 +156,7 @@
   font-size: 10px;
   color: var(--accent2);
   text-decoration: none;
-  border: 1px solid rgba(143,184,158,0.25);
+  border: 1px solid rgba(143, 184, 158, 0.25);
   padding: 4px 10px;
   border-radius: 2px;
   margin-top: 4px;
@@ -137,6 +164,6 @@
 }
 
 .gps-link:hover {
-  background: rgba(143,184,158,0.08);
-  border-color: rgba(143,184,158,0.5);
+  background: rgba(143, 184, 158, 0.08);
+  border-color: rgba(143, 184, 158, 0.5);
 }

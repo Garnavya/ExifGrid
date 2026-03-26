@@ -13,13 +13,15 @@
 }
 
 #drop-zone::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 40px;
   border: 1px dashed var(--border2);
   border-radius: 16px;
   pointer-events: none;
-  transition: border-color var(--transition), opacity var(--transition);
+  transition:
+    border-color var(--transition),
+    opacity var(--transition);
 }
 
 #drop-zone.drag-over::before {
@@ -28,20 +30,26 @@
 }
 
 #drop-zone.drag-over {
-  background: rgba(212,180,131,0.03);
+  background: rgba(212, 180, 131, 0.03);
 }
 
 .drop-inner {
   text-align: center;
   pointer-events: none;
-  display: flex; flex-direction: column; align-items: center; gap: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
 }
 
 .drop-icon {
-  width: 72px; height: 72px;
+  width: 72px;
+  height: 72px;
   border: 1.5px solid var(--border2);
   border-radius: 16px;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--surface);
   color: var(--text-dim);
   font-size: 28px;
@@ -50,10 +58,14 @@
 }
 
 .drop-icon::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 0%, rgba(212,180,131,0.12) 0%, transparent 70%);
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(212, 180, 131, 0.12) 0%,
+    transparent 70%
+  );
 }
 
 .drop-title {
@@ -72,7 +84,11 @@
 }
 
 .drop-hints {
-  display: flex; gap: 12px; margin-top: 4px; flex-wrap: wrap; justify-content: center;
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .hint-pill {
@@ -86,4 +102,6 @@
   border-radius: 2px;
 }
 
-#file-input { display: none; }
+#file-input {
+  display: none;
+}

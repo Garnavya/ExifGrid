@@ -1,0 +1,32 @@
+/* THE COLUMN FIX */
+.lb-sidebar-column {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 350px;
+  height: 100%; /* Force it to respect the lightbox boundaries */
+  overflow-y: auto; /* 🛑 Enables scrolling */
+  padding-bottom: 20px; /* Gives the button a little breathing room at the very bottom */
+}
+
+.polaroid-btn {
+  display: block;
+  width: 100%;
+  margin-top: auto; /* Pushes it to the bottom of the column */
+  padding: 16px;
+  background-color: #1a1a1a;
+  color: #00ffcc;
+  border: 1px solid #333;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+.polaroid-btn:active {
+  background-color: #000;
+  border-color: #00ffcc;
+}

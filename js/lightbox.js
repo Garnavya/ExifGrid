@@ -2,6 +2,7 @@
 // Handles opening, populating, closing, and keyboard dismissal of the lightbox,
 // plus the cinematic mobile typewriter HUD effect.
 
+import { downloadPolaroid } from './download.js';
 import { photos } from './state.js';
 import {
   formatAperture, formatShutter, formatBytes,
@@ -92,6 +93,12 @@ export function openLightbox(id) {
   document.addEventListener('keydown', lbKeydown);
 
   _runTypewriterHUD();
+
+  // Connect the Polaroid download button
+  const downloadBtn = document.getElementById('download-card-btn');
+  if (downloadBtn) {
+    downloadBtn.onclick = () => downloadPolaroid(id);
+  }
 }
 
 export function closeLightbox() {

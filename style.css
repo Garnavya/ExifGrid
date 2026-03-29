@@ -1,6 +1,6 @@
 /* ─── ExifGrid Stylesheet ────────────────────────────────────────────────────── */
 /* Import order matters: base tokens must load before anything that uses them.   */
-
+@import url(/css/download.css); /*download polaroid cards */
 @import url("css/base.css"); /* reset, :root variables, html/body          */
 @import url("css/header.css"); /* header, logo, .btn                         */
 @import url("css/stats.css"); /* #stats-bar                                 */

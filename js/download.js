@@ -1,4 +1,5 @@
-import { photos } from './state.js'; // Assuming state.js holds your uploaded photos array
+// js/download.js
+import { photos } from './state.js'; 
 
 export async function downloadPolaroid(photoId) {
   const photo = photos.find(p => p.id === photoId);
@@ -15,10 +16,23 @@ export async function downloadPolaroid(photoId) {
     img.onerror = reject;
   });
 
-  const imgWidth = img.width;
-  const imgHeight = img.height;
+  // ─── NEW: RESOLUTION SCALING LOGIC ─────────────────────────────────────────
+  // We cap the image width to 1920px (Standard HD). 
+  // If a photo is 6000px wide, this prevents the canvas from becoming a 25MB monster.
+  const MAX_WIDTH = 1920;
+  let imgWidth = img.width;
+  let imgHeight = img.height;
 
-  // ── POLAROID DESIGN MATH ──
+  // If the uploaded image is larger than our cap, mathematically scale it down
+  // while preserving the exact aspect ratio.
+  if (imgWidth > MAX_WIDTH) {
+    const scaleFactor = MAX_WIDTH / imgWidth;
+    imgWidth = MAX_WIDTH;
+    imgHeight = Math.round(imgHeight * scaleFactor);
+  }
+  // ───────────────────────────────────────────────────────────────────────────
+
+  // ── POLAROID DESIGN MATH (Now using the scaled dimensions) ──
   const frameThick = Math.round(imgWidth * 0.08); // Thick top and sides
   const bottomThick = Math.round(imgWidth * 0.22); // Fat bottom for text
   const popBorder = Math.max(4, Math.round(imgWidth * 0.015)); // The separation gap
@@ -46,12 +60,12 @@ export async function downloadPolaroid(photoId) {
   // Clear shadow before drawing the actual photo
   ctx.shadowColor = "transparent";
 
-  // 3. Draw the Actual Photo
+  // 3. Draw the Actual Photo (Using scaled dimensions)
   ctx.drawImage(img, frameThick, frameThick, imgWidth, imgHeight);
 
   // Add a razor-thin dark stroke around the photo edge for crispness
   ctx.strokeStyle = "rgba(0,0,0,0.8)";
-  ctx.lineWidth = 2;
+  ctx.lineWidth = Math.max(1, Math.round(imgWidth * 0.001)); // Scale line width too
   ctx.strokeRect(frameThick, frameThick, imgWidth, imgHeight);
 
   // 4. Draw EXIF Text on the Bottom Frame
@@ -61,7 +75,7 @@ export async function downloadPolaroid(photoId) {
   const shutter = exif.ExposureTime ? `1/${Math.round(1/exif.ExposureTime)}s` : '--s';
   const iso = exif.ISOSpeedRatings ? `ISO ${exif.ISOSpeedRatings}` : 'ISO --';
 
-  const fontSize = Math.max(30, Math.round(imgWidth * 0.03));
+  const fontSize = Math.max(20, Math.round(imgWidth * 0.03));
   ctx.font = `bold ${fontSize}px monospace`;
   ctx.textBaseline = "middle";
   
@@ -70,7 +84,7 @@ export async function downloadPolaroid(photoId) {
   // Left text (Black)
   ctx.fillStyle = "#111111";
   ctx.textAlign = "left";
-  ctx.fillText(` ${camera}`, frameThick, textY);
+  ctx.fillText(`📸 ${camera}`, frameThick, textY);
 
   // Right text (Dark Grey)
   ctx.fillStyle = "#555555";
@@ -79,7 +93,15 @@ export async function downloadPolaroid(photoId) {
 
   // 5. Trigger the Download
   const link = document.createElement('a');
-  link.download = `ExifGrid-Polaroid-${photo.id}.png`;
-  link.href = canvas.toDataURL('image/png');
+  
+  // ─── NEW: EXPORT COMPRESSION LOGIC ──────────────────────────────────────────
+  // Change filename to .jpg
+  link.download = `ExifGrid-Polaroid-${photo.id}.jpg`;
+  
+  // Switch toDataURL format to 'image/jpeg' and set quality to 0.90 (90%)
+  // This introduces highly efficient, virtually invisible compression.
+  link.href = canvas.toDataURL('image/jpeg', 0.90);
+  // ───────────────────────────────────────────────────────────────────────────
+  
   link.click();
 }

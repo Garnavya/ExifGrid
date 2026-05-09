@@ -1,32 +1,42 @@
 # ExifGrid 📷
 
-A fast, privacy-first, client-side EXIF metadata viewer.
+A fast, privacy-first, client-side EXIF metadata viewer and Polaroid generator.
 
 ## The Problem
 
 I was tired of endlessly clicking the arrow keys in my default photo gallery just to check basic camera metadata (like aperture, shutter speed, and ISO) for a bunch of photos. I wanted a quicker way to see everything at a glance. ExifGrid solves this by letting you drag and drop multiple images to view their EXIF data instantly. Plus, it processes everything locally right in the browser—zero bytes ever leave your device.
 
-## Features
+## Features (v2.0: The "Misty Monochrome" Update)
 
-- **100% Client-Side:** Uses the HTML5 `FileReader` API.
-- **Drag and Drop:** Quickly inspect multiple photos at once. (Since the processing is done locally I advise to not put up thousands of images at once on the browser. It will depend on the specifications of the device too for the processing.)
-- **Responsive Grid:** Clean, dark-mode UI for viewing photo galleries. (Inspired from Pinterest.)
-- **Detailed Lightbox:** Displays camera make, lens, exposure settings, and GPS data (if available).
-- **Polaroid Stat Export:** Generate and download thick-framed Polaroid-style image cards with your camera stats cleanly stamped at the bottom. Rendered completely offline using the browser's native Canvas API.
+- **100% Client-Side:** Uses the HTML5 `FileReader` API for ultimate privacy.
+- **Drag and Drop:** Quickly inspect multiple photos at once.
+- **Glassmorphic UI:** A dual-theme (Light/Dark) interface featuring an ambient, slow-flowing gradient background and adaptive `backdrop-filter` glass components.
+- **Dynamic Color Extraction:** Uses a microscopic 1x1 Canvas rendering trick to extract the dominant color of uploaded photos, generating perfectly matched misty shadows and glows behind the images.
+- **GSAP Choreography:** Smooth, bouncy card entrances and orchestrated lightbox reveals powered by Greensock.
+- **Interactive GPS Mini-Maps:** Integrated Leaflet.js maps that automatically render and theme themselves if an image contains GPS coordinates.
+- **Keyboard Navigation:** Seamlessly cycle through the gallery using Left/Right arrow keys without closing the lightbox.
+- **Live Polaroid Render Engine:** Generate and download thick-framed Polaroid-style image cards. Includes a real-time side-by-side Canvas visualizer, custom caption support with handwritten typography, and customizable EXIF layouts.
 
 ## Tech Stack
 
-- HTML5 (including the `<canvas>` API)
-- CSS3 (Custom Properties, Grid, Flexbox)
+- HTML5 (including the `<canvas>` API and FileReader)
+- CSS3 (Custom Properties, Grid, Flexbox, Animations)
 - Vanilla JavaScript (ES6 Modules)
-- [EXIF.js](https://github.com/exif-js/exif-js)
+- [EXIF.js](https://github.com/exif-js/exif-js) (Metadata extraction)
+- [GSAP](https://gsap.com/) (Animation orchestration)
+- [Leaflet.js](https://leafletjs.com/) (Interactive mapping)
 
 ## Development Process
 
-This project was built to practice architectural layout and client-side file handling as well as to create a personal pinterest inspired gallery of personally clicked images. The core UI boilerplate and vanilla JavaScript logic were generated using AI assistance. I acted as the architect—defining the privacy-first requirements, splitting the codebase into a maintainable structure, and refining the final UI/UX.
+This project was built to practice architectural layout, client-side file handling, and memory management, as well as to create a personal Pinterest-inspired gallery of personally clicked images. 
 
-As the application grew, I manually refactored the monolithic codebase into a strict ES6 modular architecture to handle complex DOM lifecycles. Significant engineering also went into advanced memory management—dynamically handling garbage collection for `URL.createObjectURL()` to prevent memory leaks and blob errors during heavy batch uploads and high-resolution Canvas exports.
+The core UI boilerplate and vanilla JavaScript logic were initially generated using AI assistance. I acted as the architect—defining the privacy-first requirements and refining the UI/UX. 
+
+As the application grew into v2.0, I manually refactored the monolithic codebase into a strict ES6 modular architecture to handle complex DOM lifecycles. Significant engineering went into advanced memory management and rendering optimization:
+- Dynamically handling garbage collection for `URL.createObjectURL()` to prevent memory leaks during heavy batch uploads.
+- Re-engineering the Canvas Polaroid exporter to mathematically scale high-resolution images down to a 1920px cap, converting the lossless format to 90% JPEG to reduce 25MB file bloat down to highly shareable 1MB files.
+- Managing strict aspect-ratio math to ensure vertical and horizontal photography both render perfectly proportioned typography and frames.
 
 ## Setup
 
-Simply clone the repository and open `index.html` in any modern web browser. No build steps or local servers required.
+Simply clone the repository and open `index.html` in any modern web browser. No build steps, bundlers, or local servers required.

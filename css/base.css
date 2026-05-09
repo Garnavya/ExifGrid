@@ -6,34 +6,85 @@
   padding: 0;
 }
 
+/* ─── DARK THEME (Misty Obsidian) ─── */
 :root {
-  --bg: #0c0c0b;
-  --surface: #141413;
-  --surface2: #1c1c1a;
-  --border: rgba(255, 255, 255, 0.07);
-  --border2: rgba(255, 255, 255, 0.12);
+  /* Deeper blacks and rich greys for a highly visible, moody flow */
+  --bg-gradient: linear-gradient(-45deg, #050505, #1c1c1c, #0a0a0a, #262626);
+  
+  --surface: rgba(20, 20, 20, 0.4); 
+  --surface2: rgba(35, 35, 35, 0.8);
+  --border: rgba(255, 255, 255, 0.08);
+  --border2: rgba(255, 255, 255, 0.15);
+  
   --text: #e8e4dc;
-  --text-muted: #7a7870;
-  --text-dim: #4a4845;
-  --accent: #d4b483;
-  --accent2: #8fb89e;
+  --text-muted: #888888;
+  --text-dim: #555555;
+  
+  /* Muted, classy accents instead of bright neon */
+  --accent: #b3b3b3; 
+  --accent2: #d4b483; 
   --red: #c96b5a;
+  
+  --glass-overlay: rgba(10, 10, 10, 0.7); 
+  
   --font-display: "DM Serif Display", serif;
   --font-body: "DM Sans", sans-serif;
   --font-mono: "DM Mono", monospace;
-  --radius: 4px;
-  --radius-lg: 10px;
-  --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius: 8px;
+  --radius-lg: 12px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── LIGHT THEME (Pearlescent Mist) ─── */
+html.light-theme {
+  /* Distinct silvers and soft whites so the flowing animation is obvious */
+  --bg-gradient: linear-gradient(-45deg, #ffffff, #d1d5db, #f3f4f6, #9ca3af);
+  
+  --surface: rgba(255, 255, 255, 0.5); 
+  --surface2: rgba(240, 240, 240, 0.8);
+  --border: rgba(0, 0, 0, 0.1);
+  --border2: rgba(0, 0, 0, 0.2);
+  
+  --text: #111111;
+  --text-muted: #555555;
+  --text-dim: #888888;
+  
+  --accent: #444444;
+  --accent2: #b38b4d;
+  
+  --glass-overlay: rgba(255, 255, 255, 0.6);
 }
 
 html {
-  background: var(--bg);
+  /* The Gradient Setup */
+  background: var(--bg-gradient);
+  
+  /* CRITICAL: Makes the gradient 4x larger than the screen so it can move */
+  background-size: 400% 400%;
+  
+  /* The subtle, 20-second slow flow loop */
+  animation: ambientMist 20s ease-in-out infinite;
+  
   color: var(--text);
   font-family: var(--font-body);
+  transition: color 0.6s ease;
 }
 
 body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* ─── THE AMBIENT FLOW ANIMATION ─── */
+@keyframes ambientMist {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }

@@ -1,35 +1,27 @@
-/* ─── LIGHTBOX ───────────────────────────────────────────────────────────────── */
+/* ─── LIGHTBOX (Glassmorphic) ─── */
 #lightbox {
-  display: none;
+  display: none; /* JS will change this to 'flex' when opened */
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(8, 8, 7, 0.96);
-  backdrop-filter: blur(4px);
+  
+  /* Adaptive mist overlay using our new variable! */
+  background: var(--glass-overlay);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  
   flex-direction: column;
-  animation: fadeIn 0.2s ease both;
+  opacity: 0; /* GSAP will animate this from 0 to 1 */
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-#lightbox.active {
-  display: flex;
-}
-
-/* ─── LIGHTBOX HEADER ────────────────────────────────────────────────────────── */
+/* ─── LIGHTBOX HEADER ─── */
 .lb-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
   border-bottom: 1px solid var(--border);
+  background: var(--surface); /* Inherits glassy look */
   flex-shrink: 0;
 }
 
@@ -61,53 +53,107 @@
   color: var(--text);
 }
 
-/* ─── LIGHTBOX BODY ──────────────────────────────────────────────────────────── */
+/* ─── LIGHTBOX BODY ─── */
 .lb-body {
   flex: 1;
   display: flex;
   overflow: hidden;
 }
 
+/* ─── LIVE COMPARE WRAPPER ─── */
 .lb-img-wrap {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
-  overflow: hidden;
+  overflow-y: auto; /* Allow scrolling if images stack tall */
+  transition: background 0.5s ease;
+}
+
+.compare-container {
+  display: flex;
+  flex-wrap: wrap; /* Stacks automatically on small screens */
+  gap: 30px;
+  width: 100%;
+  min-height: 100%; /* Changed from height: 100% to prevent squishing */
+  padding: 30px 0; /* Gives the images breathing room when scrolling */  
+  justify-content: center;
+  align-items: center;
+}
+
+.compare-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 45%; /* Side by side on desktop */
+  min-width: 280px; /* Stacks gracefully on mobile */
+  position: relative;
+}
+
+.compare-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.zoomable-img {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  cursor: zoom-in;
+  transition: transform 0.3s ease;
+}
+
+/* When clicked to enlarge */
+.zoomable-img.enlarged {
+  position: fixed;
+  inset: 20px;
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
+  max-width: none;
+  max-height: none;
+  z-index: 9999;
+  background: rgba(0,0,0,0.9);
+  object-fit: contain;
+  cursor: zoom-out;
+  border-radius: 0;
 }
 
 .lb-img-wrap img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  border-radius: var(--radius);
-  animation: imgIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
 }
 
-@keyframes imgIn {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* ─── META SIDEBAR ───────────────────────────────────────────────────────────── */
-.lb-meta {
-  width: 300px;
-  flex-shrink: 0;
-  border-left: 1px solid var(--border);
-  padding: 28px 24px;
+/* ─── META SIDEBAR (The Column) ─── */
+.lb-sidebar-column {
+  width: 100%;
+  max-width: 350px;
+  height: 100%;
   overflow-y: auto;
+  border-left: 1px solid var(--border);
+  transition: border-color 0.5s ease;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+
+.lb-meta {
+  padding: 28px 24px;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
+/* ─── META TEXT & GPS FORMATTING ─── */
 .meta-section-title {
   font-family: var(--font-mono);
   font-size: 9px;
@@ -143,11 +189,8 @@
   word-break: break-all;
 }
 
-.meta-accent {
-  color: var(--accent);
-}
+.meta-accent { color: var(--accent); }
 
-/* ─── GPS LINK ───────────────────────────────────────────────────────────────── */
 .gps-link {
   display: inline-flex;
   align-items: center;
@@ -166,4 +209,25 @@
 .gps-link:hover {
   background: rgba(143, 184, 158, 0.08);
   border-color: rgba(143, 184, 158, 0.5);
+}
+
+/* ─── MINI MAP ─── */
+#mini-map {
+  height: 160px;
+  width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-top: 4px;
+  margin-bottom: 12px;
+  z-index: 1; /* Keeps the map underneath the close button */
+}
+
+/* 🌙 Midnight Aurora Map Hack: Invert the map colors for Dark Mode! */
+:root #mini-map .leaflet-layer {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+/* ☀️ Frosty Sky Map: Standard map colors for Light Mode */
+html.light-theme #mini-map .leaflet-layer {
+  filter: none;
 }

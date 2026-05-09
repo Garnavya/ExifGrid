@@ -9,18 +9,20 @@
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap"
     rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="js/exif.min.js"></script>
-</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script></head>
 
 <body>
 
   <header>
-    <div class="logo">
-      <span class="logo-text">ExifGrid</span>
-      <span class="logo-tag">client-side</span>
-    </div>
     <div class="header-actions">
+      <button class="btn" id="theme-btn" onclick="toggleTheme()">☀️ Light</button>
+      
       <button class="btn" id="clear-btn" onclick="clearAll()">Clear all</button>
       <button class="btn btn-accent" onclick="document.getElementById('file-input').click()">Add photos</button>
       <input type="file" id="file-input" accept="image/*" multiple onchange="handleFiles(this.files)">
@@ -48,10 +50,10 @@
     <div class="drop-inner">
       <div class="drop-icon">📷</div>
       <div>
-        <div class="drop-title">Drop your photos here</div>
-        <div class="drop-sub" style="margin-top:10px">
-          Reads EXIF metadata directly in the browser.<br>
-          Nothing is uploaded. Everything is private.
+        <div class="drop-title">Reveal the Lens.</div>
+        <div class="drop-sub" style="margin-top:12px; font-size: 15px;">
+          Drag & drop high-res photography to instantly extract hidden metadata.<br>
+          <span style="color: var(--accent2); font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin-top: 10px;">100% Local Processing &middot; Zero Uploads</span>
         </div>
       </div>
       <div class="drop-hints">
@@ -71,21 +73,53 @@
       <button class="lb-close" onclick="closeLightbox()">✕</button>
     </div>
     <div class="lb-body">
-      <div class="lb-img-wrap">
-        <img id="lb-img" src="" alt="">
+      <div class="lb-img-wrap" id="lb-img-wrap">
+        <div class="compare-container">
+          <div class="compare-item">
+            <span class="compare-label">Original</span>
+            <img id="lb-img" class="zoomable-img" src="" alt="Original">
+          </div>
+          <div class="compare-item">
+            <span class="compare-label">Polaroid Preview</span>
+            <img id="lb-polaroid-preview" class="zoomable-img" src="" alt="Preview">
+          </div>
+        </div>
       </div>
       
       <div class="lb-sidebar-column">
         <div class="lb-meta" id="lb-meta"></div>
+        
+        <div class="polaroid-settings">
+          <div class="ps-title">Live Export Settings</div>
+
+          <label class="ps-label">Custom Caption (Optional)</label>
+          <input type="text" id="ps-caption" class="ps-input" placeholder="e.g., Happy Birthday!" maxlength="40">
+
+          <label class="ps-label">Caption Vibe</label>
+          <select id="ps-font" class="ps-select">
+            <option value="'Caveat', cursive" selected>Personal (Handwritten)</option>
+            <option value="'DM Serif Display', serif">Elegant (Serif)</option>
+            <option value="'DM Sans', sans-serif">Modern (Sans-Serif)</option>
+            <option value="monospace">Technical (Monospace)</option>
+          </select>
+
+          <label class="ps-label">Include EXIF Data</label>
+          <div id="ps-exif-toggles" class="ps-toggles">
+            <label><input type="checkbox" value="camera" checked> Camera</label>
+            <label><input type="checkbox" value="aperture" checked> Aperture</label>
+            <label><input type="checkbox" value="shutter" checked> Shutter</label>
+            <label><input type="checkbox" value="iso" checked> ISO</label>
+          </div>
+        </div>
+        
         <button id="download-card-btn" class="polaroid-btn">Download Polaroid</button>
       </div>
-      
     </div>
   </div>
 
   <footer>
     <span class="footer-text">ExifGrid — all processing is local. Zero bytes leave your device.</span>
-    <span class="footer-text" id="footer-version">v1.5</span>
+    <span class="footer-text" id="footer-version">v2.0</span>
   </footer>
 
   <script type="module" src="script.js"></script>

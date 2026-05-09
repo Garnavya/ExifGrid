@@ -1,71 +1,64 @@
-/* ─── MOBILE: LIGHTBOX STACK (≤ 400px) ──────────────────────────────────────── */
-@media (max-width: 400px) {
-  /* Force the lb-body container to stack vertically */
-  *:has(> #lb-img-wrap) {
-    display: flex !important;
+/* ─── TABLET LAYOUT (769px to 1024px) ─── */
+/* Left side: Images stack vertically | Right side: Fixed Sidebar */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .compare-container {
     flex-direction: column !important;
-    overflow-y: auto !important;
-    height: 100% !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    padding: 20px 0 !important;
   }
 
-  #lb-img-wrap {
-    width: 100% !important;
-    height: 40vh !important;
-    min-height: 250px !important;
-    flex-shrink: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  #lb-img {
-    max-width: 100% !important;
-    max-height: 100% !important;
-    object-fit: contain !important;
-  }
-
-  #lb-sidebar {
-    width: 100% !important;
-    flex-shrink: 0 !important;
-    padding: 20px !important;
-    overflow-y: visible !important;
+  .compare-item {
+    max-width: 100% !important; /* Let images span the full width of the left column */
   }
 }
 
-/* ─── MOBILE: STACKED LAYOUT & TYPEWRITER (≤ 768px) ─────────────────────────── */
+/* ─── MOBILE LAYOUT (≤ 768px) ─── */
+/* Single unified scrolling column. Images on top, Sidebar full-width on bottom. */
 @media (max-width: 768px) {
-  /* Force the lb-body container to stack vertically */
-  *:has(> #lb-img-wrap) {
-    display: flex !important;
+  
+  /* 1. Change the main layout from Left/Right to Top/Bottom */
+  .lb-body {
     flex-direction: column !important;
-    overflow-y: auto !important;
-    height: 100% !important;
+    overflow-y: auto !important; /* The entire screen scrolls now */
   }
 
-  #lb-img-wrap {
+  /* 2. Image Wrapper Adjustments */
+  .lb-img-wrap {
     width: 100% !important;
-    height: 40vh !important;
-    min-height: 250px !important;
-    flex-shrink: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 10px;
+    overflow-y: visible !important; /* Disable internal scroll to prevent double-scrollbars */
+    padding: 20px 10px !important;
+    height: auto !important;
   }
 
-  #lb-img {
+  .compare-container {
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    gap: 40px !important;
+    margin: 0 !important;
+    padding-bottom: 20px !important;
+  }
+
+  .compare-item {
     max-width: 100% !important;
-    max-height: 100% !important;
-    object-fit: contain !important;
-  }
-
-  #lb-sidebar {
     width: 100% !important;
-    flex-shrink: 0 !important;
-    padding: 20px !important;
   }
 
-  /* ── Terminal Typewriter Effect ── */
+  /* 3. Make the Sidebar span the entire bottom of the screen */
+  .lb-sidebar-column {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important; /* Remove fixed height */
+    overflow-y: visible !important; /* Disable internal scroll */
+    border-left: none !important;
+    border-top: 1px solid var(--border) !important;
+  }
+
+  .polaroid-settings {
+    margin-top: 0 !important; /* Reset margin so it flows naturally */
+  }
+
+  /* ── Terminal Typewriter Effect (Keep your cinematic mobile effect) ── */
   .typewriter-text {
     font-family: monospace, "Courier New", Courier;
     color: #ffffff !important;
@@ -83,11 +76,6 @@
 }
 
 @keyframes blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }

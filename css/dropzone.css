@@ -16,21 +16,22 @@
   content: "";
   position: absolute;
   inset: 40px;
-  border: 1px dashed var(--border2);
+  border: 1.5px dashed var(--border2);
   border-radius: 16px;
   pointer-events: none;
-  transition:
-    border-color var(--transition),
-    opacity var(--transition);
+  transition: all var(--transition);
 }
 
+/* Add a glowing effect when hovering or dragging */
+#drop-zone:hover::before,
 #drop-zone.drag-over::before {
   border-color: var(--accent);
-  border-width: 1.5px;
+  background: rgba(88, 166, 255, 0.03); /* Very subtle blue tint */
+  box-shadow: 0 0 30px rgba(88, 166, 255, 0.1) inset;
 }
 
 #drop-zone.drag-over {
-  background: rgba(212, 180, 131, 0.03);
+  background: rgba(88, 166, 255, 0.02);
 }
 
 .drop-inner {

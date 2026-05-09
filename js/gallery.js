@@ -44,6 +44,8 @@ export function handleFiles(files) {
 
     readExif(file, objectURL, id, card);
   });
+  const fileInput = document.getElementById('file-input');
+  if (fileInput) fileInput.value = '';
 }
 
 // ── Remove a Single Photo ─────────────────────────────────────────────────────
@@ -64,6 +66,10 @@ export function clearAll() {
   photos.forEach(photo => URL.revokeObjectURL(photo.src));
   photos.length = 0;
   document.getElementById('gallery').innerHTML = '';
+
+  const fileInput = document.getElementById('file-input');
+  if (fileInput) fileInput.value = '';
+  
   updateStats();
 }
 

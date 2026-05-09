@@ -7,27 +7,33 @@
 }
 
 /* ─── PHOTO CARD ─────────────────────────────────────────────────────────────── */
+/* ─── PHOTO CARD (Glassmorphic & Dynamic) ─── */
 .photo-card {
   break-inside: avoid;
   margin-bottom: 14px;
   border-radius: var(--radius-lg);
   overflow: hidden;
   position: relative;
+  
+  /* Glassmorphism Base */
   background: var(--surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  /* Dynamic Borders & Shadows (Fallback to subtle white/black if JS fails) */
+  border: 1px solid var(--card-glow, rgba(255, 255, 255, 0.1));
+  box-shadow: 0 8px 32px 0 var(--card-glow-shadow, rgba(0, 0, 0, 0.2));
+  
   cursor: pointer;
   display: block;
-  animation: cardIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  
+  /* Removed CSS animation because GSAP will handle it now */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
 }
 
-@keyframes cardIn {
-  from {
-    opacity: 0;
-    transform: translateY(18px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.photo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px 0 var(--card-glow, rgba(255, 255, 255, 0.15));
 }
 
 .photo-card img {
@@ -35,11 +41,12 @@
   height: auto;
   display: block;
   object-fit: cover;
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Reduced the hover scale slightly to keep it classy */
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .photo-card:hover img {
-  transform: scale(1.03);
+  transform: scale(1.02);
 }
 
 /* ─── REMOVE BUTTON ──────────────────────────────────────────────────────────── */

@@ -28,24 +28,57 @@ export function buildCard(id) {
 
   const card = document.createElement('div');
   card.className = 'photo-card';
-  card.style.animationDelay = (idx * 40) + 'ms'; // Cascading load animation
   card.onclick = () => openLightbox(id);
+  
+  // Set initial opacity to 0 so it stays hidden until GSAP reveals it
+  card.style.opacity = '0'; 
 
   // ── Remove button ──
   const removeBtn = document.createElement('button');
   removeBtn.className = 'remove-btn';
   removeBtn.innerHTML = '✕';
   removeBtn.onclick = (e) => {
-    e.stopPropagation(); // Prevent lightbox from opening
+    e.stopPropagation(); 
     removePhoto(id, card);
   };
   card.appendChild(removeBtn);
 
-  // ── Thumbnail ──
+  // ── Thumbnail & Dynamic Logic ──
   const img = document.createElement('img');
   img.src = p.src;
   img.alt = p.name;
   img.loading = 'lazy';
+  
+  // Wait for image to load to extract color and animate
+  img.onload = () => {
+    // 1. EXTRACT AVERAGE COLOR (The 1x1 Canvas Trick)
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 1; 
+    canvas.height = 1;
+    ctx.drawImage(img, 0, 0, 1, 1);
+    
+    try {
+      const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+      // Inject the color into CSS variables. We use 0.3 opacity to keep it subtle and misty.
+      card.style.setProperty('--card-glow', `rgba(${r}, ${g}, ${b}, 0.35)`);
+      card.style.setProperty('--card-glow-shadow', `rgba(${r}, ${g}, ${b}, 0.15)`);
+    } catch(e) {
+      console.warn("Could not extract image color.");
+    }
+
+    // 2. TRIGGER GSAP ANIMATION
+    if (window.gsap) {
+      gsap.fromTo(card, 
+        { opacity: 0, scale: 0.9, y: 20 }, 
+        { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: "back.out(1.2)", delay: (idx % 10) * 0.05 }
+      );
+    } else {
+      // Fallback if GSAP fails to load
+      card.style.opacity = '1';
+    }
+  };
+  
   card.appendChild(img);
 
   // ── Camera badge (top-left) ──

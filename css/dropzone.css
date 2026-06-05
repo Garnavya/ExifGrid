@@ -94,13 +94,14 @@
 
 .hint-pill {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px; /* Increased from 10px */
+  font-weight: 600; /* Added boldness */
   color: var(--text-dim);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   border: 1px solid var(--border);
-  padding: 4px 10px;
-  border-radius: 2px;
+  padding: 6px 12px; /* Slightly increased padding to fit the larger text */
+  border-radius: 4px; /* Softened the edges a bit */
 }
 
 #file-input {

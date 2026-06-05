@@ -41,7 +41,8 @@ footer {
 
 .footer-text {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px; /* Increased from 10px */
+  font-weight: 500; /* Added boldness */
   color: var(--text-dim);
   letter-spacing: 0.08em;
 }

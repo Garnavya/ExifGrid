@@ -3,7 +3,7 @@ header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(12, 12, 11, 0.85);
+  background: var(--surface2); /* Now reacts to light/dark mode */
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
   padding: 0 32px;
@@ -28,13 +28,14 @@ header {
 
 .logo-tag {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px; /* Increased from 10px */
+  font-weight: 600; /* Added boldness */
   color: var(--text-muted);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   border: 1px solid var(--border2);
-  padding: 2px 7px;
-  border-radius: 2px;
+  padding: 3px 8px;
+  border-radius: 4px;
 }
 
 .header-actions {

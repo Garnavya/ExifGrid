@@ -1,0 +1,111 @@
+#drop-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 32px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: background var(--transition);
+}
+
+#drop-zone::before {
+  content: "";
+  position: absolute;
+  inset: 40px;
+  border: 1.5px dashed var(--border2);
+  border-radius: 16px;
+  pointer-events: none;
+  transition: all var(--transition);
+}
+
+#drop-zone:hover::before,
+#drop-zone.drag-over::before {
+  border-color: var(--accent);
+  background: rgba(88, 166, 255, 0.03);
+  box-shadow: 0 0 30px rgba(88, 166, 255, 0.1) inset;
+}
+
+#drop-zone.drag-over {
+  background: rgba(88, 166, 255, 0.02);
+}
+
+.drop-inner {
+  text-align: center;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.drop-icon {
+  width: 72px;
+  height: 72px;
+  border: 1.5px solid var(--border2);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.drop-icon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(212, 180, 131, 0.12) 0%, transparent 70%);
+}
+
+.drop-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.drop-sub {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 380px;
+  margin-top: 12px;
+}
+
+.drop-accent {
+  color: var(--accent2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.drop-hints {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.hint-pill {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 4px;
+}

@@ -1,0 +1,19 @@
+{
+  "name": "exifgrid-v3",
+  "private": true,
+  "version": "3.0.0",
+  "description": "ExifGrid — React + Vite + Express monorepo",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently -n client,server -c cyan,magenta \"npm run dev -w client\" \"npm run dev -w server\"",
+    "build": "npm run build -w client",
+    "start": "npm run start -w server",
+    "preview": "npm run preview -w client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

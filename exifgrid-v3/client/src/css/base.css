@@ -1,0 +1,98 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-gradient: linear-gradient(-45deg, #050505, #1c1c1c, #0a0a0a, #262626);
+  --surface: rgba(20, 20, 20, 0.4);
+  --surface2: rgba(35, 35, 35, 0.8);
+  --border: rgba(255, 255, 255, 0.08);
+  --border2: rgba(255, 255, 255, 0.15);
+  --text: #e8e4dc;
+  --text-muted: #888888;
+  --text-dim: #555555;
+  --accent: #b3b3b3;
+  --accent2: #d4b483;
+  --red: #c96b5a;
+  --glass-overlay: rgba(10, 10, 10, 0.7);
+  --font-display: "DM Serif Display", serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-mono: "DM Mono", monospace;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html.light-theme {
+  --bg-gradient: linear-gradient(-45deg, #ffffff, #d1d5db, #f3f4f6, #9ca3af);
+  --surface: rgba(255, 255, 255, 0.5);
+  --surface2: rgba(240, 240, 240, 0.8);
+  --border: rgba(0, 0, 0, 0.1);
+  --border2: rgba(0, 0, 0, 0.2);
+  --text: #111111;
+  --text-muted: #555555;
+  --text-dim: #888888;
+  --accent: #444444;
+  --accent2: #b38b4d;
+  --glass-overlay: rgba(255, 255, 255, 0.6);
+}
+
+html {
+  background: var(--bg-gradient);
+  background-size: 400% 400%;
+  animation: ambientMist 20s ease-in-out infinite;
+  color: var(--text);
+  font-family: var(--font-body);
+  transition: color 0.6s ease;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+@keyframes ambientMist {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.card-loading {
+  width: 100%;
+  aspect-ratio: 3/4;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+  break-inside: avoid;
+  margin-bottom: 14px;
+}
+
+.card-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.04) 50%, transparent 100%);
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}

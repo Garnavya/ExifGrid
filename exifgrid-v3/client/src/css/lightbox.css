@@ -1,0 +1,218 @@
+#lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--glass-overlay);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  flex-direction: column;
+  opacity: 0;
+}
+
+.lightbox--open {
+  display: flex;
+}
+
+.lb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.lb-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+.lb-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  transition: all var(--transition);
+}
+
+.lb-close:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.lb-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.lb-img-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+  transition: background 0.5s ease;
+}
+
+.compare-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  width: 100%;
+  min-height: 100%;
+  padding: 30px 0;
+  justify-content: center;
+  align-items: center;
+}
+
+.compare-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 45%;
+  min-width: 280px;
+  position: relative;
+}
+
+.compare-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.zoomable-img {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  cursor: zoom-in;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.zoomable-img.enlarged {
+  position: fixed;
+  inset: 20px;
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
+  max-width: none;
+  max-height: none;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.9);
+  object-fit: contain;
+  cursor: zoom-out;
+  border-radius: 0;
+}
+
+.lb-sidebar-column {
+  width: 100%;
+  max-width: 350px;
+  height: 100%;
+  overflow-y: auto;
+  border-left: 1px solid var(--border);
+  transition: border-color 0.5s ease;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  padding-bottom: 20px;
+}
+
+.lb-meta {
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.meta-section-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.meta-key {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.meta-value {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+  text-align: right;
+  word-break: break-all;
+}
+
+.meta-accent {
+  color: var(--accent);
+}
+
+.gps-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent2);
+  text-decoration: none;
+  border: 1px solid rgba(143, 184, 158, 0.25);
+  padding: 4px 10px;
+  border-radius: 2px;
+  margin-top: 4px;
+  transition: all var(--transition);
+}
+
+.gps-link:hover {
+  background: rgba(143, 184, 158, 0.08);
+  border-color: rgba(143, 184, 158, 0.5);
+}
+
+#mini-map {
+  height: 160px;
+  width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-top: 4px;
+  margin-bottom: 12px;
+  z-index: 1;
+}
+
+#mini-map .leaflet-layer {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+html.light-theme #mini-map .leaflet-layer {
+  filter: none;
+}

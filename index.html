@@ -9,7 +9,6 @@
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap"
     rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
@@ -21,7 +20,7 @@
 
   <header>
     <div class="header-actions">
-      <button class="btn" id="theme-btn" onclick="toggleTheme()">☀️ Light</button>
+      <button class="btn" id="theme-btn" type="button">☀️ Light</button>
       
       <button class="btn" id="clear-btn" type="button">Clear all</button>
       <button class="btn btn-accent" id="add-photos-btn" type="button">Add photos</button>
@@ -73,45 +72,11 @@
     </div>
     <div class="lb-body">
       <div class="lb-img-wrap" id="lb-img-wrap">
-        <div class="compare-container">
-          <div class="compare-item">
-            <span class="compare-label">Original</span>
-            <img id="lb-img" class="zoomable-img" src="" alt="Original">
-          </div>
-          <div class="compare-item">
-            <span class="compare-label">Polaroid Preview</span>
-            <img id="lb-polaroid-preview" class="zoomable-img" src="" alt="Preview">
-          </div>
-        </div>
+        <img id="lb-img" class="zoomable-img" src="" alt="Original">
       </div>
-      
+
       <div class="lb-sidebar-column">
         <div class="lb-meta" id="lb-meta"></div>
-        
-        <div class="polaroid-settings">
-          <div class="ps-title">Live Export Settings</div>
-
-          <label class="ps-label">Custom Caption (Optional)</label>
-          <input type="text" id="ps-caption" class="ps-input" placeholder="e.g., Happy Birthday!" maxlength="40">
-
-          <label class="ps-label">Caption Vibe</label>
-          <select id="ps-font" class="ps-select">
-            <option value="'Caveat', cursive" selected>Personal (Handwritten)</option>
-            <option value="'DM Serif Display', serif">Elegant (Serif)</option>
-            <option value="'DM Sans', sans-serif">Modern (Sans-Serif)</option>
-            <option value="monospace">Technical (Monospace)</option>
-          </select>
-
-          <label class="ps-label">Include EXIF Data</label>
-          <div id="ps-exif-toggles" class="ps-toggles">
-            <label><input type="checkbox" value="camera" checked> Camera</label>
-            <label><input type="checkbox" value="aperture" checked> Aperture</label>
-            <label><input type="checkbox" value="shutter" checked> Shutter</label>
-            <label><input type="checkbox" value="iso" checked> ISO</label>
-          </div>
-        </div>
-        
-        <button id="download-card-btn" class="polaroid-btn">Download Polaroid</button>
       </div>
     </div>
   </div>

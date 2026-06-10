@@ -1,6 +1,6 @@
 # ExifGrid 📷
 
-A fast, privacy-first, client-side EXIF metadata viewer and Polaroid generator.
+A fast, privacy-first, client-side EXIF metadata viewer.
 
 ## The Problem
 
@@ -15,7 +15,6 @@ I was tired of endlessly clicking the arrow keys in my default photo gallery jus
 - **GSAP Choreography:** Smooth, bouncy card entrances and orchestrated lightbox reveals powered by Greensock.
 - **Interactive GPS Mini-Maps:** Integrated Leaflet.js maps that automatically render and theme themselves if an image contains GPS coordinates.
 - **Keyboard Navigation:** Seamlessly cycle through the gallery using Left/Right arrow keys without closing the lightbox.
-- **Live Polaroid Render Engine:** Generate and download thick-framed Polaroid-style image cards. Includes a real-time side-by-side Canvas visualizer, custom caption support with handwritten typography, and customizable EXIF layouts.
 
 ## Tech Stack
 
@@ -32,10 +31,7 @@ This project was built to practice architectural layout, client-side file handli
 
 The core UI boilerplate and vanilla JavaScript logic were initially generated using AI assistance. I acted as the architect—defining the privacy-first requirements and refining the UI/UX. 
 
-As the application grew into v2.0, I manually refined the client-side architecture to handle complex DOM lifecycles. Significant engineering went into advanced memory management and rendering optimization:
-- Dynamically handling garbage collection for `URL.createObjectURL()` to prevent memory leaks during heavy batch uploads.
-- Re-engineering the Canvas Polaroid exporter to mathematically scale high-resolution images down to a 1920px cap, converting the lossless format to 90% JPEG to reduce 25MB file bloat down to highly shareable 1MB files.
-- Managing strict aspect-ratio math to ensure vertical and horizontal photography both render perfectly proportioned typography and frames.
+As the application grew into v2.0, I manually refined the client-side architecture to handle complex DOM lifecycles. Significant engineering went into advanced memory management and rendering optimization, including dynamically handling garbage collection for `URL.createObjectURL()` to prevent memory leaks during heavy batch uploads.
 
 ## Setup
 

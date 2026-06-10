@@ -4,8 +4,7 @@
 (function(){function e(e){return!!e.exifdata}function t(e,t){t=t||e.match(/^data\:([^\;]+)\;base64,/im)[1]||"",e=e.replace(/^data\:([^\;]+)\;base64,/gim,"");for(var n=atob(e),r=n.length,i=new ArrayBuffer(r),o=new Uint8Array(i),a=0;a<r;a++)o[a]=n.charCodeAt(a);return i}function r(e,t){var n=new XMLHttpRequest;n.open("GET",e,!0),n.responseType="blob",n.onload=function(e){200!=this.status&&0!==this.status||t(this.response)},n.send()}function i(e,n){function i(t){var r=o(t);e.exifdata=r||{};var i=a(t);if(e.iptcdata=i||{},F.isXmpEnabled){var s=m(t);e.xmpdata=s||{}}n&&n.call(e)}if(e.src)if(/^data\:/i.test(e.src))i(t(e.src));else if(/^blob\:/i.test(e.src))(l=new FileReader).onload=function(e){i(e.target.result)},r(e.src,function(e){l.readAsArrayBuffer(e)});else{var s=new XMLHttpRequest;s.onload=function(){if(200!=this.status&&0!==this.status)throw"Could not load image";i(s.response),s=null},s.open("GET",e.src,!0),s.responseType="arraybuffer",s.send(null)}else if(self.FileReader&&(e instanceof self.Blob||e instanceof self.File)){var l=new FileReader;l.onload=function(e){S&&console.log("Got file of length "+e.target.result.byteLength),i(e.target.result)},l.readAsArrayBuffer(e)}}function o(e){var t=new DataView(e);if(S&&console.log("Got file of length "+e.byteLength),255!=t.getUint8(0)||216!=t.getUint8(1))return S&&console.log("Not a valid JPEG"),!1;for(var n,r=2,i=e.byteLength;r<i;){if(255!=t.getUint8(r))return S&&console.log("Not a valid marker at offset "+r+", found: "+t.getUint8(r)),!1;if(n=t.getUint8(r+1),S&&console.log(n),225==n)return S&&console.log("Found 0xFFE1 marker"),g(t,r+4,t.getUint16(r+2));r+=2+t.getUint16(r+2)}}function a(e){var t=new DataView(e);if(S&&console.log("Got file of length "+e.byteLength),255!=t.getUint8(0)||216!=t.getUint8(1))return S&&console.log("Not a valid JPEG"),!1;for(var n=2,r=e.byteLength;n<r;){if(function(e,t){return 56===e.getUint8(t)&&66===e.getUint8(t+1)&&73===e.getUint8(t+2)&&77===e.getUint8(t+3)&&4===e.getUint8(t+4)&&4===e.getUint8(t+5)}(t,n)){var i=t.getUint8(n+7);return i%2!=0&&(i+=1),0===i&&(i=4),s(e,n+8+i,t.getUint16(n+6+i))}n++}}function s(e,t,n){for(var r,i,o,a,s=new DataView(e),l={},u=t;u<t+n;)28===s.getUint8(u)&&2===s.getUint8(u+1)&&(a=s.getUint8(u+2))in v&&((o=s.getInt16(u+3))+5,i=v[a],r=f(s,u+5,o),l.hasOwnProperty(i)?l[i]instanceof Array?l[i].push(r):l[i]=[l[i],r]:l[i]=r),u++;return l}function l(e,t,n,r,i){var o,a,s,l=e.getUint16(n,!i),c={};for(s=0;s<l;s++)o=n+12*s+2,!(a=r[e.getUint16(o,!i)])&&S&&console.log("Unknown tag: "+e.getUint16(o,!i)),c[a]=u(e,o,t,n,i);return c}function u(e,t,n,r,i){var o,a,s,l,u,c,d=e.getUint16(t+2,!i),g=e.getUint32(t+4,!i),m=e.getUint32(t+8,!i)+n;switch(d){case 1:case 7:if(1==g)return e.getUint8(t+8,!i);for(o=g>4?m:t+8,a=[],l=0;l<g;l++)a[l]=e.getUint8(o+l);return a;case 2:return o=g>4?m:t+8,f(e,o,g-1);case 3:if(1==g)return e.getUint16(t+8,!i);for(o=g>2?m:t+8,a=[],l=0;l<g;l++)a[l]=e.getUint16(o+2*l,!i);return a;case 4:if(1==g)return e.getUint32(t+8,!i);for(a=[],l=0;l<g;l++)a[l]=e.getUint32(m+4*l,!i);return a;case 5:if(1==g)return u=e.getUint32(m,!i),c=e.getUint32(m+4,!i),s=new Number(u/c),s.numerator=u,s.denominator=c,s;for(a=[],l=0;l<g;l++)u=e.getUint32(m+8*l,!i),c=e.getUint32(m+4+8*l,!i),a[l]=new Number(u/c),a[l].numerator=u,a[l].denominator=c;return a;case 9:if(1==g)return e.getInt32(t+8,!i);for(a=[],l=0;l<g;l++)a[l]=e.getInt32(m+4*l,!i);return a;case 10:if(1==g)return e.getInt32(m,!i)/e.getInt32(m+4,!i);for(a=[],l=0;l<g;l++)a[l]=e.getInt32(m+8*l,!i)/e.getInt32(m+4+8*l,!i);return a}}function c(e,t,n){var r=e.getUint16(t,!n);return e.getUint32(t+2+12*r,!n)}function d(e,t,n,r){var i=c(e,t+n,r);if(!i)return{};if(i>e.byteLength)return{};var o=l(e,t,t+i,C,r);if(o.Compression)switch(o.Compression){case 6:if(o.JpegIFOffset&&o.JpegIFByteCount){var a=t+o.JpegIFOffset,s=o.JpegIFByteCount;o.blob=new Blob([new Uint8Array(e.buffer,a,s)],{type:"image/jpeg"})}break;case 1:console.log("Thumbnail image format is TIFF, which is not implemented.");break;default:console.log("Unknown thumbnail image format '%s'",o.Compression)}else 2==o.PhotometricInterpretation&&console.log("Thumbnail image format is RGB, which is not implemented.");return o}function f(e,t,r){var i="";for(n=t;n<t+r;n++)i+=String.fromCharCode(e.getUint8(n));return i}function g(e,t){if("Exif"!=f(e,t,4))return S&&console.log("Not valid EXIF data! "+f(e,t,4)),!1;var n,r,i,o,a,s=t+6;if(18761==e.getUint16(s))n=!1;else{if(19789!=e.getUint16(s))return S&&console.log("Not valid TIFF data! (no 0x4949 or 0x4D4D)"),!1;n=!0}if(42!=e.getUint16(s+2,!n))return S&&console.log("Not valid TIFF data! (no 0x002A)"),!1;var u=e.getUint32(s+4,!n);if(u<8)return S&&console.log("Not valid TIFF data! (First offset less than 8)",e.getUint32(s+4,!n)),!1;if((r=l(e,s,s+u,b,n)).ExifIFDPointer){o=l(e,s,s+r.ExifIFDPointer,y,n);for(i in o){switch(i){case"LightSource":case"Flash":case"MeteringMode":case"ExposureProgram":case"SensingMethod":case"SceneCaptureType":case"SceneType":case"CustomRendered":case"WhiteBalance":case"GainControl":case"Contrast":case"Saturation":case"Sharpness":case"SubjectDistanceRange":case"FileSource":o[i]=I[i][o[i]];break;case"ExifVersion":case"FlashpixVersion":o[i]=String.fromCharCode(o[i][0],o[i][1],o[i][2],o[i][3]);break;case"ComponentsConfiguration":o[i]=I.Components[o[i][0]]+I.Components[o[i][1]]+I.Components[o[i][2]]+I.Components[o[i][3]]}r[i]=o[i]}}if(r.GPSInfoIFDPointer){a=l(e,s,s+r.GPSInfoIFDPointer,x,n);for(i in a){switch(i){case"GPSVersionID":a[i]=a[i][0]+"."+a[i][1]+"."+a[i][2]+"."+a[i][3]}r[i]=a[i]}}return r.thumbnail=d(e,s,u,n),r}function m(e){if("DOMParser"in self){var t=new DataView(e);if(S&&console.log("Got file of length "+e.byteLength),255!=t.getUint8(0)||216!=t.getUint8(1))return S&&console.log("Not a valid JPEG"),!1;for(var n=2,r=e.byteLength,i=new DOMParser;n<r-4;){if("http"==f(t,n,4)){var o=f(t,n-1,t.getUint16(n-2)-1),a=o.indexOf("xmpmeta>")+8,s=(o=o.substring(o.indexOf("<x:xmpmeta"),a)).indexOf("x:xmpmeta")+10;return o=o.slice(0,s)+'xmlns:Iptc4xmpCore="http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tiff="http://ns.adobe.com/tiff/1.0/" xmlns:plus="http://schemas.android.com/apk/lib/com.google.android.gms.plus" xmlns:ext="http://www.gettyimages.com/xsltExtension/1.0" xmlns:exif="http://ns.adobe.com/exif/1.0/" xmlns:stEvt="http://ns.adobe.com/xap/1.0/sType/ResourceEvent#" xmlns:stRef="http://ns.adobe.com/xap/1.0/sType/ResourceRef#" xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/" xmlns:xapGImg="http://ns.adobe.com/xap/1.0/g/img/" xmlns:Iptc4xmpExt="http://iptc.org/std/Iptc4xmpExt/2008-02-29/" '+o.slice(s),h(i.parseFromString(o,"text/xml"))}n++}}}function p(e){var t={};if(1==e.nodeType){if(e.attributes.length>0){t["@attributes"]={};for(var n=0;n<e.attributes.length;n++){var r=e.attributes.item(n);t["@attributes"][r.nodeName]=r.nodeValue}}}else if(3==e.nodeType)return e.nodeValue;if(e.hasChildNodes())for(var i=0;i<e.childNodes.length;i++){var o=e.childNodes.item(i),a=o.nodeName;if(null==t[a])t[a]=p(o);else{if(null==t[a].push){var s=t[a];t[a]=[],t[a].push(s)}t[a].push(p(o))}}return t}function h(e){try{var t={};if(e.children.length>0)for(var n=0;n<e.children.length;n++){var r=e.children.item(n),i=r.attributes;for(var o in i){var a=i[o],s=a.nodeName,l=a.nodeValue;void 0!==s&&(t[s]=l)}var u=r.nodeName;if(void 0===t[u])t[u]=p(r);else{if(void 0===t[u].push){var c=t[u];t[u]=[],t[u].push(c)}t[u].push(p(r))}}else t=e.textContent;return t}catch(e){console.log(e.message)}}var S=!1,P=this,F=function(e){return e instanceof F?e:this instanceof F?void(this.EXIFwrapped=e):new F(e)};"undefined"!=typeof exports?("undefined"!=typeof module&&module.exports&&(exports=module.exports=F),exports.EXIF=F):P.EXIF=F;var y=F.Tags={36864:"ExifVersion",40960:"FlashpixVersion",40961:"ColorSpace",40962:"PixelXDimension",40963:"PixelYDimension",37121:"ComponentsConfiguration",37122:"CompressedBitsPerPixel",37500:"MakerNote",37510:"UserComment",40964:"RelatedSoundFile",36867:"DateTimeOriginal",36868:"DateTimeDigitized",37520:"SubsecTime",37521:"SubsecTimeOriginal",37522:"SubsecTimeDigitized",33434:"ExposureTime",33437:"FNumber",34850:"ExposureProgram",34852:"SpectralSensitivity",34855:"ISOSpeedRatings",34856:"OECF",37377:"ShutterSpeedValue",37378:"ApertureValue",37379:"BrightnessValue",37380:"ExposureBias",37381:"MaxApertureValue",37382:"SubjectDistance",37383:"MeteringMode",37384:"LightSource",37385:"Flash",37396:"SubjectArea",37386:"FocalLength",41483:"FlashEnergy",41484:"SpatialFrequencyResponse",41486:"FocalPlaneXResolution",41487:"FocalPlaneYResolution",41488:"FocalPlaneResolutionUnit",41492:"SubjectLocation",41493:"ExposureIndex",41495:"SensingMethod",41728:"FileSource",41729:"SceneType",41730:"CFAPattern",41985:"CustomRendered",41986:"ExposureMode",41987:"WhiteBalance",41988:"DigitalZoomRation",41989:"FocalLengthIn35mmFilm",41990:"SceneCaptureType",41991:"GainControl",41992:"Contrast",41993:"Saturation",41994:"Sharpness",41995:"DeviceSettingDescription",41996:"SubjectDistanceRange",40965:"InteroperabilityIFDPointer",42016:"ImageUniqueID"},b=F.TiffTags={256:"ImageWidth",257:"ImageHeight",34665:"ExifIFDPointer",34853:"GPSInfoIFDPointer",40965:"InteroperabilityIFDPointer",258:"BitsPerSample",259:"Compression",262:"PhotometricInterpretation",274:"Orientation",277:"SamplesPerPixel",284:"PlanarConfiguration",530:"YCbCrSubSampling",531:"YCbCrPositioning",282:"XResolution",283:"YResolution",296:"ResolutionUnit",273:"StripOffsets",278:"RowsPerStrip",279:"StripByteCounts",513:"JPEGInterchangeFormat",514:"JPEGInterchangeFormatLength",301:"TransferFunction",318:"WhitePoint",319:"PrimaryChromaticities",529:"YCbCrCoefficients",532:"ReferenceBlackWhite",306:"DateTime",270:"ImageDescription",271:"Make",272:"Model",305:"Software",315:"Artist",33432:"Copyright"},x=F.GPSTags={0:"GPSVersionID",1:"GPSLatitudeRef",2:"GPSLatitude",3:"GPSLongitudeRef",4:"GPSLongitude",5:"GPSAltitudeRef",6:"GPSAltitude",7:"GPSTimeStamp",8:"GPSSatellites",9:"GPSStatus",10:"GPSMeasureMode",11:"GPSDOP",12:"GPSSpeedRef",13:"GPSSpeed",14:"GPSTrackRef",15:"GPSTrack",16:"GPSImgDirectionRef",17:"GPSImgDirection",18:"GPSMapDatum",19:"GPSDestLatitudeRef",20:"GPSDestLatitude",21:"GPSDestLongitudeRef",22:"GPSDestLongitude",23:"GPSDestBearingRef",24:"GPSDestBearing",25:"GPSDestDistanceRef",26:"GPSDestDistance",27:"GPSProcessingMethod",28:"GPSAreaInformation",29:"GPSDateStamp",30:"GPSDifferential"},C=F.IFD1Tags={256:"ImageWidth",257:"ImageHeight",258:"BitsPerSample",259:"Compression",262:"PhotometricInterpretation",273:"StripOffsets",274:"Orientation",277:"SamplesPerPixel",278:"RowsPerStrip",279:"StripByteCounts",282:"XResolution",283:"YResolution",284:"PlanarConfiguration",296:"ResolutionUnit",513:"JpegIFOffset",514:"JpegIFByteCount",529:"YCbCrCoefficients",530:"YCbCrSubSampling",531:"YCbCrPositioning",532:"ReferenceBlackWhite"},I=F.StringValues={ExposureProgram:{0:"Not defined",1:"Manual",2:"Normal program",3:"Aperture priority",4:"Shutter priority",5:"Creative program",6:"Action program",7:"Portrait mode",8:"Landscape mode"},MeteringMode:{0:"Unknown",1:"Average",2:"CenterWeightedAverage",3:"Spot",4:"MultiSpot",5:"Pattern",6:"Partial",255:"Other"},LightSource:{0:"Unknown",1:"Daylight",2:"Fluorescent",3:"Tungsten (incandescent light)",4:"Flash",9:"Fine weather",10:"Cloudy weather",11:"Shade",12:"Daylight fluorescent (D 5700 - 7100K)",13:"Day white fluorescent (N 4600 - 5400K)",14:"Cool white fluorescent (W 3900 - 4500K)",15:"White fluorescent (WW 3200 - 3700K)",17:"Standard light A",18:"Standard light B",19:"Standard light C",20:"D55",21:"D65",22:"D75",23:"D50",24:"ISO studio tungsten",255:"Other"},Flash:{0:"Flash did not fire",1:"Flash fired",5:"Strobe return light not detected",7:"Strobe return light detected",9:"Flash fired, compulsory flash mode",13:"Flash fired, compulsory flash mode, return light not detected",15:"Flash fired, compulsory flash mode, return light detected",16:"Flash did not fire, compulsory flash mode",24:"Flash did not fire, auto mode",25:"Flash fired, auto mode",29:"Flash fired, auto mode, return light not detected",31:"Flash fired, auto mode, return light detected",32:"No flash function",65:"Flash fired, red-eye reduction mode",69:"Flash fired, red-eye reduction mode, return light not detected",71:"Flash fired, red-eye reduction mode, return light detected",73:"Flash fired, compulsory flash mode, red-eye reduction mode",77:"Flash fired, compulsory flash mode, red-eye reduction mode, return light not detected",79:"Flash fired, compulsory flash mode, red-eye reduction mode, return light detected",89:"Flash fired, auto mode, red-eye reduction mode",93:"Flash fired, auto mode, return light not detected, red-eye reduction mode",95:"Flash fired, auto mode, return light detected, red-eye reduction mode"},SensingMethod:{1:"Not defined",2:"One-chip color area sensor",3:"Two-chip color area sensor",4:"Three-chip color area sensor",5:"Color sequential area sensor",7:"Trilinear sensor",8:"Color sequential linear sensor"},SceneCaptureType:{0:"Standard",1:"Landscape",2:"Portrait",3:"Night scene"},SceneType:{1:"Directly photographed"},CustomRendered:{0:"Normal process",1:"Custom process"},WhiteBalance:{0:"Auto white balance",1:"Manual white balance"},GainControl:{0:"None",1:"Low gain up",2:"High gain up",3:"Low gain down",4:"High gain down"},Contrast:{0:"Normal",1:"Soft",2:"Hard"},Saturation:{0:"Normal",1:"Low saturation",2:"High saturation"},Sharpness:{0:"Normal",1:"Soft",2:"Hard"},SubjectDistanceRange:{0:"Unknown",1:"Macro",2:"Close view",3:"Distant view"},FileSource:{3:"DSC"},Components:{0:"",1:"Y",2:"Cb",3:"Cr",4:"R",5:"G",6:"B"}},v={120:"caption",110:"credit",25:"keywords",55:"dateCreated",80:"byline",85:"bylineTitle",122:"captionWriter",105:"headline",116:"copyright",15:"category"};F.enableXmp=function(){F.isXmpEnabled=!0},F.disableXmp=function(){F.isXmpEnabled=!1},F.getData=function(t,n){return!((self.Image&&t instanceof self.Image||self.HTMLImageElement&&t instanceof self.HTMLImageElement)&&!t.complete)&&(e(t)?n&&n.call(t):i(t,n),!0)},F.getTag=function(t,n){if(e(t))return t.exifdata[n]},F.getIptcTag=function(t,n){if(e(t))return t.iptcdata[n]},F.getAllTags=function(t){if(!e(t))return{};var n,r=t.exifdata,i={};for(n in r)r.hasOwnProperty(n)&&(i[n]=r[n]);return i},F.getAllIptcTags=function(t){if(!e(t))return{};var n,r=t.iptcdata,i={};for(n in r)r.hasOwnProperty(n)&&(i[n]=r[n]);return i},F.pretty=function(t){if(!e(t))return"";var n,r=t.exifdata,i="";for(n in r)r.hasOwnProperty(n)&&("object"==typeof r[n]?r[n]instanceof Number?i+=n+" : "+r[n]+" ["+r[n].numerator+"/"+r[n].denominator+"]\r\n":i+=n+" : ["+r[n].length+" values]\r\n":i+=n+" : "+r[n]+"\r\n");return i},F.readFromBinaryFile=function(e){return o(e)},"function"==typeof define&&define.amd&&define("exif-js",[],function(){return F})}).call(this);
 
 /* ===== js\state.js ===== */
-// â”€â”€â”€ SHARED STATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Single source of truth â€” import this wherever photos/exifCount/camerasSet
+// Single source of truth — import this wherever photos/exifCount/camerasSet
 // are read or mutated so all modules stay in sync.
 
 const photos = [];   // Array of photo objects { id, file, src, exif, name, size, naturalW, naturalH }
@@ -16,8 +15,6 @@ function setExifCount(n) { exifCount = n; }
 
 
 /* ===== js\formatters.js ===== */
-// â”€â”€â”€ FORMATTERS & CONVERTERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Pure functions â€” no DOM access, no side-effects.
 
 function formatAperture(v) {
   if (!v) return null;
@@ -44,7 +41,7 @@ function formatEV(v) {
 }
 
 function formatExifDate(str) {
-  if (!str) return 'â€”';
+  if (!str) return '—';
   // EXIF date format: "YYYY:MM:DD HH:MM:SS"
   const parts = str.split(' ');
   if (parts.length < 2) return str;
@@ -75,119 +72,13 @@ function convertDMStoDD(dms, ref) {
 }
 
 
-/* ===== js\download.js ===== */
-// EXPORT 1: Generates the Data URL for Live Preview OR Download
-async function generatePolaroidDataURL(photoId, settings = {}) {
-  const photo = photos.find(p => p.id === photoId);
-  if (!photo) return null;
-
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-
-  const img = new Image();
-  img.src = photo.src;
-  await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
-
-  const MAX_WIDTH = 1920;
-  let imgWidth = img.width;
-  let imgHeight = img.height;
-
-  if (imgWidth > MAX_WIDTH) {
-    const scaleFactor = MAX_WIDTH / imgWidth;
-    imgWidth = MAX_WIDTH;
-    imgHeight = Math.round(imgHeight * scaleFactor);
-  }
-
-  // â”€â”€ POLAROID DESIGN MATH (Fixed for Vertical Images) â”€â”€
-  // We use the LONGEST side of the image (baseSize) to calculate the bottom thickness. 
-  // This prevents the bottom frame from shrinking on tall portrait photos.
-  const baseSize = Math.max(imgWidth, imgHeight);
-
-  const frameThick = Math.round(imgWidth * 0.06); // Sides still look best tied to width
-  const bottomThick = Math.round(baseSize * 0.16); // Bottom tied to baseSize so text always fits
-  const popBorder = Math.max(4, Math.round(imgWidth * 0.015));
-
-  canvas.width = imgWidth + (frameThick * 2);
-  canvas.height = imgHeight + frameThick + bottomThick;
-
-  // Base & Border
-  ctx.fillStyle = "#F8F8F8";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-  const recessX = frameThick - popBorder;
-  const recessY = frameThick - popBorder;
-  ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
-  ctx.shadowBlur = Math.round(imgWidth * 0.02);
-  ctx.shadowOffsetY = Math.round(imgWidth * 0.01);
-  ctx.fillStyle = "#E0E0E0"; 
-  ctx.fillRect(recessX, recessY, imgWidth + (popBorder * 2), imgHeight + (popBorder * 2));
-  
-  ctx.shadowColor = "transparent";
-  ctx.drawImage(img, frameThick, frameThick, imgWidth, imgHeight);
-  ctx.strokeStyle = "rgba(0,0,0,0.8)";
-  ctx.lineWidth = Math.max(1, Math.round(imgWidth * 0.001));
-  ctx.strokeRect(frameThick, frameThick, imgWidth, imgHeight);
-
-  // â”€â”€ TYPOGRAPHY FIXES â”€â”€
-  const bottomFrameTop = frameThick + imgHeight + popBorder;
-  ctx.fillStyle = "#111111";
-
-  // Build EXIF String based on checkboxes
-  const exif = photo.exif || {};
-  let exifParts = [];
-  if (settings.exifToggles?.includes('camera') && exif.Model) exifParts.push(`ðŸ“¸ ${exif.Model}`);
-  if (settings.exifToggles?.includes('aperture') && exif.FNumber) exifParts.push(`f/${exif.FNumber}`);
-  if (settings.exifToggles?.includes('shutter') && exif.ExposureTime) exifParts.push(`1/${Math.round(1/exif.ExposureTime)}s`);
-  if (settings.exifToggles?.includes('iso') && exif.ISOSpeedRatings) exifParts.push(`ISO ${exif.ISOSpeedRatings}`);
-  
-  const exifStr = exifParts.join('  |  ');
-
-  // Draw Caption
-  if (settings.caption) {
-    // Calculate font size using baseSize
-    let capSize = Math.max(40, Math.round(baseSize * 0.035));
-    if (settings.font.includes('Caveat')) capSize = Math.round(capSize * 1.5); 
-    ctx.font = `${capSize}px ${settings.font}`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    const capY = exifStr ? bottomFrameTop + (bottomThick * 0.4) : bottomFrameTop + (bottomThick * 0.5);
-    ctx.fillText(settings.caption, canvas.width / 2, capY);
-  }
-
-  // Draw EXIF (Larger and cleaner)
-  if (exifStr) {
-    // Calculate font size using baseSize
-    const exifSize = Math.max(20, Math.round(baseSize * 0.018)); 
-    
-    ctx.font = `bold ${exifSize}px monospace`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    // Slightly adjusted Y-positioning for perfect vertical centering
-    const exifY = settings.caption ? bottomFrameTop + (bottomThick * 0.75) : bottomFrameTop + (bottomThick * 0.5);
-    
-    ctx.fillStyle = "#555555";
-    ctx.fillText(exifStr, canvas.width / 2, exifY);
-  }
-
-  return canvas.toDataURL('image/jpeg', 0.90);
-}
-
-// EXPORT 2: The actual download trigger
-async function downloadPolaroid(photoId, settings) {
-  const dataUrl = await generatePolaroidDataURL(photoId, settings);
-  if (!dataUrl) return;
-  const link = document.createElement('a');
-  link.download = `ExifGrid-Polaroid-${photoId}.jpg`;
-  link.href = dataUrl;
-  link.click();
-}
 
 /* ===== js\lightbox.js ===== */
-// â”€â”€ Track the currently open photo â”€â”€
+// ── Track the currently open photo ──
 let currentPhotoId = null;
 let miniMap = null; // Tracks the active Leaflet map
 
-// â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Public API ────────────────────────────────────────────────────────────────
 
 function openLightbox(id) {
   currentPhotoId = id; // Update tracker
@@ -206,7 +97,7 @@ function openLightbox(id) {
   meta.appendChild(_metaSection('File', [
     { k: 'Name', v: p.name },
     { k: 'Size', v: formatBytes(p.size) },
-    { k: 'Dimensions', v: p.naturalW + ' Ã— ' + p.naturalH + ' px' },
+    { k: 'Dimensions', v: p.naturalW + ' × ' + p.naturalH + ' px' },
   ]));
 
   // Camera
@@ -229,7 +120,7 @@ function openLightbox(id) {
   if (exif.DateTimeOriginal) dtFields.push({ k: 'Taken', v: formatExifDate(exif.DateTimeOriginal) });
   if (dtFields.length) meta.appendChild(_metaSection('Date & Time', dtFields));
 
-  // â”€â”€ NEW: GPS & MINI-MAP â”€â”€
+  // ── NEW: GPS & MINI-MAP ──
   if (exif.GPSLatitude && exif.GPSLongitude) {
     const lat = convertDMStoDD(exif.GPSLatitude, exif.GPSLatitudeRef);
     const lon = convertDMStoDD(exif.GPSLongitude, exif.GPSLongitudeRef);
@@ -237,10 +128,10 @@ function openLightbox(id) {
     const gpsSection = document.createElement('div');
     gpsSection.innerHTML = `
       <div class="meta-section-title">Location</div>
-      <div class="meta-row"><span class="meta-key">Coordinates</span><span class="meta-value">${lat.toFixed(5)}Â°, ${lon.toFixed(5)}Â°</span></div>
+      <div class="meta-row"><span class="meta-key">Coordinates</span><span class="meta-value">${lat.toFixed(5)}°, ${lon.toFixed(5)}°</span></div>
       <div id="mini-map"></div>
       <a class="gps-link" href="https://www.google.com/maps/search/?api=1&query=${lat},${lon}" target="_blank">
-        âŒ– Open in Google Maps
+        ↖ Open in Google Maps
       </a>
     `;
     meta.appendChild(gpsSection);
@@ -317,48 +208,7 @@ function openLightbox(id) {
   document.addEventListener('keydown', lbKeydown);
   _runTypewriterHUD();
 
-  // --- LIVE PREVIEW ENGINE & ZOOM ---
-  const previewImg = document.getElementById('lb-polaroid-preview');
-  
-  // Helper to gather settings
-  const getSettings = () => {
-    const toggles = Array.from(document.querySelectorAll('#ps-exif-toggles input:checked')).map(cb => cb.value);
-    return {
-      caption: document.getElementById('ps-caption').value,
-      font: document.getElementById('ps-font').value,
-      exifToggles: toggles
-    };
-  };
-
-  // Live updater
-  const updatePreview = async () => {
-    previewImg.style.opacity = '0.5'; // Dim while rendering
-    const dataUrl = await generatePolaroidDataURL(id, getSettings());
-    previewImg.src = dataUrl;
-    previewImg.style.opacity = '1';
-  };
-
-  // Initial render
-  updatePreview();
-
-  // Listeners for Live Updates
-  document.getElementById('ps-caption').addEventListener('input', updatePreview);
-  document.getElementById('ps-font').addEventListener('change', updatePreview);
-  document.querySelectorAll('#ps-exif-toggles input').forEach(cb => cb.addEventListener('change', updatePreview));
-
-  // The Download Button
-  const downloadBtn = document.getElementById('download-card-btn');
-  if (downloadBtn) {
-    downloadBtn.onclick = () => downloadPolaroid(id, getSettings());
-  }
-
-  // Click to Enlarge functionality
-  const originalImg = document.getElementById('lb-img');
-  const polaroidPreview = document.getElementById('lb-polaroid-preview');
-
-  // Using .onclick directly prevents listener duplication without needing to clone and destroy the DOM elements
-  originalImg.onclick = function() { this.classList.toggle('enlarged'); };
-  polaroidPreview.onclick = function() { this.classList.toggle('enlarged'); }
+  lbImg.onclick = function() { this.classList.toggle('enlarged'); };
 }
 
 function closeLightbox() {
@@ -391,7 +241,7 @@ function closeLightbox() {
   }
 }
 
-// â”€â”€ Private helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Private helpers ───────────────────────────────────────────────────────────
 
 function lbKeydown(e) {
   if (e.key === 'Escape') {
@@ -466,11 +316,11 @@ function _runTypewriterHUD() {
 }
 
 /* ===== js\gallery.js ===== */
-// â”€â”€â”€ GALLERY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── GALLERY ──────────────────────────────────────────────────────────────────
 // Drag & drop wiring, file ingestion, stats bar, clear-all, and individual
 // photo removal all live here.
 
-// â”€â”€ Drag & Drop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Drag & Drop ───────────────────────────────────────────────────────────────
 
 function onDragOver(e) {
   e.preventDefault();
@@ -487,7 +337,7 @@ function onDrop(e) {
   handleFiles(e.dataTransfer.files);
 }
 
-// â”€â”€ File Handling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── File Handling ─────────────────────────────────────────────────────────────
 
 function handleFiles(files) {
   if (!files || files.length === 0) return;
@@ -498,7 +348,7 @@ function handleFiles(files) {
 
     // Unique ID for safe async removal
     const id = Math.random().toString(36).substring(2, 9);
-    // Lightweight Object URL â€” avoids keeping a full base64 string in RAM
+    // Lightweight Object URL — avoids keeping a full base64 string in RAM
     const objectURL = URL.createObjectURL(file);
 
     photos.push({ id, file, src: objectURL, exif: null });
@@ -512,7 +362,7 @@ function handleFiles(files) {
   if (fileInput) fileInput.value = '';
 }
 
-// â”€â”€ Remove a Single Photo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Remove a Single Photo ─────────────────────────────────────────────────────
 
 function removePhoto(id, cardElement) {
   const index = photos.findIndex(p => p.id === id);
@@ -524,7 +374,7 @@ function removePhoto(id, cardElement) {
   updateStats();
 }
 
-// â”€â”€ Clear All â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Clear All ─────────────────────────────────────────────────────────────────
 
 function clearAll() {
   photos.forEach(photo => URL.revokeObjectURL(photo.src));
@@ -537,7 +387,7 @@ function clearAll() {
   updateStats();
 }
 
-// â”€â”€ Stats Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Stats Bar ─────────────────────────────────────────────────────────────────
 
 function updateStats() {
   // Recompute from the live photos array
@@ -571,25 +421,19 @@ function updateStats() {
   }
 }
 
-// â”€â”€ Private UI helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Private UI helpers ────────────────────────────────────────────────────────
 
 function _showGallery() {
-  document.getElementById('drop-zone').style.display = 'none';
-  document.getElementById('gallery').style.display = 'block';
-  document.getElementById('stats-bar').style.display = 'flex';
-  document.getElementById('clear-btn').style.display = 'block';
+  document.body.classList.add('gallery-active');
 }
 
 function _hideGallery() {
-  document.getElementById('drop-zone').style.display = '';
-  document.getElementById('gallery').style.display = 'none';
-  document.getElementById('stats-bar').style.display = 'none';
-  document.getElementById('clear-btn').style.display = 'none';
+  document.body.classList.remove('gallery-active');
 }
 
 
 /* ===== js\card.js ===== */
-// â”€â”€â”€ CARD BUILDER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── CARD BUILDER ─────────────────────────────────────────────────────────────
 // Responsible for creating both the skeleton loading card and the fully-
 // populated photo card DOM elements.
 
@@ -619,17 +463,17 @@ function buildCard(id) {
   // Set initial opacity to 0 so it stays hidden until GSAP reveals it
   card.style.opacity = '0'; 
 
-  // â”€â”€ Remove button â”€â”€
+  // ── Remove button ──
   const removeBtn = document.createElement('button');
   removeBtn.className = 'remove-btn';
-  removeBtn.innerHTML = 'âœ•';
+  removeBtn.innerHTML = '✕';
   removeBtn.onclick = (e) => {
     e.stopPropagation(); 
     removePhoto(id, card);
   };
   card.appendChild(removeBtn);
 
-  // â”€â”€ Thumbnail & Dynamic Logic â”€â”€
+  // ── Thumbnail & Dynamic Logic ──
   const img = document.createElement('img');
   img.src = p.src;
   img.alt = p.name;
@@ -667,7 +511,7 @@ function buildCard(id) {
   
   card.appendChild(img);
 
-  // â”€â”€ Camera badge (top-left) â”€â”€
+  // ── Camera badge (top-left) ──
   if (exif.Make) {
     const badge = document.createElement('div');
     badge.className = 'camera-badge';
@@ -675,7 +519,7 @@ function buildCard(id) {
     card.appendChild(badge);
   }
 
-  // â”€â”€ Hover overlay â”€â”€
+  // ── Hover overlay ──
   const overlay = document.createElement('div');
   overlay.className = 'photo-overlay';
 
@@ -723,7 +567,7 @@ function buildCard(id) {
 
 
 /* ===== js\exif.js ===== */
-// â”€â”€â”€ EXIF READING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── EXIF READING ─────────────────────────────────────────────────────────────
 // Reads raw EXIF data from a File object via EXIF.js (global), then hands off
 // to the card builder once image dimensions are also known.
 
@@ -734,7 +578,7 @@ function buildCard(id) {
  * @param {string}      id          - Unique ID assigned to this photo
  * @param {HTMLElement} placeholder - Loading-card element to be replaced when done
  */
-function readExif(file, src, id, placeholder) {
+window.readExif = window.readExif || function readExif(file, src, id, placeholder) {
   const p = photos.find(photo => photo.id === id);
   if (!p) return;
 
@@ -808,25 +652,20 @@ function readExif(file, src, id, placeholder) {
   setTimeout(() => {
     if (!rendered) renderCard();
   }, 0);
-}
+};
 
 
 /* ===== script.js ===== */
-// â”€â”€â”€ ENTRY POINT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── ENTRY POINT ─────────────────────────────────────────────────────────────
 // Wires the page controls and keeps the core functions available globally.
 
 function toggleTheme() {
   const htmlDoc = document.documentElement;
   const themeBtn = document.getElementById('theme-btn');
-  
-  // Toggle the class on the <html> tag
-  htmlDoc.classList.toggle('light-theme');
-  
-  // Update the button text
-  if (htmlDoc.classList.contains('light-theme')) {
-    themeBtn.textContent = 'Dark';
-  } else {
-    themeBtn.textContent = 'Light';
+  const isLight = htmlDoc.classList.toggle('light-theme');
+
+  if (themeBtn) {
+    themeBtn.textContent = isLight ? '🌙 Dark' : '☀️ Light';
   }
 }
 
@@ -837,31 +676,31 @@ function initEventHandlers() {
   const fileInput = document.getElementById('file-input');
   const dropZone = document.getElementById('drop-zone');
 
-  if (themeBtn) themeBtn.onclick = toggleTheme;
-  if (clearBtn) clearBtn.onclick = clearAll;
-  if (addPhotosBtn && fileInput) addPhotosBtn.onclick = () => fileInput.click();
-  if (fileInput) fileInput.onchange = () => handleFiles(fileInput.files);
+  if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+  if (clearBtn) clearBtn.addEventListener('click', clearAll);
+  if (addPhotosBtn && fileInput) addPhotosBtn.addEventListener('click', () => fileInput.click());
+  if (fileInput) fileInput.addEventListener('change', () => handleFiles(fileInput.files));
 
   if (dropZone && fileInput) {
-    dropZone.onclick = () => fileInput.click();
-    dropZone.ondragover = onDragOver;
-    dropZone.ondragleave = onDragLeave;
-    dropZone.ondrop = onDrop;
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', onDragOver);
+    dropZone.addEventListener('dragleave', onDragLeave);
+    dropZone.addEventListener('drop', onDrop);
   }
 }
+
+// Attach to window so inline onclick handlers in index.html keep working.
+window.handleFiles = handleFiles;
+window.clearAll = clearAll;
+window.onDragOver = onDragOver;
+window.onDragLeave = onDragLeave;
+window.onDrop = onDrop;
+window.closeLightbox = closeLightbox;
+window.toggleTheme = toggleTheme;
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initEventHandlers);
 } else {
   initEventHandlers();
 }
-
-// Attach to window so existing inline attributes and console debugging still work.
-window.handleFiles  = handleFiles;
-window.clearAll     = clearAll;
-window.onDragOver   = onDragOver;
-window.onDragLeave  = onDragLeave;
-window.onDrop       = onDrop;
-window.closeLightbox = closeLightbox;
-window.toggleTheme  = toggleTheme;
 

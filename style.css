@@ -1,111 +1,4 @@
-﻿/* ExifGrid consolidated stylesheet. All local CSS is bundled here. */
-
-/* ===== css\download.css ===== */
-/* THE COLUMN FIX */
-.lb-sidebar-column {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 350px;
-  height: 100%; 
-  overflow-y: auto; /* Enables scrolling for the sidebar */
-  padding-bottom: 20px; 
-}
-
-.polaroid-btn {
-  display: block;
-  width: 100%;
-  margin-top: auto; /* Pushes it to the bottom of the column */
-  padding: 16px;
-  background-color: #1a1a1a;
-  color: #00ffcc;
-  border: 1px solid #333;
-  border-radius: 6px;
-  font-family: monospace;
-  font-size: 14px;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  cursor: pointer;
-}
-
-.polaroid-btn:active {
-  background-color: #000;
-  border-color: #00ffcc;
-}
-
-/* â”€â”€â”€ POLAROID SETTINGS PANEL â”€â”€â”€ */
-.polaroid-settings {
-  background: rgba(0, 0, 0, 0.15); /* Deep inset look */
-  border-top: 1px solid var(--border);
-  padding: 20px 24px;
-  margin-top: auto; /* Pushes it down above the button */
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.light-theme .polaroid-settings {
-  background: rgba(0, 0, 0, 0.03);
-}
-
-.ps-title {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 4px;
-}
-
-.ps-label {
-  font-size: 11px;
-  color: var(--text-dim);
-  margin-top: 6px;
-}
-
-.ps-input, .ps-select {
-  width: 100%;
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  color: var(--text);
-  padding: 10px 12px;
-  border-radius: 6px;
-  font-family: var(--font-body);
-  font-size: 13px;
-  outline: none;
-  transition: all var(--transition);
-}
-
-.ps-input:focus, .ps-select:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
-}
-
-/* Force the download button to sit flush under the settings */
-.polaroid-btn {
-  margin-top: 0; 
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}
-
-/* Checkbox UI */
-.ps-toggles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 4px;
-}
-
-.ps-toggles label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-}
+/* ExifGrid consolidated stylesheet. All local CSS is bundled here. */
 
 /* ===== css\base.css ===== */
 *,
@@ -116,7 +9,7 @@
   padding: 0;
 }
 
-/* â”€â”€â”€ DARK THEME (Misty Obsidian) â”€â”€â”€ */
+/* ─── DARK THEME (Misty Obsidian) ─── */
 :root {
   /* Deeper blacks and rich greys for a highly visible, moody flow */
   --bg-gradient: linear-gradient(-45deg, #050505, #1c1c1c, #0a0a0a, #262626);
@@ -145,7 +38,7 @@
   --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* â”€â”€â”€ LIGHT THEME (Pearlescent Mist) â”€â”€â”€ */
+/* ─── LIGHT THEME (Pearlescent Mist) ─── */
 html.light-theme {
   /* Distinct silvers and soft whites so the flowing animation is obvious */
   --bg-gradient: linear-gradient(-45deg, #ffffff, #d1d5db, #f3f4f6, #9ca3af);
@@ -186,7 +79,7 @@ body {
   flex-direction: column;
 }
 
-/* â”€â”€â”€ THE AMBIENT FLOW ANIMATION â”€â”€â”€ */
+/* ─── THE AMBIENT FLOW ANIMATION ─── */
 @keyframes ambientMist {
   0% {
     background-position: 0% 50%;
@@ -200,7 +93,7 @@ body {
 }
 
 /* ===== css\header.css ===== */
-/* â”€â”€â”€ HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── HEADER ─────────────────────────────────────────────────────────────────── */
 header {
   position: sticky;
   top: 0;
@@ -246,7 +139,7 @@ header {
   gap: 12px;
 }
 
-/* â”€â”€â”€ BUTTONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── BUTTONS ────────────────────────────────────────────────────────────────── */
 .btn {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -286,7 +179,7 @@ header {
 
 
 /* ===== css\stats.css ===== */
-/* â”€â”€â”€ STATS BAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── STATS BAR ──────────────────────────────────────────────────────────────── */
 #stats-bar {
   display: none;
   padding: 10px 32px;
@@ -320,7 +213,7 @@ header {
 
 
 /* ===== css\dropzone.css ===== */
-/* â”€â”€â”€ DROP ZONE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── DROP ZONE ──────────────────────────────────────────────────────────────── */
 #drop-zone {
   flex: 1;
   display: flex;
@@ -432,16 +325,34 @@ header {
 
 
 /* ===== css\gallery.css ===== */
-/* â”€â”€â”€ GALLERY GRID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── GALLERY GRID ───────────────────────────────────────────────────────────── */
 #gallery {
-  display: none;
+  display: block;
   padding: 28px 28px 48px;
   columns: 4 220px;
   column-gap: 14px;
 }
 
-/* â”€â”€â”€ PHOTO CARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-/* â”€â”€â”€ PHOTO CARD (Glassmorphic & Dynamic) â”€â”€â”€ */
+body.gallery-active #gallery {
+  display: block;
+}
+
+body.gallery-active #drop-zone,
+body:not(.gallery-active) #stats-bar,
+body:not(.gallery-active) #clear-btn {
+  display: none;
+}
+
+body.gallery-active #stats-bar {
+  display: flex;
+}
+
+body.gallery-active #clear-btn {
+  display: block;
+}
+
+/* ─── PHOTO CARD ─────────────────────────────────────────────────────────────── */
+/* ─── PHOTO CARD (Glassmorphic & Dynamic) ─── */
 .photo-card {
   break-inside: avoid;
   margin-bottom: 14px;
@@ -483,7 +394,7 @@ header {
   transform: scale(1.02);
 }
 
-/* â”€â”€â”€ REMOVE BUTTON â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── REMOVE BUTTON ──────────────────────────────────────────────────────────── */
 .remove-btn {
   position: absolute;
   top: 10px;
@@ -515,7 +426,7 @@ header {
   opacity: 1;
 }
 
-/* â”€â”€â”€ HOVER OVERLAY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── HOVER OVERLAY ──────────────────────────────────────────────────────────── */
 .photo-overlay {
   position: absolute;
   bottom: 0;
@@ -549,7 +460,7 @@ header {
   text-overflow: ellipsis;
 }
 
-/* â”€â”€â”€ EXIF OVERLAY GRID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── EXIF OVERLAY GRID ──────────────────────────────────────────────────────── */
 .exif-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -589,7 +500,7 @@ header {
   display: inline-block;
 }
 
-/* â”€â”€â”€ CAMERA BADGE (top-left corner) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── CAMERA BADGE (top-left corner) ────────────────────────────────────────── */
 .camera-badge {
   position: absolute;
   top: 10px;
@@ -614,7 +525,7 @@ header {
 
 
 /* ===== css\lightbox.css ===== */
-/* â”€â”€â”€ LIGHTBOX (Glassmorphic) â”€â”€â”€ */
+/* ─── LIGHTBOX (Glassmorphic) ─── */
 #lightbox {
   display: none; /* JS will change this to 'flex' when opened */
   position: fixed;
@@ -630,7 +541,7 @@ header {
   opacity: 0; /* GSAP will animate this from 0 to 1 */
 }
 
-/* â”€â”€â”€ LIGHTBOX HEADER â”€â”€â”€ */
+/* ─── LIGHTBOX HEADER ─── */
 .lb-header {
   display: flex;
   align-items: center;
@@ -669,51 +580,22 @@ header {
   color: var(--text);
 }
 
-/* â”€â”€â”€ LIGHTBOX BODY â”€â”€â”€ */
+/* ─── LIGHTBOX BODY ─── */
 .lb-body {
   flex: 1;
   display: flex;
   overflow: hidden;
 }
 
-/* â”€â”€â”€ LIVE COMPARE WRAPPER â”€â”€â”€ */
+/* ─── LIGHTBOX IMAGE ─── */
 .lb-img-wrap {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
-  overflow-y: auto; /* Allow scrolling if images stack tall */
+  overflow-y: auto;
   transition: background 0.5s ease;
-}
-
-.compare-container {
-  display: flex;
-  flex-wrap: wrap; /* Stacks automatically on small screens */
-  gap: 30px;
-  width: 100%;
-  min-height: 100%; /* Changed from height: 100% to prevent squishing */
-  padding: 30px 0; /* Gives the images breathing room when scrolling */  
-  justify-content: center;
-  align-items: center;
-}
-
-.compare-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  max-width: 45%; /* Side by side on desktop */
-  min-width: 280px; /* Stacks gracefully on mobile */
-  position: relative;
-}
-
-.compare-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
 }
 
 .zoomable-img {
@@ -749,7 +631,7 @@ header {
   box-shadow: 0 10px 40px rgba(0,0,0,0.3);
 }
 
-/* â”€â”€â”€ META SIDEBAR (The Column) â”€â”€â”€ */
+/* ─── META SIDEBAR (The Column) ─── */
 .lb-sidebar-column {
   width: 100%;
   max-width: 350px;
@@ -769,7 +651,7 @@ header {
   gap: 24px;
 }
 
-/* â”€â”€â”€ META TEXT & GPS FORMATTING â”€â”€â”€ */
+/* ─── META TEXT & GPS FORMATTING ─── */
 .meta-section-title {
   font-family: var(--font-mono);
   font-size: 9px;
@@ -827,7 +709,7 @@ header {
   border-color: rgba(143, 184, 158, 0.5);
 }
 
-/* â”€â”€â”€ MINI MAP â”€â”€â”€ */
+/* ─── MINI MAP ─── */
 #mini-map {
   height: 160px;
   width: 100%;
@@ -838,18 +720,18 @@ header {
   z-index: 1; /* Keeps the map underneath the close button */
 }
 
-/* ðŸŒ™ Midnight Aurora Map Hack: Invert the map colors for Dark Mode! */
+/* 🌙 Midnight Aurora Map Hack: Invert the map colors for Dark Mode! */
 :root #mini-map .leaflet-layer {
   filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
 
-/* â˜€ï¸ Frosty Sky Map: Standard map colors for Light Mode */
+/* ☀️ Frosty Sky Map: Standard map colors for Light Mode */
 html.light-theme #mini-map .leaflet-layer {
   filter: none;
 }
 
 /* ===== css\utils.css ===== */
-/* â”€â”€â”€ LOADING SKELETON â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── LOADING SKELETON ───────────────────────────────────────────────────────── */
 .card-loading {
   width: 100%;
   aspect-ratio: 3/4;
@@ -881,7 +763,7 @@ html.light-theme #mini-map .leaflet-layer {
   }
 }
 
-/* â”€â”€â”€ FOOTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── FOOTER ─────────────────────────────────────────────────────────────────── */
 footer {
   padding: 16px 32px;
   border-top: 1px solid var(--border);
@@ -898,7 +780,7 @@ footer {
   letter-spacing: 0.08em;
 }
 
-/* â”€â”€â”€ SCROLLBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── SCROLLBAR ──────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
@@ -913,22 +795,7 @@ footer {
 
 
 /* ===== css\mobile.css ===== */
-/* â”€â”€â”€ TABLET LAYOUT (769px to 1024px) â”€â”€â”€ */
-/* Left side: Images stack vertically | Right side: Fixed Sidebar */
-@media (max-width: 1024px) and (min-width: 769px) {
-  .compare-container {
-    flex-direction: column !important;
-    flex-wrap: nowrap !important;
-    justify-content: flex-start !important;
-    padding: 20px 0 !important;
-  }
-
-  .compare-item {
-    max-width: 100% !important; /* Let images span the full width of the left column */
-  }
-}
-
-/* â”€â”€â”€ MOBILE LAYOUT (â‰¤ 768px) â”€â”€â”€ */
+/* ─── MOBILE LAYOUT (≤ 768px) ─── */
 /* Single unified scrolling column. Images on top, Sidebar full-width on bottom. */
 @media (max-width: 768px) {
   
@@ -946,19 +813,6 @@ footer {
     height: auto !important;
   }
 
-  .compare-container {
-    flex-direction: column !important;
-    flex-wrap: nowrap !important;
-    gap: 40px !important;
-    margin: 0 !important;
-    padding-bottom: 20px !important;
-  }
-
-  .compare-item {
-    max-width: 100% !important;
-    width: 100% !important;
-  }
-
   /* 3. Make the Sidebar span the entire bottom of the screen */
   .lb-sidebar-column {
     width: 100% !important;
@@ -969,11 +823,7 @@ footer {
     border-top: 1px solid var(--border) !important;
   }
 
-  .polaroid-settings {
-    margin-top: 0 !important; /* Reset margin so it flows naturally */
-  }
-
-  /* â”€â”€ Terminal Typewriter Effect (Keep your cinematic mobile effect) â”€â”€ */
+  /* ── Terminal Typewriter Effect (Keep your cinematic mobile effect) ── */
   .typewriter-text {
     font-family: monospace, "Courier New", Courier;
     color: #ffffff !important;
@@ -983,7 +833,7 @@ footer {
   }
 
   .typing-cursor::after {
-    content: "â–ˆ";
+    content: "█";
     animation: blink 0.8s step-end infinite;
     margin-left: 4px;
     color: #00ffcc;

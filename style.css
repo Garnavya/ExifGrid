@@ -1,11 +1,997 @@
-/* ─── ExifGrid Stylesheet ────────────────────────────────────────────────────── */
-/* Import order matters: base tokens must load before anything that uses them.   */
-@import url(/css/download.css); /*download polaroid cards */
-@import url("css/base.css"); /* reset, :root variables, html/body          */
-@import url("css/header.css"); /* header, logo, .btn                         */
-@import url("css/stats.css"); /* #stats-bar                                 */
-@import url("css/dropzone.css"); /* #drop-zone, .hint-pill                     */
-@import url("css/gallery.css"); /* #gallery, .photo-card, overlays, badges    */
-@import url("css/lightbox.css"); /* #lightbox, .lb-meta, .gps-link             */
-@import url("css/utils.css"); /* .card-loading, footer, scrollbar           */
-@import url("css/mobile.css"); /* @media queries, typewriter, blink          */
+﻿/* ExifGrid consolidated stylesheet. All local CSS is bundled here. */
+
+/* ===== css\download.css ===== */
+/* THE COLUMN FIX */
+.lb-sidebar-column {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 350px;
+  height: 100%; 
+  overflow-y: auto; /* Enables scrolling for the sidebar */
+  padding-bottom: 20px; 
+}
+
+.polaroid-btn {
+  display: block;
+  width: 100%;
+  margin-top: auto; /* Pushes it to the bottom of the column */
+  padding: 16px;
+  background-color: #1a1a1a;
+  color: #00ffcc;
+  border: 1px solid #333;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+.polaroid-btn:active {
+  background-color: #000;
+  border-color: #00ffcc;
+}
+
+/* â”€â”€â”€ POLAROID SETTINGS PANEL â”€â”€â”€ */
+.polaroid-settings {
+  background: rgba(0, 0, 0, 0.15); /* Deep inset look */
+  border-top: 1px solid var(--border);
+  padding: 20px 24px;
+  margin-top: auto; /* Pushes it down above the button */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.light-theme .polaroid-settings {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.ps-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+
+.ps-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+
+.ps-input, .ps-select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  transition: all var(--transition);
+}
+
+.ps-input:focus, .ps-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
+}
+
+/* Force the download button to sit flush under the settings */
+.polaroid-btn {
+  margin-top: 0; 
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* Checkbox UI */
+.ps-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.ps-toggles label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+/* ===== css\base.css ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* â”€â”€â”€ DARK THEME (Misty Obsidian) â”€â”€â”€ */
+:root {
+  /* Deeper blacks and rich greys for a highly visible, moody flow */
+  --bg-gradient: linear-gradient(-45deg, #050505, #1c1c1c, #0a0a0a, #262626);
+  
+  --surface: rgba(20, 20, 20, 0.4); 
+  --surface2: rgba(35, 35, 35, 0.8);
+  --border: rgba(255, 255, 255, 0.08);
+  --border2: rgba(255, 255, 255, 0.15);
+  
+  --text: #e8e4dc;
+  --text-muted: #888888;
+  --text-dim: #555555;
+  
+  /* Muted, classy accents instead of bright neon */
+  --accent: #b3b3b3; 
+  --accent2: #d4b483; 
+  --red: #c96b5a;
+  
+  --glass-overlay: rgba(10, 10, 10, 0.7); 
+  
+  --font-display: "DM Serif Display", serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-mono: "DM Mono", monospace;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* â”€â”€â”€ LIGHT THEME (Pearlescent Mist) â”€â”€â”€ */
+html.light-theme {
+  /* Distinct silvers and soft whites so the flowing animation is obvious */
+  --bg-gradient: linear-gradient(-45deg, #ffffff, #d1d5db, #f3f4f6, #9ca3af);
+  
+  --surface: rgba(255, 255, 255, 0.5); 
+  --surface2: rgba(240, 240, 240, 0.8);
+  --border: rgba(0, 0, 0, 0.1);
+  --border2: rgba(0, 0, 0, 0.2);
+  
+  --text: #111111;
+  --text-muted: #555555;
+  --text-dim: #888888;
+  
+  --accent: #444444;
+  --accent2: #b38b4d;
+  
+  --glass-overlay: rgba(255, 255, 255, 0.6);
+}
+
+html {
+  /* The Gradient Setup */
+  background: var(--bg-gradient);
+  
+  /* CRITICAL: Makes the gradient 4x larger than the screen so it can move */
+  background-size: 400% 400%;
+  
+  /* The subtle, 20-second slow flow loop */
+  animation: ambientMist 20s ease-in-out infinite;
+  
+  color: var(--text);
+  font-family: var(--font-body);
+  transition: color 0.6s ease;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* â”€â”€â”€ THE AMBIENT FLOW ANIMATION â”€â”€â”€ */
+@keyframes ambientMist {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* ===== css\header.css ===== */
+/* â”€â”€â”€ HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface2); /* Now reacts to light/dark mode */
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+
+.logo {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.logo-text {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.logo-tag {
+  font-family: var(--font-mono);
+  font-size: 12px; /* Increased from 10px */
+  font-weight: 600; /* Added boldness */
+  color: var(--text-muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid var(--border2);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* â”€â”€â”€ BUTTONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 7px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn:hover {
+  background: var(--surface2);
+  color: var(--text);
+  border-color: var(--border2);
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: #1a1612;
+  border-color: var(--accent);
+  font-weight: 500;
+}
+
+.btn-accent:hover {
+  background: #e2c99a;
+  border-color: #e2c99a;
+  color: #1a1612;
+}
+
+#clear-btn {
+  display: none;
+}
+
+
+/* ===== css\stats.css ===== */
+/* â”€â”€â”€ STATS BAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+#stats-bar {
+  display: none;
+  padding: 10px 32px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  gap: 28px;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent2);
+}
+
+.stat-val {
+  color: var(--text);
+  font-weight: 500;
+}
+
+
+/* ===== css\dropzone.css ===== */
+/* â”€â”€â”€ DROP ZONE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+#drop-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 32px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: background var(--transition);
+}
+
+#drop-zone::before {
+  content: "";
+  position: absolute;
+  inset: 40px;
+  border: 1.5px dashed var(--border2);
+  border-radius: 16px;
+  pointer-events: none;
+  transition: all var(--transition);
+}
+
+/* Add a glowing effect when hovering or dragging */
+#drop-zone:hover::before,
+#drop-zone.drag-over::before {
+  border-color: var(--accent);
+  background: rgba(88, 166, 255, 0.03); /* Very subtle blue tint */
+  box-shadow: 0 0 30px rgba(88, 166, 255, 0.1) inset;
+}
+
+#drop-zone.drag-over {
+  background: rgba(88, 166, 255, 0.02);
+}
+
+.drop-inner {
+  text-align: center;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.drop-icon {
+  width: 72px;
+  height: 72px;
+  border: 1.5px solid var(--border2);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.drop-icon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(212, 180, 131, 0.12) 0%,
+    transparent 70%
+  );
+}
+
+.drop-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.drop-sub {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 380px;
+}
+
+.drop-hints {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.hint-pill {
+  font-family: var(--font-mono);
+  font-size: 12px; /* Increased from 10px */
+  font-weight: 600; /* Added boldness */
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  padding: 6px 12px; /* Slightly increased padding to fit the larger text */
+  border-radius: 4px; /* Softened the edges a bit */
+}
+
+#file-input {
+  display: none;
+}
+
+
+/* ===== css\gallery.css ===== */
+/* â”€â”€â”€ GALLERY GRID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+#gallery {
+  display: none;
+  padding: 28px 28px 48px;
+  columns: 4 220px;
+  column-gap: 14px;
+}
+
+/* â”€â”€â”€ PHOTO CARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* â”€â”€â”€ PHOTO CARD (Glassmorphic & Dynamic) â”€â”€â”€ */
+.photo-card {
+  break-inside: avoid;
+  margin-bottom: 14px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+  
+  /* Glassmorphism Base */
+  background: var(--surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  /* Dynamic Borders & Shadows (Fallback to subtle white/black if JS fails) */
+  border: 1px solid var(--card-glow, rgba(255, 255, 255, 0.1));
+  box-shadow: 0 8px 32px 0 var(--card-glow-shadow, rgba(0, 0, 0, 0.2));
+  
+  cursor: pointer;
+  display: block;
+  
+  /* Removed CSS animation because GSAP will handle it now */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+}
+
+.photo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px 0 var(--card-glow, rgba(255, 255, 255, 0.15));
+}
+
+.photo-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  /* Reduced the hover scale slightly to keep it classy */
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.photo-card:hover img {
+  transform: scale(1.02);
+}
+
+/* â”€â”€â”€ REMOVE BUTTON â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.remove-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  background: rgba(8, 8, 7, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border2);
+  border-radius: 50%;
+  color: var(--text-muted);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.remove-btn:hover {
+  color: var(--red);
+  border-color: var(--red);
+  background: rgba(201, 107, 90, 0.1);
+}
+
+.photo-card:hover .remove-btn {
+  opacity: 1;
+}
+
+/* â”€â”€â”€ HOVER OVERLAY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.photo-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 40px 14px 14px;
+  background: linear-gradient(
+    to top,
+    rgba(8, 8, 7, 0.92) 0%,
+    rgba(8, 8, 7, 0.6) 50%,
+    transparent 100%
+  );
+  transform: translateY(4px);
+  opacity: 0;
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.photo-card:hover .photo-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.photo-filename {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* â”€â”€â”€ EXIF OVERLAY GRID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.exif-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 10px;
+}
+
+.exif-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.exif-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.exif-val {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+  font-weight: 400;
+}
+
+.no-exif-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  padding: 3px 8px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* â”€â”€â”€ CAMERA BADGE (top-left corner) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.camera-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(8, 8, 7, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.photo-card:hover .camera-badge {
+  opacity: 1;
+}
+
+
+/* ===== css\lightbox.css ===== */
+/* â”€â”€â”€ LIGHTBOX (Glassmorphic) â”€â”€â”€ */
+#lightbox {
+  display: none; /* JS will change this to 'flex' when opened */
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  
+  /* Adaptive mist overlay using our new variable! */
+  background: var(--glass-overlay);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  
+  flex-direction: column;
+  opacity: 0; /* GSAP will animate this from 0 to 1 */
+}
+
+/* â”€â”€â”€ LIGHTBOX HEADER â”€â”€â”€ */
+.lb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface); /* Inherits glassy look */
+  flex-shrink: 0;
+}
+
+.lb-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+.lb-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  transition: all var(--transition);
+  line-height: 1;
+}
+
+.lb-close:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+/* â”€â”€â”€ LIGHTBOX BODY â”€â”€â”€ */
+.lb-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* â”€â”€â”€ LIVE COMPARE WRAPPER â”€â”€â”€ */
+.lb-img-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto; /* Allow scrolling if images stack tall */
+  transition: background 0.5s ease;
+}
+
+.compare-container {
+  display: flex;
+  flex-wrap: wrap; /* Stacks automatically on small screens */
+  gap: 30px;
+  width: 100%;
+  min-height: 100%; /* Changed from height: 100% to prevent squishing */
+  padding: 30px 0; /* Gives the images breathing room when scrolling */  
+  justify-content: center;
+  align-items: center;
+}
+
+.compare-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 45%; /* Side by side on desktop */
+  min-width: 280px; /* Stacks gracefully on mobile */
+  position: relative;
+}
+
+.compare-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.zoomable-img {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  cursor: zoom-in;
+  transition: transform 0.3s ease;
+}
+
+/* When clicked to enlarge */
+.zoomable-img.enlarged {
+  position: fixed;
+  inset: 20px;
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
+  max-width: none;
+  max-height: none;
+  z-index: 9999;
+  background: rgba(0,0,0,0.9);
+  object-fit: contain;
+  cursor: zoom-out;
+  border-radius: 0;
+}
+
+.lb-img-wrap img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+/* â”€â”€â”€ META SIDEBAR (The Column) â”€â”€â”€ */
+.lb-sidebar-column {
+  width: 100%;
+  max-width: 350px;
+  height: 100%;
+  overflow-y: auto;
+  border-left: 1px solid var(--border);
+  transition: border-color 0.5s ease;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+
+.lb-meta {
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* â”€â”€â”€ META TEXT & GPS FORMATTING â”€â”€â”€ */
+.meta-section-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.meta-key {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.meta-value {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+  text-align: right;
+  word-break: break-all;
+}
+
+.meta-accent { color: var(--accent); }
+
+.gps-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent2);
+  text-decoration: none;
+  border: 1px solid rgba(143, 184, 158, 0.25);
+  padding: 4px 10px;
+  border-radius: 2px;
+  margin-top: 4px;
+  transition: all var(--transition);
+}
+
+.gps-link:hover {
+  background: rgba(143, 184, 158, 0.08);
+  border-color: rgba(143, 184, 158, 0.5);
+}
+
+/* â”€â”€â”€ MINI MAP â”€â”€â”€ */
+#mini-map {
+  height: 160px;
+  width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-top: 4px;
+  margin-bottom: 12px;
+  z-index: 1; /* Keeps the map underneath the close button */
+}
+
+/* ðŸŒ™ Midnight Aurora Map Hack: Invert the map colors for Dark Mode! */
+:root #mini-map .leaflet-layer {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+/* â˜€ï¸ Frosty Sky Map: Standard map colors for Light Mode */
+html.light-theme #mini-map .leaflet-layer {
+  filter: none;
+}
+
+/* ===== css\utils.css ===== */
+/* â”€â”€â”€ LOADING SKELETON â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.card-loading {
+  width: 100%;
+  aspect-ratio: 3/4;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* â”€â”€â”€ FOOTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+footer {
+  padding: 16px 32px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-text {
+  font-family: var(--font-mono);
+  font-size: 12px; /* Increased from 10px */
+  font-weight: 500; /* Added boldness */
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+}
+
+/* â”€â”€â”€ SCROLLBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border2);
+  border-radius: 2px;
+}
+
+
+/* ===== css\mobile.css ===== */
+/* â”€â”€â”€ TABLET LAYOUT (769px to 1024px) â”€â”€â”€ */
+/* Left side: Images stack vertically | Right side: Fixed Sidebar */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .compare-container {
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    padding: 20px 0 !important;
+  }
+
+  .compare-item {
+    max-width: 100% !important; /* Let images span the full width of the left column */
+  }
+}
+
+/* â”€â”€â”€ MOBILE LAYOUT (â‰¤ 768px) â”€â”€â”€ */
+/* Single unified scrolling column. Images on top, Sidebar full-width on bottom. */
+@media (max-width: 768px) {
+  
+  /* 1. Change the main layout from Left/Right to Top/Bottom */
+  .lb-body {
+    flex-direction: column !important;
+    overflow-y: auto !important; /* The entire screen scrolls now */
+  }
+
+  /* 2. Image Wrapper Adjustments */
+  .lb-img-wrap {
+    width: 100% !important;
+    overflow-y: visible !important; /* Disable internal scroll to prevent double-scrollbars */
+    padding: 20px 10px !important;
+    height: auto !important;
+  }
+
+  .compare-container {
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    gap: 40px !important;
+    margin: 0 !important;
+    padding-bottom: 20px !important;
+  }
+
+  .compare-item {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* 3. Make the Sidebar span the entire bottom of the screen */
+  .lb-sidebar-column {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important; /* Remove fixed height */
+    overflow-y: visible !important; /* Disable internal scroll */
+    border-left: none !important;
+    border-top: 1px solid var(--border) !important;
+  }
+
+  .polaroid-settings {
+    margin-top: 0 !important; /* Reset margin so it flows naturally */
+  }
+
+  /* â”€â”€ Terminal Typewriter Effect (Keep your cinematic mobile effect) â”€â”€ */
+  .typewriter-text {
+    font-family: monospace, "Courier New", Courier;
+    color: #ffffff !important;
+    font-size: 13px !important;
+    letter-spacing: 1px;
+    text-shadow: 0 0 5px rgba(0, 255, 204, 0.4);
+  }
+
+  .typing-cursor::after {
+    content: "â–ˆ";
+    animation: blink 0.8s step-end infinite;
+    margin-left: 4px;
+    color: #00ffcc;
+  }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+

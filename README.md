@@ -21,7 +21,7 @@ I was tired of endlessly clicking the arrow keys in my default photo gallery jus
 
 - HTML5 (including the `<canvas>` API and FileReader)
 - CSS3 (Custom Properties, Grid, Flexbox, Animations)
-- Vanilla JavaScript (ES6 Modules)
+- Vanilla JavaScript (single bundled file)
 - [EXIF.js](https://github.com/exif-js/exif-js) (Metadata extraction)
 - [GSAP](https://gsap.com/) (Animation orchestration)
 - [Leaflet.js](https://leafletjs.com/) (Interactive mapping)
@@ -32,7 +32,7 @@ This project was built to practice architectural layout, client-side file handli
 
 The core UI boilerplate and vanilla JavaScript logic were initially generated using AI assistance. I acted as the architect—defining the privacy-first requirements and refining the UI/UX. 
 
-As the application grew into v2.0, I manually refactored the monolithic codebase into a strict ES6 modular architecture to handle complex DOM lifecycles. Significant engineering went into advanced memory management and rendering optimization:
+As the application grew into v2.0, I manually refined the client-side architecture to handle complex DOM lifecycles. Significant engineering went into advanced memory management and rendering optimization:
 - Dynamically handling garbage collection for `URL.createObjectURL()` to prevent memory leaks during heavy batch uploads.
 - Re-engineering the Canvas Polaroid exporter to mathematically scale high-resolution images down to a 1920px cap, converting the lossless format to 90% JPEG to reduce 25MB file bloat down to highly shareable 1MB files.
 - Managing strict aspect-ratio math to ensure vertical and horizontal photography both render perfectly proportioned typography and frames.

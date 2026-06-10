@@ -1,6 +1,11 @@
 // client/src/utils/exifReader.js
 import exifr from 'exifr';
 
+// Initialize the worker using Vite's native worker import syntax
+const exifWorker = new Worker(new URL('./exifWorker.js', import.meta.url), {
+  type: 'module',
+});
+
 function loadImageDimensions(src) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -10,11 +15,28 @@ function loadImageDimensions(src) {
   });
 }
 
+function parseExifInWorker(file) {
+  return new Promise((resolve) => {
+    const id = Math.random().toString(36).substring(2, 9); // Temporary ID for matching messages
+    
+    const messageHandler = (e) => {
+      if (e.data.id === id) {
+        exifWorker.removeEventListener('message', messageHandler);
+        resolve(e.data.exifData);
+      }
+    };
+    
+    exifWorker.addEventListener('message', messageHandler);
+    exifWorker.postMessage({ file, id });
+  });
+}
+
 export async function ingestPhotoMeta(file, src) {
   try {
+    // Run dimension checking and worker EXIF extraction in parallel
     const [dims, exifData] = await Promise.all([
       loadImageDimensions(src),
-      exifr.parse(file).catch(() => ({})), // Fallbacks cleanly if no EXIF exists
+      parseExifInWorker(file),
     ]);
 
     return {

@@ -12,7 +12,7 @@ export default defineConfig({
         name: 'ExifGrid v3',
         short_name: 'ExifGrid',
         description: 'Privacy-focused local EXIF metadata viewer and editor',
-        theme_color: '#1a1a1a', // Adjust this to match your base.css dark mode background
+        theme_color: '#1a1a1a', 
         background_color: '#1a1a1a',
         display: 'standalone',
         icons: [
@@ -30,11 +30,9 @@ export default defineConfig({
         ]
       },
       workbox: {
-        // Cache all local document, script, style, and image requests
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
-            // Future-proofing: Cache Leaflet map tiles or external CDNs
             urlPattern: /^https:\/\/.*\.tile\.openstreetmap\.org\/.*/i,
             handler: 'CacheFirst',
             options: {
@@ -51,5 +49,14 @@ export default defineConfig({
         ]
       }
     })
-  ]
+  ],
+  // This tells Vite: "If a request starts with /api, send it to port 3001 instead of trying to find a frontend file."
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
+  },
 });

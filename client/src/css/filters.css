@@ -1,0 +1,126 @@
+/* Force the dropdown options to match the dark theme */
+.filter-group select option {
+  background-color: #1a1a1a; /* Dark background */
+  color: #e0e0e0;            /* Light text */
+  padding: 10px;
+}
+
+/* Specific override for the dark mode class if necessary */
+:root.dark-theme .filter-group select option {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+}
+
+/* Force light theme colors when the app is in light mode */
+:root.light-theme .filter-group select option {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.filter-matrix-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 32px;
+  padding: 0 28px;
+}
+
+.filter-controls-bar {
+  display: flex;
+  flex-direction: row; /* Forces horizontal left-to-right */
+  justify-content: center; /* Centers the whole bar */
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  
+  /* The Sleek Pill Background */
+  background: rgba(8, 8, 7, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border2);
+  border-radius: 50px; 
+  padding: 12px 32px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: row; /* Puts label and dropdown side-by-side */
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-group label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+.filter-group select {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 6px 36px 6px 16px; /* Extra right padding for the arrow */
+  border-radius: 20px; /* Pill-shaped dropdowns */
+  font-family: var(--font-mono);
+  font-size: 12px;
+  cursor: pointer;
+  appearance: none;
+  outline: none;
+  transition: all 0.2s ease;
+  
+  /* Modern Arrow SVG */
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23999%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.filter-group select:hover,
+.filter-group select:focus {
+  border-color: var(--accent);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.separator {
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+}
+
+.filter-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  border-left: 1px solid var(--border2);
+  padding-left: 24px;
+}
+
+.results-badge {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.clear-filters-btn {
+  background: rgba(201, 107, 90, 0.1);
+  color: var(--red);
+  border: 1px solid rgba(201, 107, 90, 0.3);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.clear-filters-btn:hover {
+  background: rgba(201, 107, 90, 0.2);
+  border-color: var(--red);
+}

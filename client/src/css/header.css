@@ -91,8 +91,17 @@ html.light-theme .app-header {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  background-color: var(--surface);
-  border: 1px solid var(--border);
+  
+  /* 1. The Glassy Background (90% solid dark grey) */
+  background-color: rgba(20, 20, 20, 0.90);
+  
+  /* 2. The Blur Effect (creates the frosted glass look) */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  
+  /* 3. A subtle semi-transparent border for a crisp edge */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   min-width: 180px;
@@ -103,6 +112,9 @@ html.light-theme .app-header {
 }
 
 html.light-theme .dropdown-menu {
+  /* 90% solid white for light mode */
+  background-color: rgba(255, 255, 255, 0.90);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 

@@ -1,0 +1,34 @@
+.global-progress-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 99999; /* Stay above everything, including modals */
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.global-progress-container.visible {
+  opacity: 1;
+}
+
+.global-progress-bar {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+/* The neon leading edge of the progress bar */
+.progress-glow {
+  display: block;
+  position: absolute;
+  right: 0;
+  width: 150px;
+  height: 100%;
+  box-shadow: 0 0 12px var(--accent), 0 0 6px var(--accent);
+  opacity: 1;
+  transform: rotate(3deg) translate(0px, -4px);
+}

@@ -1,15 +1,10 @@
-/**
- * Header — migrated from vanilla header + initEventHandlers theme/clear/add wiring.
- *
- * Vanilla: document.getElementById + addEventListener in initEventHandlers().
- * React:   receives callbacks via props; no direct DOM queries.
- */
 export default function Header({
   isLight,
   hasPhotos,
   onToggleTheme,
   onClearAll,
   onAddPhotos,
+  onExportCSV,
   fileInputRef,
   onFilesSelected,
 }) {
@@ -20,10 +15,17 @@ export default function Header({
           {isLight ? '🌙 Dark' : '☀️ Light'}
         </button>
 
+        {/* <-- Render Export and Clear buttons only if there are photos --> */}
         {hasPhotos && (
-          <button className="btn" type="button" onClick={onClearAll}>
-            Clear all
-          </button>
+          <>
+            <button className="btn" type="button" onClick={onExportCSV}>
+              ⬇ Export CSV
+            </button>
+            
+            <button className="btn" type="button" onClick={onClearAll}>
+              Clear all
+            </button>
+          </>
         )}
 
         <button className="btn btn-accent" type="button" onClick={onAddPhotos}>

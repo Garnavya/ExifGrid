@@ -8,6 +8,7 @@ import Lightbox from './components/Lightbox.jsx';
 import { ingestPhotoMeta, createPhotoId } from './utils/exifReader.js';
 import { computeStats } from './utils/stats.js';
 import { syncPreferences } from './api/settings.js';
+import { exportToCSV } from './utils/csvExport.js';
 
 export default function App() {
   const [photos, setPhotos] = useState([]);
@@ -21,6 +22,11 @@ export default function App() {
   const stats = useMemo(() => computeStats(photos), [photos]);
   const photoIds = useMemo(() => photos.map((p) => p.id), [photos]);
   const activePhoto = photos.find((p) => p.id === activePhotoId) || null;
+
+  // <-- CSV Handler
+  const handleExportCSV = () => {
+    exportToCSV(photos);
+  };
 
   useEffect(() => {
     document.documentElement.classList.toggle('light-theme', isLight);
@@ -78,6 +84,7 @@ export default function App() {
         onToggleTheme={() => setIsLight((v) => !v)}
         onClearAll={handleClearAll}
         onAddPhotos={() => fileInputRef.current?.click()}
+        onExportCSV={handleExportCSV}
         fileInputRef={fileInputRef}
         onFilesSelected={handleFiles}
       />

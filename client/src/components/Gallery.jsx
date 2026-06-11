@@ -1,12 +1,6 @@
 import PhotoCard from './PhotoCard.jsx';
 
-/**
- * Gallery — migrated from vanilla gallery grid + handleFiles card append.
- *
- * Vanilla: columns layout on #gallery, appendChild(buildCard()).
- * React:   maps photos[] to <PhotoCard />; masonry via CSS columns in gallery.css.
- */
-export default function Gallery({ photos, onOpenPhoto, onRemovePhoto }) {
+export default function Gallery({ photos, onOpenPhoto, onRemovePhoto, comparisonIds, onToggleCompare }) {
   return (
     <div id="gallery" className="gallery--visible">
       {photos.map((photo, index) => (
@@ -16,6 +10,8 @@ export default function Gallery({ photos, onOpenPhoto, onRemovePhoto }) {
           index={index}
           onOpen={onOpenPhoto}
           onRemove={onRemovePhoto}
+          isComparing={comparisonIds?.includes(photo.id)}
+          onToggleCompare={onToggleCompare}
         />
       ))}
     </div>

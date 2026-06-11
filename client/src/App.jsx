@@ -2,9 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Header from './components/Header.jsx';
 import StatsBar from './components/StatsBar.jsx';
 import DropZone from './components/DropZone.jsx';
+import ComparisonFeed from './components/ComparisonFeed.jsx';
 import Gallery from './components/Gallery.jsx';
 import Lightbox from './components/Lightbox.jsx';
 import JourneyMap from './components/JourneyMap.jsx';
+import { createBatchPolaroidZip } from './utils/batchProcessor.js';
+import BatchSettingsModal from './components/BatchSettingsModal.jsx';
 import { ingestPhotoMeta, createPhotoId } from './utils/exifReader.js';
 import { computeStats } from './utils/stats.js';
 import { syncPreferences } from './api/settings.js';
@@ -28,6 +31,12 @@ export default function App() {
 
   const handleExportCSV = () => exportToCSV(photos);
 
+  const [comparisonIds, setComparisonIds] = useState([]);
+
+  const [isZipping, setIsZipping] = useState(false);
+  const [zipProgress, setZipProgress] = useState(0);
+  const [showBatchModal, setShowBatchModal] = useState(false);
+
   useEffect(() => { document.documentElement.classList.toggle('light-theme', isLight); }, [isLight]);
   useEffect(() => {
     if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
@@ -36,6 +45,10 @@ export default function App() {
     }, 800);
     return () => clearTimeout(syncTimerRef.current);
   }, [isLight]);
+
+  const handleOpenBatchMenu = useCallback(() => {
+    if (photos.length > 0) setShowBatchModal(true);
+  }, [photos.length]);
 
   const handleFiles = useCallback(async (fileList) => {
     if (!fileList?.length) return;
@@ -68,11 +81,45 @@ export default function App() {
     setActivePhotoId((current) => (current === id ? null : current));
   }, []);
 
+  const handleToggleCompare = useCallback((id) => {
+    setComparisonIds((prev) => {
+      // Deselect if already active
+      if (prev.includes(id)) {
+        return prev.filter(compId => compId !== id);
+      }
+      // Keep array locked to 2 max. Replace the oldest if full.
+      if (prev.length >= 2) {
+        return [prev[1], id]; 
+      }
+      return [...prev, id];
+    });
+  }, []);
+
+  const handleClearCompare = useCallback(() => setComparisonIds([]), []);
+
   const handleClearAll = useCallback(() => {
     setPhotos((prev) => { prev.forEach((p) => URL.revokeObjectURL(p.src)); return []; });
     setActivePhotoId(null);
-    setViewMode('gallery'); // Reset to gallery if cleared
+    setComparisonIds([]); // Also wipe comparison state
+    setViewMode('gallery'); 
   }, []);
+
+  const executeBatchDownload = useCallback(async (settings) => {
+    setShowBatchModal(false);
+    setIsZipping(true);
+    setZipProgress(0);
+
+    try {
+      await createBatchPolaroidZip(photos, settings, (progress) => {
+        setZipProgress(progress);
+      });
+    } catch (error) {
+      console.error("Batch processing failed", error);
+    } finally {
+      setIsZipping(false);
+      setZipProgress(0);
+    }
+  }, [photos]);
 
   return (
     <>
@@ -83,10 +130,11 @@ export default function App() {
         onClearAll={handleClearAll}
         onAddPhotos={() => fileInputRef.current?.click()}
         onExportCSV={handleExportCSV}
+        onBatchDownload={handleOpenBatchMenu} /* <--- ADD THIS LINE */
         fileInputRef={fileInputRef}
         onFilesSelected={handleFiles}
-        viewMode={viewMode} //  Pass current mode to Header
-        onToggleView={() => setViewMode(prev => prev === 'gallery' ? 'map' : 'gallery')} //  Toggle function
+        viewMode={viewMode}
+        onToggleView={() => setViewMode(prev => prev === 'gallery' ? 'map' : 'gallery')}
       />
       
       <StatsBar count={stats.count} exifCount={stats.exifCount} cameraLabel={stats.cameraLabel} visible={hasPhotos} />
@@ -97,7 +145,22 @@ export default function App() {
              This prevents the heavy lag from re-rendering the entire masonry DOM. */}
       {hasPhotos && (
         <div style={{ display: viewMode === 'gallery' ? 'block' : 'none' }}>
-          <Gallery photos={photos} onOpenPhoto={setActivePhotoId} onRemovePhoto={handleRemovePhoto} />
+          
+          {/* Inject the feed directly above the gallery */}
+          <ComparisonFeed 
+            photos={photos} 
+            comparisonIds={comparisonIds} 
+            onClear={handleClearCompare} 
+            onRemove={handleToggleCompare} 
+          />
+
+          <Gallery 
+            photos={photos} 
+            onOpenPhoto={setActivePhotoId} 
+            onRemovePhoto={handleRemovePhoto} 
+            comparisonIds={comparisonIds}
+            onToggleCompare={handleToggleCompare}
+          />
         </div>
       )}
       
@@ -106,6 +169,28 @@ export default function App() {
         <JourneyMap photos={photos} />
       )}
       
+      {/* 3. The Batch Settings Modal */}
+      {showBatchModal && (
+        <BatchSettingsModal 
+          onCancel={() => setShowBatchModal(false)}
+          onConfirm={executeBatchDownload}
+        />
+      )}
+      
+      {/* 4. The Zipping Loading Overlay */}
+      {isZipping && (
+        <div className="zip-progress-overlay">
+          <div className="zip-progress-box">
+            <div className="spinner"></div>
+            <h4>Packaging Batch...</h4>
+            <div className="progress-bar-bg">
+              <div className="progress-bar-fill" style={{ width: `${zipProgress}%` }}></div>
+            </div>
+            <span className="progress-text">{zipProgress}%</span>
+          </div>
+        </div>
+      )}
+
       <Lightbox photo={activePhoto} photoIds={photoIds} onClose={() => setActivePhotoId(null)} onNavigate={setActivePhotoId} />
       
       <footer>

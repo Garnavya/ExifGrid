@@ -15,6 +15,7 @@ import './css/lightbox.css';
 import './css/polaroid.css';
 import './css/footer.css';
 import './css/mobile.css';
+import './css/modal.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

@@ -21,9 +21,12 @@ export function stripExifData(file) {
       // Draw the raw pixels onto the canvas
       ctx.drawImage(img, 0, 0);
 
-      // Preserve PNGs, otherwise default to high-quality JPEG
+      // Preserve PNGs, otherwise default to JPEG
       const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-      const quality = 1.0; // Maximum quality to prevent visual degradation
+      
+      // FIX: Apply a 0.90 quality setting for JPEGs to prevent massive file bloat.
+      // PNGs ignore the quality parameter.
+      const quality = outputType === 'image/jpeg' ? 0.90 : undefined;
 
       // Export the raw pixels back into a binary Blob
       canvas.toBlob((blob) => {

@@ -4,6 +4,7 @@ import L from 'leaflet';
 import { formatAperture, formatBytes, formatExifDate, formatShutter } from '../utils/formatters.js';
 import { extractDominantColor, glowStyle } from '../utils/colorExtract.js';
 import { useKeyboardNav } from '../hooks/useKeyboardNav.js';
+import { stripExifData, downloadScrubbedImage } from '../utils/exifStripper.js'; // <-- NEW IMPORT
 
 function MetaSection({ title, rows }) {
   return (
@@ -44,9 +45,9 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
   const imgWrapRef = useRef(null);
 
   const [enlarged, setEnlarged] = useState(false);
+  const [isScrubbing, setIsScrubbing] = useState(false); // <-- NEW STATE
   const isOpen = Boolean(photo);
 
-  // FIX 1: Always reset zoom state when switching photos or closing
   useEffect(() => {
     setEnlarged(false);
   }, [photo?.id]);
@@ -58,7 +59,6 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     gsap.to(overlayRef.current, { opacity: 0, duration: 0.3, ease: 'power2.inOut', onComplete: onClose });
   }, [onClose]);
 
-  // FIX 2: Intercept the Escape key. If enlarged, zoom out. If not, close the Lightbox.
   const handleEscapeKey = useCallback(() => {
     if (enlarged) {
       setEnlarged(false);
@@ -67,7 +67,6 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     }
   }, [enlarged, handleClose]);
 
-  // Pass the interceptor function to the keyboard hook instead of standard onClose
   useKeyboardNav({ isOpen, activeId: photo?.id, photoIds, onClose: handleEscapeKey, onNavigate });
 
   useEffect(() => {
@@ -110,6 +109,26 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
 
     return () => { cancelled = true; };
   }, [photo?.src]);
+
+  // <-- NEW SCRUBBING FUNCTION
+  const handleScrubDownload = async () => {
+    if (!photo) return;
+    setIsScrubbing(true);
+    try {
+      // Fetch the object URL back into a Blob to feed into the canvas engine
+      const res = await fetch(photo.src);
+      const blob = await res.blob();
+      const fileLikeObject = new File([blob], photo.name, { type: blob.type });
+
+      const scrubbedBlob = await stripExifData(fileLikeObject);
+      downloadScrubbedImage(scrubbedBlob, photo.name);
+    } catch (err) {
+      console.error('Failed to scrub EXIF data:', err);
+      alert('Failed to scrub image. Ensure it is a valid format.');
+    } finally {
+      setIsScrubbing(false);
+    }
+  };
 
   if (!photo) return null;
 
@@ -203,6 +222,31 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                 </a>
               </div>
             )}
+            
+            {/* <-- NEW BUTTON LAYOUT --> */}
+            <div className="meta-actions" style={{ marginTop: '24px' }}>
+              <button
+                type="button"
+                onClick={handleScrubDownload}
+                disabled={isScrubbing}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: 'var(--accent)',
+                  color: 'var(--bg)',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: isScrubbing ? 'wait' : 'pointer',
+                  fontWeight: '600',
+                  opacity: isScrubbing ? 0.7 : 1,
+                  transition: 'opacity 0.2s',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                }}
+              >
+                {isScrubbing ? 'Scrubbing Metadata...' : '⬇ Download Scrubbed Image'}
+              </button>
+            </div>
+
           </div>
         </div>
       </div>

@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import gsap from 'gsap';
 import L from 'leaflet';
 import { formatAperture, formatBytes, formatExifDate, formatShutter } from '../utils/formatters.js';
 import { extractDominantColor, glowStyle } from '../utils/colorExtract.js';
 import { useKeyboardNav } from '../hooks/useKeyboardNav.js';
-import { stripExifData, downloadScrubbedImage } from '../utils/exifStripper.js'; // <-- NEW IMPORT
+import { stripExifData, downloadScrubbedImage } from '../utils/exifStripper.js';
+import { downloadPolaroid, generatePolaroidDataURL } from '../utils/polaroid.js'; 
 
 function MetaSection({ title, rows }) {
   return (
@@ -31,11 +32,15 @@ function MiniMap({ lat, lon }) {
     const markerHtml = '<div style="background:var(--accent);width:14px;height:14px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 10px var(--accent);"></div>';
     L.marker([lat, lon], { icon: L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] }) }).addTo(map);
     mapRef.current = map;
-    setTimeout(() => map.invalidateSize(), 150);
-    return () => { map.remove(); mapRef.current = null; };
+    
+    const timer = setTimeout(() => {
+      if (mapRef.current) mapRef.current.invalidateSize();
+    }, 750); 
+
+    return () => { clearTimeout(timer); map.remove(); mapRef.current = null; };
   }, [lat, lon]);
 
-  return <div id="mini-map" ref={containerRef} />;
+  return <div id="mini-map" ref={containerRef} style={{ minHeight: '160px' }} />;
 }
 
 export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
@@ -45,81 +50,128 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
   const imgWrapRef = useRef(null);
 
   const [enlarged, setEnlarged] = useState(false);
-  const [isScrubbing, setIsScrubbing] = useState(false); // <-- NEW STATE
+  const [isScrubbing, setIsScrubbing] = useState(false);
+  
+  // Polaroid State
+  const [polaroidCaption, setPolaroidCaption] = useState('');
+  const [polaroidToggles, setPolaroidToggles] = useState([]);
+  const [polaroidFont, setPolaroidFont] = useState('sans-serif');
+  const [exifBold, setExifBold] = useState(true);
+  const [exifItalic, setExifItalic] = useState(false);
+  const [exifTextScale, setExifTextScale] = useState(1.0); // <-- NEW STATE FOR SIZE
+  const [polaroidPreview, setPolaroidPreview] = useState(null);
+  const [isGeneratingPolaroid, setIsGeneratingPolaroid] = useState(false);
+
   const isOpen = Boolean(photo);
 
+  // Dynamically extract ALL available primitive EXIF keys specifically for THIS photo
+  const availableExifOptions = useMemo(() => {
+    if (!photo?.exif) return [];
+    const keys = Object.keys(photo.exif).filter(k => {
+      const val = photo.exif[k];
+      return (typeof val === 'string' || typeof val === 'number') && val !== '';
+    });
+    
+    const cleanKeys = keys.filter(k => !['thumbnail', 'MakerNote', 'UserComment', 'latitude', 'longitude'].includes(k));
+    
+    if (photo.exif.latitude !== undefined && photo.exif.longitude !== undefined) {
+      cleanKeys.push('GPS');
+    }
+    
+    return [...new Set(cleanKeys)].sort();
+  }, [photo]);
+
+  // Reset states and set smart defaults ONLY for tags that actually exist on this photo
   useEffect(() => {
     setEnlarged(false);
-  }, [photo?.id]);
+    setPolaroidCaption('');
+    setPolaroidPreview(null);
+    setExifTextScale(1.0); // Reset scale on new photo
+    
+    if (photo?.exif) {
+      const standardTags = ['Model', 'FNumber', 'ExposureTime', 'ISOSpeedRatings', 'ISO'];
+      const validDefaults = standardTags.filter(tag => photo.exif[tag] !== undefined);
+      setPolaroidToggles(validDefaults);
+    } else {
+      setPolaroidToggles([]);
+    }
+  }, [photo]);
 
   const handleClose = useCallback(() => {
     if (!overlayRef.current) { onClose(); return; }
-    
     gsap.set(overlayRef.current, { pointerEvents: 'none' });
     gsap.to(overlayRef.current, { opacity: 0, duration: 0.3, ease: 'power2.inOut', onComplete: onClose });
   }, [onClose]);
 
   const handleEscapeKey = useCallback(() => {
-    if (enlarged) {
-      setEnlarged(false);
-    } else {
-      handleClose();
-    }
+    if (enlarged) setEnlarged(false);
+    else handleClose();
   }, [enlarged, handleClose]);
 
   useKeyboardNav({ isOpen, activeId: photo?.id, photoIds, onClose: handleEscapeKey, onNavigate });
 
   useEffect(() => {
     if (!isOpen || !overlayRef.current) return;
-    
     document.body.style.overflow = 'hidden';
     gsap.set(overlayRef.current, { display: 'flex', pointerEvents: 'auto', opacity: 0 });
 
     const ctx = gsap.context(() => {
       const tl = gsap.timeline();
       tl.to(overlayRef.current, { opacity: 1, duration: 0.3, ease: 'power2.out' });
-
-      if (imgRef.current) {
-        tl.fromTo(imgRef.current, { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.5)' }, '-=0.1');
-      }
-
-      if (sidebarRef.current) {
-        tl.fromTo(sidebarRef.current, { x: 40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: 'power2.out' }, '-=0.3');
-      }
+      if (imgRef.current) tl.fromTo(imgRef.current, { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.5)' }, '-=0.1');
+      if (sidebarRef.current) tl.fromTo(sidebarRef.current, { x: 40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: 'power2.out' }, '-=0.3');
     });
 
-    return () => { 
-      document.body.style.overflow = ''; 
-      ctx.revert(); 
-    };
+    return () => { document.body.style.overflow = ''; ctx.revert(); };
   }, [isOpen, photo?.id]);
 
   useEffect(() => {
     if (!photo?.src) return;
     let cancelled = false;
-
     (async () => {
       const rgb = await extractDominantColor(photo.src);
       if (cancelled || !rgb) return;
-      
       const styles = glowStyle(rgb, false);
       if (imgWrapRef.current) imgWrapRef.current.style.background = styles.background;
       if (sidebarRef.current) sidebarRef.current.style.borderLeftColor = styles.borderLeftColor;
     })();
-
     return () => { cancelled = true; };
   }, [photo?.src]);
 
-  // <-- NEW SCRUBBING FUNCTION
+  // Regenerate preview whenever the text scale changes
+  useEffect(() => {
+    if (!photo?.src) return;
+    let cancelled = false;
+    
+    const timer = setTimeout(async () => {
+      try {
+        const dataUrl = await generatePolaroidDataURL(photo, {
+          caption: polaroidCaption,
+          exifToggles: polaroidToggles,
+          font: polaroidFont,
+          exifBold,
+          exifItalic,
+          exifTextScale
+        });
+        if (!cancelled) setPolaroidPreview(dataUrl);
+      } catch (err) {
+        console.error("Preview generation failed", err);
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      cancelled = true;
+    };
+  }, [photo, polaroidCaption, polaroidToggles, polaroidFont, exifBold, exifItalic, exifTextScale]);
+
   const handleScrubDownload = async () => {
     if (!photo) return;
     setIsScrubbing(true);
     try {
-      // Fetch the object URL back into a Blob to feed into the canvas engine
       const res = await fetch(photo.src);
       const blob = await res.blob();
       const fileLikeObject = new File([blob], photo.name, { type: blob.type });
-
       const scrubbedBlob = await stripExifData(fileLikeObject);
       downloadScrubbedImage(scrubbedBlob, photo.name);
     } catch (err) {
@@ -128,6 +180,32 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     } finally {
       setIsScrubbing(false);
     }
+  };
+
+  const handlePolaroidDownload = async () => {
+    if (!photo) return;
+    setIsGeneratingPolaroid(true);
+    try {
+      await downloadPolaroid(photo, {
+        caption: polaroidCaption,
+        exifToggles: polaroidToggles,
+        font: polaroidFont,
+        exifBold,
+        exifItalic,
+        exifTextScale
+      });
+    } catch (err) {
+      console.error('Failed to generate polaroid:', err);
+      alert('Failed to generate polaroid frame.');
+    } finally {
+      setIsGeneratingPolaroid(false);
+    }
+  };
+
+  const togglePolaroidExif = (field) => {
+    setPolaroidToggles(prev => 
+      prev.includes(field) ? prev.filter(f => f !== field) : [...prev, field]
+    );
   };
 
   if (!photo) return null;
@@ -143,17 +221,6 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
       id="lightbox" 
       ref={overlayRef} 
       className="lightbox--open"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 1000,
-        background: 'var(--glass-overlay)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        display: 'none',
-        flexDirection: 'column',
-        pointerEvents: 'none'
-      }}
     >
       <div className="lb-header">
         <div className="lb-title">{photo.name}</div>
@@ -161,15 +228,37 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
       </div>
       
       <div className="lb-body">
+        
         <div className="lb-img-wrap" ref={imgWrapRef}>
-          <img
-            ref={imgRef}
-            id="lb-img"
-            className={`zoomable-img${enlarged ? ' enlarged' : ''}`}
-            src={photo.src}
-            alt={photo.name}
-            onClick={() => setEnlarged((v) => !v)}
-          />
+          <div className="compare-container" style={{ display: 'flex', flexDirection: 'row', width: '100%', height: '100%', gap: '24px', alignItems: 'center', justifyContent: 'center' }}>
+            
+            <div className="compare-item" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minWidth: 0 }}>
+              <img
+                ref={imgRef}
+                id="lb-img"
+                className={`zoomable-img${enlarged ? ' enlarged' : ''}`}
+                src={photo.src}
+                alt={photo.name}
+                onClick={() => setEnlarged((v) => !v)}
+              />
+            </div>
+
+            <div className="compare-item" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minWidth: 0 }}>
+              {polaroidPreview ? (
+                <img 
+                  src={polaroidPreview} 
+                  alt="Polaroid Live Preview" 
+                  className="zoomable-img" 
+                  style={{ cursor: 'default', filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))' }}
+                />
+              ) : (
+                <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>
+                  Rendering Preview...
+                </div>
+              )}
+            </div>
+
+          </div>
         </div>
         
         <div className="lb-sidebar-column" ref={sidebarRef}>
@@ -182,33 +271,20 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                 { k: 'Dimensions', v: `${photo.naturalW} × ${photo.naturalH} px` },
               ]}
             />
-            {(exif.Make || exif.Model || exif.LensModel) && (
-              <MetaSection
-                title="Camera"
-                rows={[
-                  exif.Make && { k: 'Make', v: exif.Make },
-                  exif.Model && { k: 'Model', v: exif.Model },
-                  exif.LensModel && { k: 'Lens', v: exif.LensModel },
-                ].filter(Boolean)}
-              />
+            {exif.Make && (
+              <MetaSection title="Camera" rows={[{ k: 'Make', v: exif.Make }, { k: 'Model', v: exif.Model }].filter(Boolean)} />
             )}
-            {(exif.FNumber || exif.ExposureTime || iso || exif.FocalLength) && (
+            {(exif.FNumber || exif.ExposureTime || iso) && (
               <MetaSection
                 title="Exposure"
                 rows={[
                   exif.FNumber && { k: 'Aperture', v: formatAperture(exif.FNumber), accent: true },
                   exif.ExposureTime && { k: 'Shutter', v: formatShutter(exif.ExposureTime), accent: true },
                   iso && { k: 'ISO', v: `ISO ${iso}`, accent: true },
-                  exif.FocalLength && { k: 'Focal', v: `${Number(exif.FocalLength).toFixed(0)}mm`, accent: true },
                 ].filter(Boolean)}
               />
             )}
-            {exif.DateTimeOriginal && (
-              <MetaSection
-                title="Date & Time"
-                rows={[{ k: 'Taken', v: formatExifDate(exif.DateTimeOriginal.toString()) }]}
-              />
-            )}
+            
             {hasGps && (
               <div className="meta-section">
                 <div className="meta-section-title">Location</div>
@@ -222,29 +298,107 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                 </a>
               </div>
             )}
-            
-            {/* <-- NEW BUTTON LAYOUT --> */}
+
             <div className="meta-actions" style={{ marginTop: '24px' }}>
               <button
                 type="button"
+                className="polaroid-btn"
                 onClick={handleScrubDownload}
                 disabled={isScrubbing}
                 style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'var(--accent)',
-                  color: 'var(--bg)',
-                  border: 'none',
                   borderRadius: '6px',
-                  cursor: isScrubbing ? 'wait' : 'pointer',
-                  fontWeight: '600',
+                  backgroundColor: '#1a1a1a',
+                  color: '#ffb86c',
+                  borderColor: '#333',
+                  marginBottom: '16px',
                   opacity: isScrubbing ? 0.7 : 1,
-                  transition: 'opacity 0.2s',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                  cursor: isScrubbing ? 'wait' : 'pointer'
                 }}
               >
-                {isScrubbing ? 'Scrubbing Metadata...' : '⬇ Download Scrubbed Image'}
+                {isScrubbing ? 'Scrubbing...' : '⬇ Scrubbed Image'}
               </button>
+
+              <div className="polaroid-settings" style={{ borderRadius: '8px' }}>
+                <div className="ps-title">Polaroid Generator</div>
+                
+                <div className="ps-label">Custom Caption</div>
+                <input 
+                  type="text" 
+                  className="ps-input" 
+                  placeholder="Add a caption..."
+                  value={polaroidCaption}
+                  onChange={(e) => setPolaroidCaption(e.target.value)}
+                />
+
+                <div className="ps-label">Font Style</div>
+                <select 
+                  className="ps-select"
+                  value={polaroidFont}
+                  onChange={(e) => setPolaroidFont(e.target.value)}
+                >
+                  <option value="sans-serif">System Sans-Serif</option>
+                  <option value="'Caveat', cursive">Caveat (Handwriting)</option>
+                  <option value="'Courier New', monospace">Courier New (Typewriter)</option>
+                  <option value="'Playfair Display', serif">Playfair Display (Elegant)</option>
+                  <option value="'Impact', sans-serif">Impact (Bold)</option>
+                  <option value="'Inter', sans-serif">Inter (Modern)</option>
+                </select>
+
+                <div className="ps-label" style={{ marginTop: '12px' }}>EXIF Text Formatting</div>
+                <div style={{ display: 'flex', gap: '16px', marginTop: '6px' }}>
+                  <label style={{ fontSize: '12px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={exifBold} onChange={(e) => setExifBold(e.target.checked)} />
+                    Bold
+                  </label>
+                  <label style={{ fontSize: '12px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={exifItalic} onChange={(e) => setExifItalic(e.target.checked)} />
+                    Italic
+                  </label>
+                </div>
+
+                {/* <-- TEXT SIZE SLIDER --> */}
+                <div className="ps-label" style={{ marginTop: '12px' }}>EXIF Text Size: {Math.round(exifTextScale * 100)}%</div>
+                <input 
+                  type="range" 
+                  min="0.5" 
+                  max="2.0" 
+                  step="0.05" 
+                  value={exifTextScale}
+                  onChange={(e) => setExifTextScale(parseFloat(e.target.value))}
+                  style={{ width: '100%', cursor: 'pointer', marginTop: '4px' }}
+                />
+
+                <div className="ps-label" style={{ marginTop: '12px' }}>Include EXIF Data (Scroll for more)</div>
+                <div className="ps-toggles" style={{ 
+                  maxHeight: '140px', 
+                  overflowY: 'auto', 
+                  padding: '8px', 
+                  background: 'var(--surface2)', 
+                  borderRadius: '6px', 
+                  border: '1px solid var(--border2)' 
+                }}>
+                  {availableExifOptions.map(field => (
+                    <label key={field} style={{ flex: '1 1 45%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={polaroidToggles.includes(field)}
+                        onChange={() => togglePolaroidExif(field)}
+                      />
+                      {field}
+                    </label>
+                  ))}
+                </div>
+
+                <button 
+                  type="button" 
+                  className="polaroid-btn"
+                  onClick={handlePolaroidDownload}
+                  disabled={isGeneratingPolaroid}
+                  style={{ marginTop: '16px' }}
+                >
+                  {isGeneratingPolaroid ? 'Generating...' : '🖼️ Download Polaroid'}
+                </button>
+              </div>
             </div>
 
           </div>

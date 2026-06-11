@@ -1,7 +1,5 @@
-/**
- * Canvas Polaroid exporter — migrated from vanilla generatePolaroidDataURL / downloadPolaroid.
- * Runs entirely client-side; output is a JPEG data URL for preview or download.
- */
+import { formatAperture, formatShutter, formatExifDate } from './formatters.js';
+
 export async function generatePolaroidDataURL(photo, settings = {}) {
   if (!photo?.src) return null;
 
@@ -54,14 +52,23 @@ export async function generatePolaroidDataURL(photo, settings = {}) {
   const exif = photo.exif || {};
   const exifParts = [];
 
-  if (settings.exifToggles?.includes('camera') && exif.Model) exifParts.push(`📸 ${exif.Model}`);
-  if (settings.exifToggles?.includes('aperture') && exif.FNumber) exifParts.push(`f/${exif.FNumber}`);
-  if (settings.exifToggles?.includes('shutter') && exif.ExposureTime) {
-    exifParts.push(`1/${Math.round(1 / exif.ExposureTime)}s`);
-  }
-  if (settings.exifToggles?.includes('iso') && exif.ISOSpeedRatings) {
-    exifParts.push(`ISO ${exif.ISOSpeedRatings}`);
-  }
+  // Strictly map exactly what the user selected to prevent hardcoded overrides
+  settings.exifToggles?.forEach(key => {
+    if (key === 'Model' && exif.Model) exifParts.push(`📸 ${exif.Model}`);
+    else if (key === 'Make' && exif.Make) exifParts.push(exif.Make);
+    else if (key === 'FNumber' && exif.FNumber) exifParts.push(formatAperture(exif.FNumber));
+    else if (key === 'ExposureTime' && exif.ExposureTime) exifParts.push(formatShutter(exif.ExposureTime));
+    else if (key === 'ISOSpeedRatings' && exif.ISOSpeedRatings) exifParts.push(`ISO ${exif.ISOSpeedRatings}`);
+    else if (key === 'ISO' && exif.ISO) exifParts.push(`ISO ${exif.ISO}`);
+    else if (key === 'FocalLength' && exif.FocalLength) exifParts.push(`${Number(exif.FocalLength).toFixed(0)}mm`);
+    else if (key === 'DateTimeOriginal' && exif.DateTimeOriginal) exifParts.push(formatExifDate(exif.DateTimeOriginal.toString()));
+    else if (key === 'GPS' && exif.latitude !== undefined && exif.longitude !== undefined) {
+      exifParts.push(`${exif.latitude.toFixed(5)}°, ${exif.longitude.toFixed(5)}°`);
+    } else if (exif[key]) {
+      const val = String(exif[key]).trim();
+      if (val) exifParts.push(val.length > 25 ? `${val.substring(0, 25)}...` : val);
+    }
+  });
 
   const exifStr = exifParts.join('  |  ');
 
@@ -79,8 +86,25 @@ export async function generatePolaroidDataURL(photo, settings = {}) {
   }
 
   if (exifStr) {
-    const exifSize = Math.max(20, Math.round(baseSize * 0.018));
-    ctx.font = `bold ${exifSize}px monospace`;
+    // Apply user scale multiplier (default 1.0)
+    const userScale = settings.exifTextScale || 1.0;
+    const baseExifSize = Math.max(26, Math.round(baseSize * 0.024)) * userScale;
+    
+    const weight = settings.exifBold ? 'bold' : 'normal';
+    const style = settings.exifItalic ? 'italic' : 'normal';
+    
+    ctx.font = `${style} ${weight} ${baseExifSize}px monospace`;
+    
+    let currentSize = baseExifSize;
+    let textWidth = ctx.measureText(exifStr).width;
+    const maxTextWidth = canvas.width * 0.92; 
+    
+    while(textWidth > maxTextWidth && currentSize > 12) {
+      currentSize -= 1;
+      ctx.font = `${style} ${weight} ${currentSize}px monospace`;
+      textWidth = ctx.measureText(exifStr).width;
+    }
+
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     const exifY = settings.caption

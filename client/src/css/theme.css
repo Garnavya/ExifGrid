@@ -1,5 +1,6 @@
 /* --- THEME: TUNGSTEN & BRASS --- */
 :root {
+  --bg-main: #1c1d1a; /* Solid dark fallback for dropdowns */
   --bg-gradient: linear-gradient(-45deg, #121312, #1c1d1a, #0b0b0a, #262723);
   --surface: rgba(28, 29, 26, 0.4);
   --surface2: rgba(42, 43, 38, 0.7);
@@ -16,6 +17,7 @@
 
 /* --- LIGHT THEME: IVORY & CHAMPAGNE --- */
 html.light-theme {
+  --bg-main: #f5f6f4; /* Solid light fallback for dropdowns */
   --bg-gradient: linear-gradient(-45deg, #fcfbf9, #f4f1ea, #fdfdfc, #ebe6db);
   --surface: rgba(255, 255, 255, 0.5);
   --surface2: rgba(252, 251, 249, 0.85);

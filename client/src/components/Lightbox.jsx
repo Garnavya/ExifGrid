@@ -52,7 +52,6 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
   const [enlarged, setEnlarged] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
   
-  // Polaroid State
   const [polaroidCaption, setPolaroidCaption] = useState('');
   const [polaroidToggles, setPolaroidToggles] = useState([]);
   const [polaroidFont, setPolaroidFont] = useState('sans-serif');
@@ -77,6 +76,15 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     if (photo.exif.latitude !== undefined && photo.exif.longitude !== undefined) {
       cleanKeys.push('GPS');
     }
+
+    const captionInputRef = useRef(null);
+
+    const handleInputFocus = () => {
+    setTimeout(() => {
+      // Smoothly pushes the input to the center of the screen after the mobile keyboard opens
+      captionInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300); 
+  };
     
     return [...new Set(cleanKeys)].sort();
   }, [photo]);
@@ -217,6 +225,10 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
   const iso = exif.ISO || exif.ISOSpeedRatings;
 
   return (
+
+    <div className="lightbox-overlay" onClick={onClose}>
+      <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
+
     <div 
       id="lightbox" 
       ref={overlayRef} 
@@ -403,6 +415,19 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
 
           </div>
         </div>
+      </div>
+    </div>
+    <div className="lightbox-caption-area">
+          <input 
+            ref={captionInputRef} /* Attach the reference here */
+            type="text" 
+            placeholder="Add a caption..."
+            // value={yourCaptionState}
+            // onChange={yourOnChangeHandler}
+            onFocus={handleInputFocus} /* Fire the slide-up function when tapped */
+          />
+        </div>
+
       </div>
     </div>
   );

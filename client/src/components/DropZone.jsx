@@ -1,53 +1,49 @@
-/**
- * DropZone — migrated from vanilla onDragOver / onDrop / drop-zone click.
- *
- * Vanilla: toggled .drag-over class via getElementById.
- * React:   isDragOver boolean state drives the className.
- */
+import React, { useState } from 'react';
+
 export default function DropZone({ onFilesSelected, onBrowse }) {
+  // 1. Safe React state for hover tracking
+  const [isDragOver, setIsDragOver] = useState(false);
+
   const handleDragOver = (e) => {
     e.preventDefault();
-    e.currentTarget.classList.add('drag-over');
+    setIsDragOver(true);
   };
 
   const handleDragLeave = (e) => {
-    e.currentTarget.classList.remove('drag-over');
+    e.preventDefault();
+    setIsDragOver(false);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
-    e.currentTarget.classList.remove('drag-over');
-    onFilesSelected(e.dataTransfer.files);
+    setIsDragOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      onFilesSelected(e.dataTransfer.files);
+    }
   };
 
   return (
-    <div
-      id="drop-zone"
-      onClick={onBrowse}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && onBrowse()}
-    >
-      <div className="drop-inner">
-        <div className="drop-icon">📷</div>
-        <div>
-          <div className="drop-title">Reveal the Lens.</div>
-          <div className="drop-sub">
-            Drag & drop high-res photography to instantly extract hidden metadata.
-            <br />
-            <span className="drop-accent">
-              100% Local Processing · Zero Uploads
-            </span>
+    <div id="drop-zone-wrapper">
+      {/* 1. The new "dead space" wrapper (No clicks or drag events here!) */}
+      
+      {/* 2. Your original drop-zone, now acting as the true interactive core */}
+      <div 
+        id="drop-zone"
+        onClick={onBrowse}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={isDragOver ? 'drag-over' : ''}
+      >
+        <div className="drop-inner">
+          <div className="drop-icon">📂</div>
+          <h3 className="drop-title">Drop photos here</h3>
+          <p className="drop-sub">or click to browse your files</p>
+          <span className="drop-accent">Supports JPG, PNG, WEBP</span>
+          <div className="drop-hints">
+            <span className="hint-pill">Max 50MB</span>
+            <span className="hint-pill">Exif Preserved</span>
           </div>
-        </div>
-        <div className="drop-hints">
-          <span className="hint-pill">JPEG · TIFF</span>
-          <span className="hint-pill">No upload</span>
-          <span className="hint-pill">Multiple files</span>
-          <span className="hint-pill">Click or drag</span>
         </div>
       </div>
     </div>

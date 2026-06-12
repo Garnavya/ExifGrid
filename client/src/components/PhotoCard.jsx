@@ -73,7 +73,25 @@ export default function PhotoCard({ photo, index, onOpen, onRemove, isComparing,
       
       <img src={photo.src} alt={photo.name} loading="lazy" />
       
-      {/* ... existing overlays and EXIF readout */}
+      {/* THE RESTORED CODE: Camera Badge (Top Left) */}
+      {cameraBadge && <div className="camera-badge">{cameraBadge}</div>}
+
+      {/* THE RESTORED CODE: EXIF Overlay (Bottom) */}
+      <div className="photo-overlay">
+        <div className="photo-filename">{photo.name}</div>
+        {hasExif ? (
+          <div className="exif-grid">
+            {fields.map(f => (
+              <div key={f.label} className="exif-item">
+                <span className="exif-label">{f.label}</span>
+                <span className="exif-val">{f.val}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <span className="no-exif-badge">No EXIF</span>
+        )}
+      </div>
     </div>
   );
 }

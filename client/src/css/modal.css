@@ -1,13 +1,33 @@
 .modal-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
-  align-items: center;
   justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
+  align-items: center;
+  z-index: 9999;
+  
+  /* CRITICAL FOR MOBILE: Allows scrolling if modal is taller than screen */
+  padding: 20px;
+  overflow-y: auto; 
+}
+
+.insights-dashboard {
+  background: rgba(18, 18, 18, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 650px;
+  padding: 32px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+  color: #e0e0e0;
+  animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  
+  /* CRITICAL: Prevents layout breakage */
+  box-sizing: border-box; 
 }
 
 @keyframes fadeIn {

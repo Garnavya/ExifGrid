@@ -1,3 +1,6 @@
+/* ==========================================================
+   BASE SKELETON (Layout, Fonts, & Animations Only)
+========================================================== */
 *,
 *::before,
 *::after {
@@ -7,38 +10,12 @@
 }
 
 :root {
-  --bg-gradient: linear-gradient(-45deg, #050505, #1c1c1c, #0a0a0a, #262626);
-  --surface: rgba(20, 20, 20, 0.4);
-  --surface2: rgba(35, 35, 35, 0.8);
-  --border: rgba(255, 255, 255, 0.08);
-  --border2: rgba(255, 255, 255, 0.15);
-  --text: #e8e4dc;
-  --text-muted: #888888;
-  --text-dim: #555555;
-  --accent: #b3b3b3;
-  --accent2: #d4b483;
-  --red: #c96b5a;
-  --glass-overlay: rgba(10, 10, 10, 0.7);
   --font-display: "DM Serif Display", serif;
   --font-body: "DM Sans", sans-serif;
   --font-mono: "DM Mono", monospace;
   --radius: 8px;
   --radius-lg: 12px;
   --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-html.light-theme {
-  --bg-gradient: linear-gradient(-45deg, #ffffff, #d1d5db, #f3f4f6, #9ca3af);
-  --surface: rgba(255, 255, 255, 0.5);
-  --surface2: rgba(240, 240, 240, 0.8);
-  --border: rgba(0, 0, 0, 0.1);
-  --border2: rgba(0, 0, 0, 0.2);
-  --text: #111111;
-  --text-muted: #555555;
-  --text-dim: #888888;
-  --accent: #444444;
-  --accent2: #b38b4d;
-  --glass-overlay: rgba(255, 255, 255, 0.6);
 }
 
 html {
@@ -73,6 +50,7 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
+/* The loading shimmer uses your dynamic variables perfectly */
 .card-loading {
   width: 100%;
   aspect-ratio: 3/4;

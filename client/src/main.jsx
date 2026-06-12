@@ -7,6 +7,7 @@ import 'virtual:pwa-register';
 
 // Modular CSS — split from monolithic style.css
 import './css/base.css';
+import './css/theme.css';
 import './css/header.css';
 import './css/stats.css';
 import './css/dropzone.css';

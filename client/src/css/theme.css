@@ -1,0 +1,31 @@
+/* --- THEME: TUNGSTEN & BRASS --- */
+:root {
+  --bg-gradient: linear-gradient(-45deg, #121312, #1c1d1a, #0b0b0a, #262723);
+  --surface: rgba(28, 29, 26, 0.4);
+  --surface2: rgba(42, 43, 38, 0.7);
+  --border: rgba(181, 166, 132, 0.05); /* Faint Brass */
+  --border2: rgba(181, 166, 132, 0.15);
+  --text: #edece8;
+  --text-muted: #9e9c93;
+  --text-dim: #616059;
+  --accent: #b5a684; /* Desaturated Brass */
+  --accent2: #7a7059;
+  --red: #c96b5a;
+  --glass-overlay: rgba(18, 19, 18, 0.85);
+}
+
+/* --- LIGHT THEME: IVORY & CHAMPAGNE --- */
+html.light-theme {
+  --bg-gradient: linear-gradient(-45deg, #fcfbf9, #f4f1ea, #fdfdfc, #ebe6db);
+  --surface: rgba(255, 255, 255, 0.5);
+  --surface2: rgba(252, 251, 249, 0.85);
+  --border: rgba(212, 196, 168, 0.3); /* Subtle Champagne */
+  --border2: rgba(212, 196, 168, 0.6);
+  --text: #36332e; /* Espresso / Dark Taupe */
+  --text-muted: #857f75;
+  --text-dim: #b8b1a5;
+  --accent: #b09e80; /* Champagne Gold */
+  --accent2: #d6cfc4;
+  --red: #bd4b4b;
+  --glass-overlay: rgba(252, 251, 249, 0.75);
+}

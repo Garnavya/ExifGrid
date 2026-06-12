@@ -51,19 +51,17 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
 
   const [enlarged, setEnlarged] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
-  
   const [polaroidCaption, setPolaroidCaption] = useState('');
   const [polaroidToggles, setPolaroidToggles] = useState([]);
   const [polaroidFont, setPolaroidFont] = useState('sans-serif');
   const [exifBold, setExifBold] = useState(true);
   const [exifItalic, setExifItalic] = useState(false);
-  const [exifTextScale, setExifTextScale] = useState(1.0); // <-- NEW STATE FOR SIZE
+  const [exifTextScale, setExifTextScale] = useState(1.0);
   const [polaroidPreview, setPolaroidPreview] = useState(null);
   const [isGeneratingPolaroid, setIsGeneratingPolaroid] = useState(false);
 
   const isOpen = Boolean(photo);
 
-  // Dynamically extract ALL available primitive EXIF keys specifically for THIS photo
   const availableExifOptions = useMemo(() => {
     if (!photo?.exif) return [];
     const keys = Object.keys(photo.exif).filter(k => {
@@ -76,25 +74,14 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     if (photo.exif.latitude !== undefined && photo.exif.longitude !== undefined) {
       cleanKeys.push('GPS');
     }
-
-    const captionInputRef = useRef(null);
-
-    const handleInputFocus = () => {
-    setTimeout(() => {
-      // Smoothly pushes the input to the center of the screen after the mobile keyboard opens
-      captionInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 300); 
-  };
-    
     return [...new Set(cleanKeys)].sort();
   }, [photo]);
 
-  // Reset states and set smart defaults ONLY for tags that actually exist on this photo
   useEffect(() => {
     setEnlarged(false);
     setPolaroidCaption('');
     setPolaroidPreview(null);
-    setExifTextScale(1.0); // Reset scale on new photo
+    setExifTextScale(1.0); 
     
     if (photo?.exif) {
       const standardTags = ['Model', 'FNumber', 'ExposureTime', 'ISOSpeedRatings', 'ISO'];
@@ -146,7 +133,6 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     return () => { cancelled = true; };
   }, [photo?.src]);
 
-  // Regenerate preview whenever the text scale changes
   useEffect(() => {
     if (!photo?.src) return;
     let cancelled = false;
@@ -225,209 +211,198 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
   const iso = exif.ISO || exif.ISOSpeedRatings;
 
   return (
-
     <div className="lightbox-overlay" onClick={onClose}>
       <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
-
-    <div 
-      id="lightbox" 
-      ref={overlayRef} 
-      className="lightbox--open"
-    >
-      <div className="lb-header">
-        <div className="lb-title">{photo.name}</div>
-        <button type="button" className="lb-close" onClick={handleClose} aria-label="Close">✕</button>
-      </div>
+        
+        <div id="lightbox" ref={overlayRef} className="lightbox--open">
+          
+          <div className="lb-header">
+            <div className="lb-title">{photo.name}</div>
+            <button type="button" className="lb-close" onClick={handleClose}>✕</button>
+          </div>
       
-      <div className="lb-body">
-        
-        <div className="lb-img-wrap" ref={imgWrapRef}>
-          <div className="compare-container" style={{ display: 'flex', flexDirection: 'row', width: '100%', height: '100%', gap: '24px', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="lb-body">
             
-            <div className="compare-item" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minWidth: 0 }}>
-              <img
-                ref={imgRef}
-                id="lb-img"
-                className={`zoomable-img${enlarged ? ' enlarged' : ''}`}
-                src={photo.src}
-                alt={photo.name}
-                onClick={() => setEnlarged((v) => !v)}
-              />
-            </div>
-
-            <div className="compare-item" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minWidth: 0 }}>
-              {polaroidPreview ? (
-                <img 
-                  src={polaroidPreview} 
-                  alt="Polaroid Live Preview" 
-                  className="zoomable-img" 
-                  style={{ cursor: 'default', filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))' }}
-                />
-              ) : (
-                <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>
-                  Rendering Preview...
-                </div>
-              )}
-            </div>
-
-          </div>
-        </div>
-        
-        <div className="lb-sidebar-column" ref={sidebarRef}>
-          <div className="lb-meta">
-            <MetaSection
-              title="File"
-              rows={[
-                { k: 'Name', v: photo.name },
-                { k: 'Size', v: formatBytes(photo.size) },
-                { k: 'Dimensions', v: `${photo.naturalW} × ${photo.naturalH} px` },
-              ]}
-            />
-            {exif.Make && (
-              <MetaSection title="Camera" rows={[{ k: 'Make', v: exif.Make }, { k: 'Model', v: exif.Model }].filter(Boolean)} />
-            )}
-            {(exif.FNumber || exif.ExposureTime || iso) && (
-              <MetaSection
-                title="Exposure"
-                rows={[
-                  exif.FNumber && { k: 'Aperture', v: formatAperture(exif.FNumber), accent: true },
-                  exif.ExposureTime && { k: 'Shutter', v: formatShutter(exif.ExposureTime), accent: true },
-                  iso && { k: 'ISO', v: `ISO ${iso}`, accent: true },
-                ].filter(Boolean)}
-              />
-            )}
-            
-            {hasGps && (
-              <div className="meta-section">
-                <div className="meta-section-title">Location</div>
-                <div className="meta-row">
-                  <span className="meta-key">Coordinates</span>
-                  <span className="meta-value">{lat.toFixed(5)}°, {lon.toFixed(5)}°</span>
-                </div>
-                <MiniMap lat={lat} lon={lon} />
-                <a className="gps-link" href={`https://www.google.com/maps?q=${lat},${lon}`} target="_blank" rel="noreferrer">
-                  ↖ Open in Google Maps
-                </a>
-              </div>
-            )}
-
-            <div className="meta-actions" style={{ marginTop: '24px' }}>
-              <button
-                type="button"
-                className="polaroid-btn"
-                onClick={handleScrubDownload}
-                disabled={isScrubbing}
-                style={{
-                  borderRadius: '6px',
-                  backgroundColor: '#1a1a1a',
-                  color: '#ffb86c',
-                  borderColor: '#333',
-                  marginBottom: '16px',
-                  opacity: isScrubbing ? 0.7 : 1,
-                  cursor: isScrubbing ? 'wait' : 'pointer'
-                }}
-              >
-                {isScrubbing ? 'Scrubbing...' : '⬇ Scrubbed Image'}
-              </button>
-
-              <div className="polaroid-settings" style={{ borderRadius: '8px' }}>
-                <div className="ps-title">Polaroid Generator</div>
+            {/* LEFT SIDE: Image Preview Area */}
+            <div className="lb-img-wrap" ref={imgWrapRef}>
+              <div className="compare-container" style={{ display: 'flex', flexDirection: 'row', width: '100%', height: '100%', gap: '24px', alignItems: 'center', justifyContent: 'center' }}>
                 
-                <div className="ps-label">Custom Caption</div>
-                <input 
-                  type="text" 
-                  className="ps-input" 
-                  placeholder="Add a caption..."
-                  value={polaroidCaption}
-                  onChange={(e) => setPolaroidCaption(e.target.value)}
-                />
-
-                <div className="ps-label">Font Style</div>
-                <select 
-                  className="ps-select"
-                  value={polaroidFont}
-                  onChange={(e) => setPolaroidFont(e.target.value)}
-                >
-                  <option value="sans-serif">System Sans-Serif</option>
-                  <option value="'Caveat', cursive">Caveat (Handwriting)</option>
-                  <option value="'Courier New', monospace">Courier New (Typewriter)</option>
-                  <option value="'Playfair Display', serif">Playfair Display (Elegant)</option>
-                  <option value="'Impact', sans-serif">Impact (Bold)</option>
-                  <option value="'Inter', sans-serif">Inter (Modern)</option>
-                </select>
-
-                <div className="ps-label" style={{ marginTop: '12px' }}>EXIF Text Formatting</div>
-                <div style={{ display: 'flex', gap: '16px', marginTop: '6px' }}>
-                  <label style={{ fontSize: '12px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-                    <input type="checkbox" checked={exifBold} onChange={(e) => setExifBold(e.target.checked)} />
-                    Bold
-                  </label>
-                  <label style={{ fontSize: '12px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-                    <input type="checkbox" checked={exifItalic} onChange={(e) => setExifItalic(e.target.checked)} />
-                    Italic
-                  </label>
+                <div className="compare-item" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minWidth: 0 }}>
+                  <img
+                    ref={imgRef}
+                    id="lb-img"
+                    className={`zoomable-img${enlarged ? ' enlarged' : ''}`}
+                    src={photo.src}
+                    alt={photo.name}
+                    onClick={() => setEnlarged((v) => !v)}
+                  />
                 </div>
 
-                {/* <-- TEXT SIZE SLIDER --> */}
-                <div className="ps-label" style={{ marginTop: '12px' }}>EXIF Text Size: {Math.round(exifTextScale * 100)}%</div>
-                <input 
-                  type="range" 
-                  min="0.5" 
-                  max="2.0" 
-                  step="0.05" 
-                  value={exifTextScale}
-                  onChange={(e) => setExifTextScale(parseFloat(e.target.value))}
-                  style={{ width: '100%', cursor: 'pointer', marginTop: '4px' }}
-                />
-
-                <div className="ps-label" style={{ marginTop: '12px' }}>Include EXIF Data (Scroll for more)</div>
-                <div className="ps-toggles" style={{ 
-                  maxHeight: '140px', 
-                  overflowY: 'auto', 
-                  padding: '8px', 
-                  background: 'var(--surface2)', 
-                  borderRadius: '6px', 
-                  border: '1px solid var(--border2)' 
-                }}>
-                  {availableExifOptions.map(field => (
-                    <label key={field} style={{ flex: '1 1 45%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      <input 
-                        type="checkbox" 
-                        checked={polaroidToggles.includes(field)}
-                        onChange={() => togglePolaroidExif(field)}
-                      />
-                      {field}
-                    </label>
-                  ))}
+                <div className="compare-item" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minWidth: 0 }}>
+                  {polaroidPreview ? (
+                    <img 
+                      src={polaroidPreview} 
+                      alt="Polaroid Live Preview" 
+                      className="zoomable-img" 
+                      style={{ cursor: 'default', filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))' }}
+                    />
+                  ) : (
+                    <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>
+                      Rendering Preview...
+                    </div>
+                  )}
                 </div>
 
-                <button 
-                  type="button" 
-                  className="polaroid-btn"
-                  onClick={handlePolaroidDownload}
-                  disabled={isGeneratingPolaroid}
-                  style={{ marginTop: '16px' }}
-                >
-                  {isGeneratingPolaroid ? 'Generating...' : '🖼️ Download Polaroid'}
-                </button>
               </div>
             </div>
+            
+            {/* RIGHT SIDE: Sidebar / Meta Settings */}
+            <div className="lb-sidebar-column" ref={sidebarRef}>
+              <div className="lb-meta">
+                <MetaSection
+                  title="File"
+                  rows={[
+                    { k: 'Name', v: photo.name },
+                    { k: 'Size', v: formatBytes(photo.size) },
+                    { k: 'Dimensions', v: `${photo.naturalW} × ${photo.naturalH} px` },
+                  ]}
+                />
+                
+                {exif.Make && (
+                  <MetaSection title="Camera" rows={[{ k: 'Make', v: exif.Make }, { k: 'Model', v: exif.Model }].filter(Boolean)} />
+                )}
+                
+                {(exif.FNumber || exif.ExposureTime || iso) && (
+                  <MetaSection
+                    title="Exposure"
+                    rows={[
+                      exif.FNumber && { k: 'Aperture', v: formatAperture(exif.FNumber), accent: true },
+                      exif.ExposureTime && { k: 'Shutter', v: formatShutter(exif.ExposureTime), accent: true },
+                      iso && { k: 'ISO', v: `ISO ${iso}`, accent: true },
+                    ].filter(Boolean)}
+                  />
+                )}
+                
+                {hasGps && (
+                  <div className="meta-section">
+                    <div className="meta-section-title">Location</div>
+                    <div className="meta-row">
+                      <span className="meta-key">Coordinates</span>
+                      <span className="meta-value">{lat.toFixed(5)}°, {lon.toFixed(5)}°</span>
+                    </div>
+                    <MiniMap lat={lat} lon={lon} />
+                    <a className="gps-link" href={`https://www.google.com/maps?q=${lat},${lon}`} target="_blank" rel="noreferrer">
+                      ↖ Open in Google Maps
+                    </a>
+                  </div>
+                )}
 
+                <div className="meta-actions" style={{ marginTop: '24px' }}>
+                  <button
+                    type="button"
+                    className="polaroid-btn"
+                    onClick={handleScrubDownload}
+                    disabled={isScrubbing}
+                    style={{
+                      borderRadius: '6px',
+                      backgroundColor: '#1a1a1a',
+                      color: '#ffb86c',
+                      borderColor: '#333',
+                      marginBottom: '16px',
+                      opacity: isScrubbing ? 0.7 : 1,
+                      cursor: isScrubbing ? 'wait' : 'pointer'
+                    }}
+                  >
+                    {isScrubbing ? 'Scrubbing...' : '⬇ Scrubbed Image'}
+                  </button>
+
+                  <div className="polaroid-settings" style={{ borderRadius: '8px' }}>
+                    <div className="ps-title">Polaroid Generator</div>
+                    
+                    <div className="ps-label">Custom Caption</div>
+                    <input 
+                      type="text" 
+                      className="ps-input" 
+                      placeholder="Add a caption..."
+                      value={polaroidCaption}
+                      onChange={(e) => setPolaroidCaption(e.target.value)}
+                    />
+
+                    <div className="ps-label">Font Style</div>
+                    <select 
+                      className="ps-select"
+                      value={polaroidFont}
+                      onChange={(e) => setPolaroidFont(e.target.value)}
+                    >
+                      <option value="sans-serif">System Sans-Serif</option>
+                      <option value="'Caveat', cursive">Caveat (Handwriting)</option>
+                      <option value="'Courier New', monospace">Courier New (Typewriter)</option>
+                      <option value="'Playfair Display', serif">Playfair Display (Elegant)</option>
+                      <option value="'Impact', sans-serif">Impact (Bold)</option>
+                      <option value="'Inter', sans-serif">Inter (Modern)</option>
+                    </select>
+
+                    <div className="ps-label" style={{ marginTop: '12px' }}>EXIF Text Formatting</div>
+                    <div style={{ display: 'flex', gap: '16px', marginTop: '6px' }}>
+                      <label style={{ fontSize: '12px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={exifBold} onChange={(e) => setExifBold(e.target.checked)} />
+                        Bold
+                      </label>
+                      <label style={{ fontSize: '12px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={exifItalic} onChange={(e) => setExifItalic(e.target.checked)} />
+                        Italic
+                      </label>
+                    </div>
+
+                    <div className="ps-label" style={{ marginTop: '12px' }}>EXIF Text Size: {Math.round(exifTextScale * 100)}%</div>
+                    <input 
+                      type="range" 
+                      min="0.5" 
+                      max="2.0" 
+                      step="0.05" 
+                      value={exifTextScale}
+                      onChange={(e) => setExifTextScale(parseFloat(e.target.value))}
+                      style={{ width: '100%', cursor: 'pointer', marginTop: '4px' }}
+                    />
+
+                    <div className="ps-label" style={{ marginTop: '12px' }}>Include EXIF Data (Scroll for more)</div>
+                    <div className="ps-toggles" style={{ 
+                      maxHeight: '140px', 
+                      overflowY: 'auto', 
+                      padding: '8px', 
+                      background: 'var(--surface2)', 
+                      borderRadius: '6px', 
+                      border: '1px solid var(--border2)' 
+                    }}>
+                      {availableExifOptions.map(field => (
+                        <label key={field} style={{ flex: '1 1 45%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <input 
+                            type="checkbox" 
+                            checked={polaroidToggles.includes(field)}
+                            onChange={() => togglePolaroidExif(field)}
+                          />
+                          {field}
+                        </label>
+                      ))}
+                    </div>
+
+                    <button 
+                      type="button" 
+                      className="polaroid-btn"
+                      onClick={handlePolaroidDownload}
+                      disabled={isGeneratingPolaroid}
+                      style={{ marginTop: '16px' }}
+                    >
+                      {isGeneratingPolaroid ? 'Generating...' : '🖼️ Download Polaroid'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
           </div>
         </div>
-      </div>
-    </div>
-    <div className="lightbox-caption-area">
-          <input 
-            ref={captionInputRef} /* Attach the reference here */
-            type="text" 
-            placeholder="Add a caption..."
-            // value={yourCaptionState}
-            // onChange={yourOnChangeHandler}
-            onFocus={handleInputFocus} /* Fire the slide-up function when tapped */
-          />
-        </div>
-
+        
       </div>
     </div>
   );

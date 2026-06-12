@@ -71,7 +71,7 @@ export default function PhotoCard({ photo, index, onOpen, onRemove, isComparing,
       {/* Existing Remove Button */}
       <button type="button" className="remove-btn" onClick={(e) => { e.stopPropagation(); onRemove(photo.id); }}>✕</button>
       
-      <img src={photo.src} alt={photo.name} loading="lazy" />
+      <img src={photo?.src} alt={photo?.name || 'Photo'} />
       
       {/* THE RESTORED CODE: Camera Badge (Top Left) */}
       {cameraBadge && <div className="camera-badge">{cameraBadge}</div>}

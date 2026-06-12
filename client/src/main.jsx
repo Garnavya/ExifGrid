@@ -11,6 +11,7 @@ import './css/header.css';
 import './css/stats.css';
 import './css/dropzone.css';
 import './css/gallery.css';
+import './css/pinterest.css';
 import './css/lightbox.css';
 import './css/polaroid.css';
 import './css/footer.css';

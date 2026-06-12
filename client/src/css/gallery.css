@@ -1,10 +1,5 @@
 /* Pinterest-style masonry via CSS columns (unchanged from v2) */
-#gallery {
-  padding: 28px 28px 48px;
-  columns: 4 220px;
-  column-gap: 14px;
-  flex: 1;
-}
+
 
 .photo-card {
   break-inside: avoid;

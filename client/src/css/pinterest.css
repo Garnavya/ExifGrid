@@ -1,0 +1,69 @@
+/* ==========================================================
+   PINTEREST MASONRY LAYOUT (SKELETON ONLY)
+   Targeting: #gallery.gallery--visible
+========================================================== */
+
+/* --- 1. BASE: Mobile S, M, L (320px to 767px) --- */
+#gallery.gallery--visible {
+  display: block !important; /* Kills rogue flexbox conflicts */
+  column-count: 2;
+  column-gap: 12px;
+  padding: 24px 12px 48px; /* Restores the padding you deleted from base */
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+#gallery.gallery--visible .photo-card {
+  display: inline-block !important; /* Forces masonry to work */
+  width: 100%;
+  margin-bottom: 12px; /* Gap between top/bottom images */
+  break-inside: avoid; /* Prevents image splitting across columns */
+  transform: translateZ(0); /* Hardware acceleration fix for iOS/Safari */
+}
+
+/* THE IMAGE LOCK: Forces the image to respect the grid slot */
+#gallery.gallery--visible .photo-card img {
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* --- 2. TABLET (768px to 1023px) --- */
+@media (min-width: 768px) {
+  #gallery.gallery--visible { 
+    column-count: 4; 
+    column-gap: 16px; 
+    padding: 28px 20px 48px; 
+  }
+  #gallery.gallery--visible .photo-card { margin-bottom: 16px; }
+}
+
+/* --- 3. LAPTOP (1024px to 1439px) --- */
+@media (min-width: 1024px) {
+  #gallery.gallery--visible { 
+    column-count: 5; 
+    column-gap: 20px; 
+    padding: 28px 28px 48px; 
+  }
+  #gallery.gallery--visible .photo-card { margin-bottom: 20px; }
+}
+
+/* --- 4. LAPTOP L / DESKTOP (1440px to 2559px) --- */
+@media (min-width: 1440px) {
+  #gallery.gallery--visible { 
+    column-count: 6; 
+    column-gap: 24px; 
+    padding: 28px 32px 48px; 
+  }
+  #gallery.gallery--visible .photo-card { margin-bottom: 24px; }
+}
+
+/* --- 5. 4K ULTRA-WIDES (2560px+) --- */
+@media (min-width: 2560px) {
+  #gallery.gallery--visible { 
+    column-count: 8; 
+    column-gap: 24px; 
+    padding: 28px 40px 48px; 
+    max-width: 3840px; 
+  }
+}

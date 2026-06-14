@@ -6,6 +6,7 @@ import { extractDominantColor, glowStyle } from '../utils/colorExtract.js';
 import { useKeyboardNav } from '../hooks/useKeyboardNav.js';
 import { stripExifData, downloadScrubbedImage } from '../utils/exifStripper.js';
 import { downloadPolaroid, generatePolaroidDataURL } from '../utils/polaroid.js'; 
+import AIAnalysisModal from './AIAnalysisModal';
 
 function MetaSection({ title, rows }) {
   return (
@@ -59,6 +60,7 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
   const [exifTextScale, setExifTextScale] = useState(1.0);
   const [polaroidPreview, setPolaroidPreview] = useState(null);
   const [isGeneratingPolaroid, setIsGeneratingPolaroid] = useState(false);
+  const [showAIModal, setShowAIModal] = useState(false);
 
   const isOpen = Boolean(photo);
 
@@ -82,6 +84,7 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     setPolaroidCaption('');
     setPolaroidPreview(null);
     setExifTextScale(1.0); 
+    setShowAIModal(false);
     
     if (photo?.exif) {
       const standardTags = ['Model', 'FNumber', 'ExposureTime', 'ISOSpeedRatings', 'ISO'];
@@ -99,9 +102,14 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
   }, [onClose]);
 
   const handleEscapeKey = useCallback(() => {
-    if (enlarged) setEnlarged(false);
-    else handleClose();
-  }, [enlarged, handleClose]);
+    if (showAIModal) {
+      setShowAIModal(false); // Close AI modal first if it's open
+    } else if (enlarged) {
+      setEnlarged(false);
+    } else {
+      handleClose();
+    }
+  }, [enlarged, handleClose, showAIModal]);
 
   useKeyboardNav({ isOpen, activeId: photo?.id, photoIds, onClose: handleEscapeKey, onNavigate });
 
@@ -395,6 +403,31 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                     >
                       {isGeneratingPolaroid ? 'Generating...' : '🖼️ Download Polaroid'}
                     </button>
+                    
+                    <button 
+  type="button" 
+  className="polaroid-btn"
+  onClick={() => setShowAIModal(true)}
+  style={{ 
+    marginTop: '16px',
+    backgroundColor: 'rgba(0, 255, 204, 0.05)', 
+    color: '#00ffcc', 
+    borderColor: 'rgba(0, 255, 204, 0.3)',
+    fontWeight: 'bold',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 0 15px rgba(0, 255, 204, 0.1)'
+  }}
+  onMouseOver={(e) => {
+    e.target.style.backgroundColor = 'rgba(0, 255, 204, 0.15)';
+    e.target.style.borderColor = '#00ffcc';
+  }}
+  onMouseOut={(e) => {
+    e.target.style.backgroundColor = 'rgba(0, 255, 204, 0.05)';
+    e.target.style.borderColor = 'rgba(0, 255, 204, 0.3)';
+  }}
+>
+  ✨ AI Posture & Light Analysis
+</button>
                   </div>
                 </div>
               </div>
@@ -404,6 +437,13 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
         </div>
         
       </div>
+
+      {showAIModal && (
+  <AIAnalysisModal 
+    imageSrc={photo.src} // Change 'photo.url' to whatever variable holds your image source
+    onClose={() => setShowAIModal(false)} 
+  />
+)}
     </div>
   );
 }

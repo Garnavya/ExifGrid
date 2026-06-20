@@ -1,56 +1,52 @@
-// 1. The Temporary Storage Array & Timer
-let telemetryBatch = [];
+let actionQueue = { images: 0, ai: 0, polaroid: 0, csv: 0, apertures: [] };
 let batchTimer = null;
 
-export async function logAnonymousTelemetry(exif) {
-  if (!exif || Object.keys(exif).length === 0) return;
+// Call this function whenever a user performs an action
+export function trackAction(type, data = null) {
+  if (type === 'image_drop') {
+    actionQueue.images += data.count; 
+    if (data.apertures) actionQueue.apertures.push(...data.apertures);
+  } else if (type === 'ai_run') {
+    actionQueue.ai += 1;
+  } else if (type === 'polaroid_gen') {
+    // THE FIX: Add the specific number of photos passed in, or default to 1
+    actionQueue.polaroid += (data && data.count) ? data.count : 1;
+  } else if (type === 'csv_export') {
+    actionQueue.csv += 1;
+  }
 
-  const make = exif.Make ? exif.Make.trim() : '';
-  const model = exif.Model ? exif.Model.trim() : '';
-  const cameraString = `${make} ${model}`.trim().substring(0, 30);
-  
-  const focalLength = exif.FocalLength ? `${Number(exif.FocalLength).toFixed(0)}mm` : null;
-
-  if (!cameraString && !focalLength) return;
-
-  // 2. Add the hardware string to our temporary queue
-  telemetryBatch.push({
-    camera: cameraString || 'Unknown Camera',
-    focalLength: focalLength || 'Unknown Lens'
-  });
-
-  // 3. Reset the countdown timer
+  // Debounce the network request
   if (batchTimer) clearTimeout(batchTimer);
-
-  // 4. Wait 2 seconds. If no new photos are dropped, send the whole batch!
-  batchTimer = setTimeout(() => {
-    sendBatchToServer();
-  }, 2000);
+  batchTimer = setTimeout(sendBatchToServer, 3000);
 }
 
-// 5. The function that actually talks to the Express Server
 async function sendBatchToServer() {
-  if (telemetryBatch.length === 0) return;
+  if (actionQueue.images === 0 && actionQueue.ai === 0 && actionQueue.polaroid === 0 && actionQueue.csv === 0) return;
 
-  // Copy the current queue and instantly empty it so it's ready for the next drop
-  const payload = [...telemetryBatch];
-  telemetryBatch = [];
+  const payload = { ...actionQueue };
+  actionQueue = { images: 0, ai: 0, polaroid: 0, csv: 0, apertures: [] };
+
+  // THE FIX: Safely fallback to localhost:3001 if the env variable is missing
+  const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   try {
-    await fetch('/api/telemetry', {
+    await fetch(`${BASE_URL}/api/telemetry`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ batch: payload }) // Send the whole array at once
+      body: JSON.stringify(payload) 
     });
   } catch (error) {
-    console.warn("Telemetry batch failed, continuing offline.");
+    console.warn("Telemetry blocked or offline.");
   }
 }
 
 export async function fetchGlobalInsights() {
+  // THE FIX: Safely fallback to localhost:3001
+  const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  
   try {
-    const res = await fetch('/api/telemetry');
-    if (!res.ok) throw new Error('Network response was not ok');
+    const res = await fetch(`${BASE_URL}/api/telemetry`);
+    if (!res.ok) throw new Error('Network error');
     return await res.json();
   } catch (error) {
     console.error("Could not load global insights.", error);

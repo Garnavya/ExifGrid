@@ -19,95 +19,75 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB Atlas'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
-// --- Telemetry Schema ---
-const telemetrySchema = new mongoose.Schema({
-  category: String, // 'camera', 'focalLength', or 'global'
-  label: String,    // e.g., 'Canon EOS 1200D', '50mm', or 'total_processed'
-  count: { type: Number, default: 0 }
+// --- Global Telemetry Schema (Fixed Size) ---
+const globalStatsSchema = new mongoose.Schema({
+  doc_id: { type: String, default: 'exifgrid_master' }, // Only 1 document will ever exist
+  total_images: { type: Number, default: 0 },
+  total_ai_runs: { type: Number, default: 0 },
+  total_polaroids: { type: Number, default: 0 },
+  total_csv_exports: { type: Number, default: 0 },
+  min_aperture: { type: Number, default: 99.0 },
+  max_aperture: { type: Number, default: 0.0 }
 });
 
-const Telemetry = mongoose.model('Telemetry', telemetrySchema);
+const GlobalStats = mongoose.model('GlobalStats', globalStatsSchema);
 
 // --- Telemetry Routes ---
 
-// 1. POST: Accept a batched array and sanitize inputs
+// 1. POST: Increment counters safely
 app.post('/api/telemetry', async (req, res) => {
-  // Extract the array we created in the frontend
-  const { batch } = req.body;
-  
-  // If there's no batch array, reject the request early
-  if (!batch || !Array.isArray(batch)) return res.status(400).send();
+  const { images = 0, ai = 0, polaroid = 0, csv = 0, apertures = [] } = req.body;
 
   try {
-    const operations = [];
-
-    // Increment the global "total_processed" by the exact length of the batch array
-    if (batch.length > 0) {
-      operations.push(Telemetry.updateOne(
-        { category: 'global', label: 'total_processed' },
-        { $inc: { count: batch.length } },
-        { upsert: true }
-      ));
-    }
-
-    // Loop through every item in the batch
-    for (const item of batch) {
-      // THE SANITIZER: Force it to be a string, and strictly slice to 50 characters
-      const safeCamera = item.camera ? String(item.camera).slice(0, 50).trim() : null;
-      const safeFocal = item.focalLength ? String(item.focalLength).slice(0, 50).trim() : null;
-
-      // Queue the Camera increment
-      if (safeCamera && safeCamera !== 'Unknown Camera') {
-        operations.push(Telemetry.updateOne(
-          { category: 'camera', label: safeCamera },
-          { $inc: { count: 1 } },
-          { upsert: true }
-        ));
+    const updatePayload = {
+      $inc: {
+        total_images: images,
+        total_ai_runs: ai,
+        total_polaroids: polaroid,
+        total_csv_exports: csv
       }
+    };
 
-      // Queue the Focal Length increment
-      if (safeFocal && safeFocal !== 'Unknown Lens') {
-        operations.push(Telemetry.updateOne(
-          { category: 'focalLength', label: safeFocal },
-          { $inc: { count: 1 } },
-          { upsert: true }
-        ));
+    // If apertures were sent, find the min and max of this specific batch
+    if (apertures && apertures.length > 0) {
+      const validApertures = apertures.filter(a => typeof a === 'number' && !isNaN(a));
+      if (validApertures.length > 0) {
+        updatePayload.$min = { min_aperture: Math.min(...validApertures) };
+        updatePayload.$max = { max_aperture: Math.max(...validApertures) };
       }
     }
 
-    // Execute all database hits at the exact same time
-    if (operations.length > 0) await Promise.all(operations);
+    // Upsert the single master document
+    await GlobalStats.findOneAndUpdate(
+      { doc_id: 'exifgrid_master' },
+      updatePayload,
+      { upsert: true, new: true }
+    );
     
     res.status(204).send();
   } catch (error) {
-    console.error("Telemetry batch save failed", error);
+    console.error("Telemetry save failed", error);
     res.status(500).send();
   }
 });
 
-// 2. GET: Instant Dashboard Retrieval (No heavy math required anymore!)
+// 2. GET: Fetch the numbers for the frontend
 app.get('/api/telemetry', async (req, res) => {
   try {
-    // Fetch pre-sorted top 5s directly
-    const topCameras = await Telemetry.find({ category: 'camera' }).sort({ count: -1 }).limit(5);
-    const topFocals = await Telemetry.find({ category: 'focalLength' }).sort({ count: -1 }).limit(5);
-    const globalTotal = await Telemetry.findOne({ category: 'global', label: 'total_processed' });
-
-    // Format for the React Dashboard
-    const cameras = {};
-    topCameras.forEach(doc => cameras[doc.label] = doc.count);
-
-    const focalLengths = {};
-    topFocals.forEach(doc => focalLengths[doc.label] = doc.count);
-
-    res.json({ 
-      totalProcessed: globalTotal ? globalTotal.count : 0, 
-      cameras, 
-      focalLengths 
+    let stats = await GlobalStats.findOne({ doc_id: 'exifgrid_master' });
+    if (!stats) {
+       // Return defaults if nobody has used the app yet
+       stats = { total_images: 0, total_ai_runs: 0, total_polaroids: 0, total_csv_exports: 0, min_aperture: 0, max_aperture: 0 };
+    }
+    
+    res.json({
+      images: stats.total_images,
+      ai: stats.total_ai_runs,
+      polaroids: stats.total_polaroids,
+      csv: stats.total_csv_exports,
+      apertureRange: `f/${stats.min_aperture} - f/${stats.max_aperture}`
     });
-
   } catch (err) {
-    console.error("Dashboard fetch failed", err);
     res.status(500).json({ error: "Database error" });
   }
 });

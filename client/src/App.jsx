@@ -16,7 +16,7 @@ import { ingestPhotoMeta, createPhotoId } from './utils/exifReader.js';
 import { computeStats } from './utils/stats.js';
 import { syncPreferences } from './api/settings.js';
 import { exportToCSV } from './utils/csvExport.js';
-import { logAnonymousTelemetry } from './api/telemetry.js';
+import { trackAction } from './api/telemetry.js';
 
 export default function App() {
   const [photos, setPhotos] = useState([]);
@@ -36,7 +36,10 @@ export default function App() {
   const photoIds = useMemo(() => photos.map((p) => p.id), [photos]);
   const activePhoto = photos.find((p) => p.id === activePhotoId) || null;
 
-  const handleExportCSV = () => exportToCSV(photos);
+  const handleExportCSV = () => {
+      exportToCSV(photos);
+      trackAction('csv_export'); 
+  };
 
   const [comparisonIds, setComparisonIds] = useState([]);
 
@@ -75,7 +78,6 @@ const handleFiles = useCallback(async (fileList) => {
     const incoming = Array.from(fileList).filter((f) => f.type.startsWith('image/'));
     if (!incoming.length) return;
 
-    // Start the loading bar at 5% instantly to show activity
     setGridProgress({ active: true, percent: 5 });
 
     const placeholders = incoming.map((file) => ({
@@ -86,23 +88,29 @@ const handleFiles = useCallback(async (fileList) => {
     if (fileInputRef.current) fileInputRef.current.value = '';
 
     let processed = 0;
+    const batchApertures = []; // 1. Create a temporary array to hold the apertures
+
     for (const placeholder of placeholders) {
       try {
         const meta = await ingestPhotoMeta(placeholder.file, placeholder.src);
         setPhotos((prev) => prev.map((p) => (p.id === placeholder.id ? { ...p, ...meta } : p)));
         
-        // Fire and forget telemetry ping
-        logAnonymousTelemetry(meta.exif);
+        // 2. Extract the aperture if it exists and push it to our array
+        if (meta.exif && meta.exif.FNumber) {
+           batchApertures.push(Number(meta.exif.FNumber));
+        }
+
       } catch {
         setPhotos((prev) => prev.map((p) => (p.id === placeholder.id ? { ...p, status: 'ready' } : p)));
       }
 
       processed++;
-      // Increment the bar based on exactly how many photos have finished
       setGridProgress({ active: true, percent: 5 + (processed / placeholders.length) * 95 });
     }
 
-    // Smoothly hide the bar once 100% is reached
+    // 3. Send the single tracking payload with the total count and the array of apertures!
+    trackAction('image_drop', { count: placeholders.length, apertures: batchApertures });
+
     setTimeout(() => setGridProgress(prev => ({ ...prev, active: false })), 400);
     setTimeout(() => setGridProgress({ active: false, percent: 0 }), 700);
   }, []);
@@ -156,6 +164,8 @@ const handleFiles = useCallback(async (fileList) => {
       await createBatchPolaroidZip(photos, settings, (progress) => {
         setZipProgress(progress);
       });
+      // Tell the telemetry EXACTLY how many polaroids were just packed into the zip
+      trackAction('polaroid_gen', { count: photos.length });
     } catch (error) {
       console.error("Batch processing failed", error);
     } finally {

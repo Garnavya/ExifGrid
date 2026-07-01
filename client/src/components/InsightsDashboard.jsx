@@ -32,21 +32,6 @@ export default function InsightsDashboard({ onClose }) {
               <p className="privacy-statement" style={{ marginBottom: '2rem', color: 'var(--text-secondary)' }}>
                 A total of <strong style={{ color: 'var(--accent)' }}>{(stats.images || 0).toLocaleString()}</strong> images have visited this website to have their EXIF data analyzed—but the private details <em>only ever existed on the computers they were sent from.</em>
               </p>
-              
-              <div className="global-stats-grid" style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr' }}>
-                <div className="stat-card" style={{ background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px' }}>
-                  <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>AI Framing Critiques Run</span>
-                  <strong style={{ fontSize: '1.5rem' }}>{(stats.ai || 0).toLocaleString()}</strong>
-                </div>
-                <div className="stat-card" style={{ background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px' }}>
-                  <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Polaroids Generated</span>
-                  <strong style={{ fontSize: '1.5rem' }}>{(stats.polaroids || 0).toLocaleString()}</strong>
-                </div>
-                <div className="stat-card" style={{ background: 'var(--bg-secondary)', padding: '1rem', borderRadius: '8px' }}>
-                  <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Global Aperture Range Evaluated</span>
-                  <strong style={{ fontSize: '1.5rem', color: 'var(--accent)' }}>{stats.apertureRange || 'N/A'}</strong>
-                </div>
-              </div>
             </>
           )}
         </div>

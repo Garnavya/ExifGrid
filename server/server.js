@@ -21,16 +21,33 @@ mongoose.connect(process.env.MONGODB_URI)
 
 // --- Global Telemetry Schema (Fixed Size) ---
 const globalStatsSchema = new mongoose.Schema({
-  doc_id: { type: String, default: 'exifgrid_master' }, // Only 1 document will ever exist
-  total_images: { type: Number, default: 0 },
-  total_ai_runs: { type: Number, default: 0 },
-  total_polaroids: { type: Number, default: 0 },
-  total_csv_exports: { type: Number, default: 0 },
-  min_aperture: { type: Number, default: 99.0 },
-  max_aperture: { type: Number, default: 0.0 }
+  doc_id: { type: String, default: 'exifgrid_master' },
+  total_images: { type: Number, default: 0 }
 });
 
 const GlobalStats = mongoose.model('GlobalStats', globalStatsSchema);
+
+app.post('/api/telemetry', async (req, res) => {
+  const count = parseInt(req.body.count, 10);
+  
+  if (isNaN(count) || count <= 0) {
+    return res.status(400).send();
+  }
+
+  try {
+    await GlobalStats.findOneAndUpdate(
+      { doc_id: 'exifgrid_master' },
+      { $inc: { total_images: count } },
+      { upsert: true, new: true }
+    );
+    res.status(204).send();
+  } catch (error) {
+    console.error("Telemetry save failed", error);
+    res.status(500).send();
+  }
+});
+
+// Remove ALL routes for /api/settings/sync below this point
 
 // --- Telemetry Routes ---
 
@@ -74,55 +91,13 @@ app.post('/api/telemetry', async (req, res) => {
 // 2. GET: Fetch the numbers for the frontend
 app.get('/api/telemetry', async (req, res) => {
   try {
-    let stats = await GlobalStats.findOne({ doc_id: 'exifgrid_master' });
-    if (!stats) {
-       // Return defaults if nobody has used the app yet
-       stats = { total_images: 0, total_ai_runs: 0, total_polaroids: 0, total_csv_exports: 0, min_aperture: 0, max_aperture: 0 };
-    }
+    const stats = await GlobalStats.findOne({ doc_id: 'exifgrid_master' });
     
+    // Only return the single permitted metric
     res.json({
-      images: stats.total_images,
-      ai: stats.total_ai_runs,
-      polaroids: stats.total_polaroids,
-      csv: stats.total_csv_exports,
-      apertureRange: `f/${stats.min_aperture} - f/${stats.max_aperture}`
+      images: stats ? stats.total_images : 0
     });
   } catch (err) {
     res.status(500).json({ error: "Database error" });
   }
-});
-
-// --- Existing Preference Routes ---
-app.get('/api/settings/sync', (_req, res) => {
-  res.json({ ok: true, preferences: null });
-});
-
-app.post('/api/settings/sync', (req, res) => {
-  const body = req.body;
-  if (!body || typeof body !== 'object' || Array.isArray(body)) {
-    return res.status(400).json({ ok: false, error: 'Body must be a JSON object.' });
-  }
-
-  const forbiddenKeys = ['image', 'file', 'blob', 'dataUrl', 'base64', 'src'];
-  for (const key of forbiddenKeys) {
-    if (key in body) return res.status(400).json({ ok: false, error: `Key "${key}" not allowed.` });
-  }
-
-  const preferences = {
-    theme: body.theme === 'light' || body.theme === 'dark' ? body.theme : 'dark',
-    polaroid: {
-      caption: typeof body.polaroid?.caption === 'string' ? body.polaroid.caption.slice(0, 40) : '',
-      font: typeof body.polaroid?.font === 'string' ? body.polaroid.font : "'Caveat', cursive",
-      exifToggles: Array.isArray(body.polaroid?.exifToggles)
-        ? body.polaroid.exifToggles.filter((t) => ['camera', 'aperture', 'shutter', 'iso'].includes(t))
-        : ['camera', 'aperture', 'shutter', 'iso'],
-    },
-    syncedAt: new Date().toISOString(),
-  };
-
-  res.json({ ok: true, preferences });
-});
-
-app.listen(PORT, () => {
-  console.log(`ExifGrid API listening on http://localhost:${PORT}`);
 });

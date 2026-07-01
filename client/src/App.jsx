@@ -14,7 +14,6 @@ import InsightsDashboard from './components/InsightsDashboard.jsx';
 import GridLoader from './components/GridLoader.jsx';
 import { ingestPhotoMeta, createPhotoId } from './utils/exifReader.js';
 import { computeStats } from './utils/stats.js';
-import { syncPreferences } from './api/settings.js';
 import { exportToCSV } from './utils/csvExport.js';
 import { trackAction } from './api/telemetry.js';
 
@@ -50,13 +49,6 @@ export default function App() {
   const [showInsights, setShowInsights] = useState(false); // 2. ADDED STATE
 
   useEffect(() => { document.documentElement.classList.toggle('light-theme', isLight); }, [isLight]);
-  useEffect(() => {
-    if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
-    syncTimerRef.current = setTimeout(() => {
-      syncPreferences({ theme: isLight ? 'light' : 'dark' }).catch(() => {});
-    }, 800);
-    return () => clearTimeout(syncTimerRef.current);
-  }, [isLight]);
 
   const handleOpenBatchMenu = useCallback(() => {
     if (photos.length > 0) setShowBatchModal(true);

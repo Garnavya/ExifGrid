@@ -1,32 +1,27 @@
-let actionQueue = { images: 0, ai: 0, polaroid: 0, csv: 0, apertures: [] };
+let imageQueue = 0;
 let batchTimer = null;
 
-// Call this function whenever a user performs an action
 export function trackAction(type, data = null) {
-  if (type === 'image_drop') {
-    actionQueue.images += data.count; 
-    if (data.apertures) actionQueue.apertures.push(...data.apertures);
-  } else if (type === 'ai_run') {
-    actionQueue.ai += 1;
-  } else if (type === 'polaroid_gen') {
-    // THE FIX: Add the specific number of photos passed in, or default to 1
-    actionQueue.polaroid += (data && data.count) ? data.count : 1;
-  } else if (type === 'csv_export') {
-    actionQueue.csv += 1;
-  }
+  // 1. Opt-out check (Reads from localStorage, defaults to false)
+  const isOptedOut = localStorage.getItem('telemetry_opt_out') === 'true';
+  if (isOptedOut) return;
 
-  // Debounce the network request
-  if (batchTimer) clearTimeout(batchTimer);
-  batchTimer = setTimeout(sendBatchToServer, 3000);
+  // 2. Only track image drops
+  if (type === 'image_drop' && data && typeof data.count === 'number') {
+    imageQueue += data.count;
+    
+    // Debounce the network request for 3 seconds to batch rapid drag-and-drops
+    if (batchTimer) clearTimeout(batchTimer);
+    batchTimer = setTimeout(sendBatchToServer, 3000);
+  }
 }
 
 async function sendBatchToServer() {
-  if (actionQueue.images === 0 && actionQueue.ai === 0 && actionQueue.polaroid === 0 && actionQueue.csv === 0) return;
+  if (imageQueue === 0) return;
 
-  const payload = { ...actionQueue };
-  actionQueue = { images: 0, ai: 0, polaroid: 0, csv: 0, apertures: [] };
+  const payload = { count: imageQueue };
+  imageQueue = 0; // Reset queue after copying
 
-  // THE FIX: Safely fallback to localhost:3001 if the env variable is missing
   const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   try {
@@ -36,12 +31,12 @@ async function sendBatchToServer() {
       body: JSON.stringify(payload) 
     });
   } catch (error) {
+    // Fail silently if offline or blocked by ad-blockers
     console.warn("Telemetry blocked or offline.");
   }
 }
 
 export async function fetchGlobalInsights() {
-  // THE FIX: Safely fallback to localhost:3001
   const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
   
   try {
@@ -50,6 +45,6 @@ export async function fetchGlobalInsights() {
     return await res.json();
   } catch (error) {
     console.error("Could not load global insights.", error);
-    return null;
+    return { images: 0 }; // Return safe default if it fails
   }
 }

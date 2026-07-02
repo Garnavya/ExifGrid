@@ -4,6 +4,9 @@
 
 Full-stack monorepo — React + Vite + Express.
 
+<!-- 🖼️ HERO SCREENSHOT/GIF: Wide shot of the masonry grid, dark mode, 20+ photos loaded, EXIF pills visible. This is the first thing people see — make it count. -->
+![ExifGrid Hero](./assets/Hero_Section.mp4)
+
 ---
 
 ## Table of Contents
@@ -37,6 +40,46 @@ Checking basic camera metadata — aperture, shutter speed, ISO — across a bat
 - **Privacy-Safe "Scrubbed" Export** — One-click download that strips all EXIF and GPS metadata via re-encoding through the Canvas/Blob pipeline, so images are safe to share on social media.
 - **CSV Metadata Export** — Export all extracted metadata from a batch into a structured spreadsheet.
 - **Interactive Journey Map** — For geotagged photos, plots GPS points on an interactive map and traces the route between them, powered by Leaflet.
+
+<!--
+  🖼️ FEATURE GALLERY GRID
+  GitHub strips <style>/CSS from READMEs, so real flexbox/grid CSS won't render here.
+  This HTML table is the standard workaround — 2 fixed-width columns, images scale to
+  fit without overlapping or reflowing unpredictably. Swap each src="" once you have
+  the actual files. Recommended: ~1200px wide max, under ~5-8MB per GIF for fast loading.
+-->
+<table>
+  <tr>
+    <td width="50%">
+      <p align="center"><b>Masonry Grid</b></p>
+      <img src="./assets/Masonry Grid.png" width="100%" alt="Masonry grid view"/>
+    </td>
+    <td width="50%">
+      <p align="center"><b>EXIF Filtering</b></p>
+      <img src="./assets/Exif Filtering.png" width="100%" alt="EXIF filter UI"/>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <p align="center"><b>Comparison Mode</b></p>
+      <img src="./assets/Comparison.png" width="100%" alt="Split-screen photo comparison"/>
+    </td>
+    <td width="50%">
+      <p align="center"><b>Polaroid Generator</b></p>
+      <img src="./assets/Polaroid.png" width="100%" alt="Polaroid export"/>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <p align="center"><b>Journey Map</b></p>
+      <img src="./assets/Journey Map.png" width="100%" alt="GPS journey map"/>
+    </td>
+    <td width="50%">
+      <p align="center"><b>CSV Export</b></p>
+      <img src="./assets/CSV Exp.png" width="100%" alt="CSV metadata export"/>
+    </td>
+  </tr>
+</table>
 
 ### UI & Layout Engineering
 - **Decoupled "Glassmorphism" Theming** — Structural CSS is fully separated from the visual theme layer via a modular `theme.css` system, with cinematic color grades (e.g. "Tungsten & Brass" for dark mode).
@@ -75,6 +118,15 @@ The model is a custom dual-head architecture (`ExifGridDualHead`) built in PyTor
 > - There's a version mismatch between the ONNX export scripts (`opset_version=17` vs. `opset_version=14`), which may cause compatibility issues depending on the runtime.
 >
 > In short: the feature exists in the codebase and the vision behind it is real, but don't rely on its output yet. If you're an ML enthusiast interested in dataset scaling, PyTorch-to-ONNX pipelines, or browser-based inference, contributions here are especially welcome.
+
+<table>
+  <tr>
+    <td width="100%">
+      <p align="center"><b>AI Engine — Experimental Preview</b></p>
+      <img src="./assets/AI.png" width="100%" alt="AI engine experimental preview"/>
+    </td>
+  </tr>
+</table>
 
 ---
 

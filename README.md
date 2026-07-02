@@ -4,15 +4,10 @@
 
 Full-stack monorepo — React + Vite + Express.
 
-<!-- 🖼️ HERO SCREENSHOT/GIF: Wide shot of the masonry grid, dark mode, 20+ photos loaded, EXIF pills visible. This is the first thing people see — make it count. -->
-<table>
-  <tr>
-    <td width="100%">
-      <p align="center"><b>Hero GIF</b></p>
-      <video src="./assets/Hero_Section.mp4" width="100%" alt="HERO GIF"/>
-    </td>
-  </tr>
-</table>
+
+<video src="https://github.com/user-attachments/assets/6215def3-1bdb-4151-8b39-4ca1312b842e" controls autoplay loop muted width="100%"></video>
+
+
 ---
 
 ## Table of Contents

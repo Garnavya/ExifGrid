@@ -14,3 +14,39 @@ footer {
   color: var(--text-dim);
   letter-spacing: 0.08em;
 }
+
+/* client/src/css/footer.css */
+
+.privacy-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-left: auto;
+  margin-right: 16px;
+  transition: opacity 0.2s;
+}
+
+.privacy-toggle-wrap:hover {
+  opacity: 0.8;
+}
+
+.privacy-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+/* Catchy Neon Cyan for Opted-In */
+.privacy-indicator.active {
+  background-color: #00ffcc;
+  box-shadow: 0 0 10px #00ffcc, 0 0 4px #00ffcc;
+}
+
+/* Muted Red for Opted-Out */
+.privacy-indicator.inactive {
+  background-color: var(--red);
+  box-shadow: none;
+}

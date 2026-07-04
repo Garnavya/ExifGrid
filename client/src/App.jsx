@@ -1,3 +1,5 @@
+// client/src/App.jsx
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Header from './components/Header.jsx';
 import StatsBar from './components/StatsBar.jsx';
@@ -10,8 +12,10 @@ import { createBatchPolaroidZip } from './utils/batchProcessor.js';
 import BatchSettingsModal from './components/BatchSettingsModal.jsx';
 import { usePhotoFilters } from './hooks/usePhotoFilters.js';
 import FilterMatrix from './components/FilterMatrix.jsx';
-import InsightsDashboard from './components/InsightsDashboard.jsx'; 
+import InsightsDashboard from './components/InsightsDashboard.jsx';
 import GridLoader from './components/GridLoader.jsx';
+import ConsentModal from './components/ConsentModal.jsx';               // Initial Launch Popup
+import PrivacySettingsModal from './components/PrivacySettingsModal.jsx'; // Footer Settings Modal
 import { ingestPhotoMeta, createPhotoId } from './utils/exifReader.js';
 import { computeStats } from './utils/stats.js';
 import { exportToCSV } from './utils/csvExport.js';
@@ -21,104 +25,106 @@ export default function App() {
   const [photos, setPhotos] = useState([]);
   const [isLight, setIsLight] = useState(false);
   const [activePhotoId, setActivePhotoId] = useState(null);
-  
-  // The new View Mode State ('gallery' or 'map')
   const [viewMode, setViewMode] = useState('gallery');
-
   const [gridProgress, setGridProgress] = useState({ active: false, percent: 0 });
-
   const fileInputRef = useRef(null);
-  const syncTimerRef = useRef(null);
-
+  
   const hasPhotos = photos.length > 0;
   const stats = useMemo(() => computeStats(photos), [photos]);
   const photoIds = useMemo(() => photos.map((p) => p.id), [photos]);
   const activePhoto = photos.find((p) => p.id === activePhotoId) || null;
+  
+  const [comparisonIds, setComparisonIds] = useState([]);
+  const [isZipping, setIsZipping] = useState(false);
+  const [zipProgress, setZipProgress] = useState(0);
+  const [showBatchModal, setShowBatchModal] = useState(false);
+  const [showInsights, setShowInsights] = useState(false);
+
+  // --- Telemetry & Privacy State ---
+  const [showConsent, setShowConsent] = useState(false);
+  const [showPrivacySettings, setShowPrivacySettings] = useState(false);
+  const [isOptedIn, setIsOptedIn] = useState(false);
+
+  // Check for consent on initial load
+  useEffect(() => {
+    const consent = localStorage.getItem('exifgrid_telemetry_consent');
+    if (!consent) {
+      setShowConsent(true); // Show popup on first visit
+    } else {
+      setIsOptedIn(consent === 'granted');
+    }
+  }, []); // Empty array ensures this runs exactly once
+
+    useEffect(() => {
+    document.documentElement.classList.toggle('light-theme', isLight);
+  }, [isLight]);
+
+  // Handlers for privacy state
+  const handleConsentChoice = (granted) => {
+    localStorage.setItem('exifgrid_telemetry_consent', granted ? 'granted' : 'denied');
+    setIsOptedIn(granted);
+    setShowConsent(false);
+  };
+
+  const handleToggleTelemetry = () => {
+    const newState = !isOptedIn;
+    localStorage.setItem('exifgrid_telemetry_consent', newState ? 'granted' : 'denied');
+    setIsOptedIn(newState);
+  };
 
   const handleExportCSV = () => {
       exportToCSV(photos);
       trackAction('csv_export'); 
   };
 
-  const [comparisonIds, setComparisonIds] = useState([]);
-
-  const [isZipping, setIsZipping] = useState(false);
-  const [zipProgress, setZipProgress] = useState(0);
-  const [showBatchModal, setShowBatchModal] = useState(false);
-  
-  const [showInsights, setShowInsights] = useState(false); // 2. ADDED STATE
-
-  useEffect(() => { document.documentElement.classList.toggle('light-theme', isLight); }, [isLight]);
-
   const handleOpenBatchMenu = useCallback(() => {
     if (photos.length > 0) setShowBatchModal(true);
   }, [photos.length]);
 
-  const { 
-    filters, 
-    updateFilter, 
-    clearFilters, 
-    filteredPhotos, 
-    availableCameras,
-    availableFocals,      
-    availableApertures,   
-    isFiltering 
-  } = usePhotoFilters(photos);
+  const { filters, updateFilter, clearFilters, filteredPhotos, availableCameras, availableFocals, availableApertures, isFiltering } = usePhotoFilters(photos);
 
-const handleFiles = useCallback(async (fileList) => {
+  const handleFiles = useCallback(async (fileList) => {
     if (!fileList?.length) return;
     const incoming = Array.from(fileList).filter((f) => f.type.startsWith('image/'));
     if (!incoming.length) return;
 
     setGridProgress({ active: true, percent: 5 });
-
+    
     const placeholders = incoming.map((file) => ({
       id: createPhotoId(), file, src: URL.createObjectURL(file), status: 'loading', exif: {}, name: file.name, size: file.size
     }));
-
+    
     setPhotos((prev) => [...prev, ...placeholders]);
     if (fileInputRef.current) fileInputRef.current.value = '';
-
+    
     let processed = 0;
-    const batchApertures = []; // 1. Create a temporary array to hold the apertures
-
+    
     for (const placeholder of placeholders) {
       try {
         const meta = await ingestPhotoMeta(placeholder.file, placeholder.src);
         setPhotos((prev) => prev.map((p) => (p.id === placeholder.id ? { ...p, ...meta } : p)));
-        
-        // 2. Extract the aperture if it exists and push it to our array
-        if (meta.exif && meta.exif.FNumber) {
-           batchApertures.push(Number(meta.exif.FNumber));
-        }
-
       } catch {
         setPhotos((prev) => prev.map((p) => (p.id === placeholder.id ? { ...p, status: 'ready' } : p)));
       }
-
       processed++;
       setGridProgress({ active: true, percent: 5 + (processed / placeholders.length) * 95 });
     }
 
-    // 3. Send the single tracking payload with the total count and the array of apertures!
-    trackAction('image_drop', { count: placeholders.length, apertures: batchApertures });
-
+    // Safely track the drop if they opted in
+    trackAction('image_drop', { count: placeholders.length });
+    
     setTimeout(() => setGridProgress(prev => ({ ...prev, active: false })), 400);
     setTimeout(() => setGridProgress({ active: false, percent: 0 }), 700);
   }, []);
 
   const handleRemovePhoto = useCallback((id) => {
-    // Jump to 30% to indicate a layout shift is starting
     setGridProgress({ active: true, percent: 30 });
-
     setPhotos((prev) => {
       const target = prev.find((p) => p.id === id);
       if (target?.src) URL.revokeObjectURL(target.src);
       return prev.filter((p) => p.id !== id);
     });
     setActivePhotoId((current) => (current === id ? null : current));
-
-    // Simulate the masonry re-arrangement snapping into place
     setTimeout(() => {
       setGridProgress({ active: true, percent: 100 });
       setTimeout(() => setGridProgress(prev => ({ ...prev, active: false })), 300);
@@ -128,35 +134,29 @@ const handleFiles = useCallback(async (fileList) => {
 
   const handleToggleCompare = useCallback((id) => {
     setComparisonIds((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter(compId => compId !== id);
-      }
-      if (prev.length >= 2) {
-        return [prev[1], id]; 
-      }
+      if (prev.includes(id)) return prev.filter(compId => compId !== id);
+      if (prev.length >= 2) return [prev[1], id];
       return [...prev, id];
     });
   }, []);
 
   const handleClearCompare = useCallback(() => setComparisonIds([]), []);
-
+  
   const handleClearAll = useCallback(() => {
     setPhotos((prev) => { prev.forEach((p) => URL.revokeObjectURL(p.src)); return []; });
     setActivePhotoId(null);
-    setComparisonIds([]); 
-    setViewMode('gallery'); 
+    setComparisonIds([]);
+    setViewMode('gallery');
   }, []);
 
   const executeBatchDownload = useCallback(async (settings) => {
     setShowBatchModal(false);
     setIsZipping(true);
     setZipProgress(0);
-
     try {
       await createBatchPolaroidZip(photos, settings, (progress) => {
         setZipProgress(progress);
       });
-      // Tell the telemetry EXACTLY how many polaroids were just packed into the zip
       trackAction('polaroid_gen', { count: photos.length });
     } catch (error) {
       console.error("Batch processing failed", error);
@@ -168,8 +168,20 @@ const handleFiles = useCallback(async (fileList) => {
 
   return (
     <>
-      {/* 1. MOUNT THE LOADER AT THE VERY TOP */}
       <GridLoader active={gridProgress.active} percent={gridProgress.percent} />
+      
+      {/* 1. The Initial Consent Popup */}
+      {showConsent && <ConsentModal onChoice={handleConsentChoice} />}
+      
+      {/* 2. The Persistent Privacy Settings Modal */}
+      {showPrivacySettings && (
+        <PrivacySettingsModal 
+          isOptedIn={isOptedIn} 
+          onToggle={handleToggleTelemetry} 
+          onClose={() => setShowPrivacySettings(false)} 
+        />
+      )}
+
       <Header
         isLight={isLight}
         hasPhotos={hasPhotos}
@@ -186,16 +198,15 @@ const handleFiles = useCallback(async (fileList) => {
       />
       
       <StatsBar count={stats.count} exifCount={stats.exifCount} cameraLabel={stats.cameraLabel} visible={hasPhotos} />
-
-      {/* Mount the Filter Matrix if photos exist */}
+      
       {hasPhotos && (
         <FilterMatrix 
           filters={filters}
           updateFilter={updateFilter}
           clearFilters={clearFilters}
           availableCameras={availableCameras}
-          availableFocals={availableFocals}         
-          availableApertures={availableApertures}   
+          availableFocals={availableFocals}
+          availableApertures={availableApertures}
           isFiltering={isFiltering}
           totalVisible={filteredPhotos.length}
         />
@@ -203,46 +214,17 @@ const handleFiles = useCallback(async (fileList) => {
       
       {!hasPhotos && <DropZone onFilesSelected={handleFiles} onBrowse={() => fileInputRef.current?.click()} />}
       
-      {/* Gallery & Comparison Feed */}
       {hasPhotos && (
         <div style={{ display: viewMode === 'gallery' ? 'block' : 'none' }}>
-          
-          <ComparisonFeed 
-            photos={photos} 
-            comparisonIds={comparisonIds} 
-            onClear={handleClearCompare} 
-            onRemove={handleToggleCompare} 
-          />
-
-          <Gallery 
-            photos={filteredPhotos} 
-            onOpenPhoto={setActivePhotoId} 
-            onRemovePhoto={handleRemovePhoto} 
-            comparisonIds={comparisonIds}
-            onToggleCompare={handleToggleCompare}
-          />
+          <ComparisonFeed photos={photos} comparisonIds={comparisonIds} onClear={handleClearCompare} onRemove={handleToggleCompare} />
+          <Gallery photos={filteredPhotos} onOpenPhoto={setActivePhotoId} onRemovePhoto={handleRemovePhoto} comparisonIds={comparisonIds} onToggleCompare={handleToggleCompare} />
         </div>
       )}
       
-      {/* Map View */}
-      {hasPhotos && viewMode === 'map' && (
-        <JourneyMap photos={filteredPhotos} />
-      )}
+      {hasPhotos && viewMode === 'map' && <JourneyMap photos={filteredPhotos} />}
+      {showInsights && <InsightsDashboard onClose={() => setShowInsights(false)} />}
+      {showBatchModal && <BatchSettingsModal onCancel={() => setShowBatchModal(false)} onConfirm={executeBatchDownload} />}
       
-      {/* 3. ADDED INSIGHTS COMPONENT HERE */}
-      {showInsights && (
-        <InsightsDashboard onClose={() => setShowInsights(false)} />
-      )}
-
-      {/* The Batch Settings Modal */}
-      {showBatchModal && (
-        <BatchSettingsModal 
-          onCancel={() => setShowBatchModal(false)}
-          onConfirm={executeBatchDownload}
-        />
-      )}
-      
-      {/* The Zipping Loading Overlay */}
       {isZipping && (
         <div className="zip-progress-overlay">
           <div className="zip-progress-box">
@@ -256,11 +238,20 @@ const handleFiles = useCallback(async (fileList) => {
         </div>
       )}
       
-      {/* Lightbox */}
       <Lightbox photo={activePhoto} photoIds={photoIds} onClose={() => setActivePhotoId(null)} onNavigate={setActivePhotoId} />
       
       <footer>
-        <span className="footer-text">ExifGrid — all processing is local. Zero bytes leave your device.</span>
+        <span className="footer-text">ExifGrid processes everything locally. Only anonymous image counts are tracked (if opted in).</span>
+        
+        {/* 3. The Footer Toggle with Neon Cyan Indicator */}
+        <div className="privacy-toggle-wrap" onClick={() => setShowPrivacySettings(true)}>
+          <span className="footer-text" style={{ textDecoration: 'underline' }}>Privacy Settings</span>
+          <span 
+            className={`privacy-indicator ${isOptedIn ? 'active' : 'inactive'}`}
+            title={isOptedIn ? "Telemetry Active" : "Telemetry Disabled"}
+          ></span>
+        </div>
+        
         <span className="footer-text">v3.0</span>
       </footer>
     </>

@@ -1,18 +1,21 @@
 let imageQueue = 0;
 let batchTimer = null;
 
-export function trackAction(type, data = null) {
-  // 1. Opt-out check (Reads from localStorage, defaults to false)
-  const isOptedOut = localStorage.getItem('telemetry_opt_out') === 'true';
-  if (isOptedOut) return;
+export function trackAction(action, data = {}) {
+  // 1. Check for explicit user consent
+  const consent = localStorage.getItem('exifgrid_telemetry_consent');
+  if (consent !== 'granted') return; // Silently abort if no consent
 
-  // 2. Only track image drops
-  if (type === 'image_drop' && data && typeof data.count === 'number') {
-    imageQueue += data.count;
-    
-    // Debounce the network request for 3 seconds to batch rapid drag-and-drops
-    if (batchTimer) clearTimeout(batchTimer);
-    batchTimer = setTimeout(sendBatchToServer, 3000);
+  // 2. Only process image drops
+  if (action === 'image_drop' && data.count) {
+    fetch('/api/telemetry', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ images: data.count })
+    }).catch(err => {
+      // Fail silently on the client to avoid disrupting UX
+      console.error('Telemetry error:', err);
+    });
   }
 }
 

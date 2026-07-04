@@ -2,13 +2,14 @@ import { formatAperture, formatShutter, formatExifDate } from './formatters.js';
 
 /**
  * Generates and downloads a CSV file containing metadata for all loaded photos.
- * * @param {Array} photos - The array of photo objects currently in state.
+ *
+ * @param {Array} photos - The array of photo objects currently in state.
  */
 export function exportToCSV(photos) {
   if (!photos || photos.length === 0) return;
 
   const headers = [
-    'Filename', 'Size (Bytes)', 'Width', 'Height',
+    'Original Name', 'Relative Path', 'Size (Bytes)', 'Width', 'Height',
     'Make', 'Model', 'Lens',
     'Aperture', 'Shutter Speed', 'ISO', 'Focal Length',
     'Date Taken', 'Latitude', 'Longitude'
@@ -16,8 +17,13 @@ export function exportToCSV(photos) {
 
   const rows = photos.map((photo) => {
     const e = photo.exif || {};
+    
+    // Attempt to grab the relative folder path, fallback to just the file name
+    const relativePath = photo.file?.webkitRelativePath || photo.name;
+
     return [
       photo.name,
+      relativePath,
       photo.size,
       photo.naturalW,
       photo.naturalH,
@@ -33,7 +39,14 @@ export function exportToCSV(photos) {
       e.longitude !== undefined ? e.longitude.toFixed(5) : 'N/A'
     ]
       // Wrap each cell in quotes and escape internal quotes to prevent CSV breakage
-      .map((val) => `"${String(val).replace(/"/g, '""')}"`)
+      .map((val) => {
+        const strVal = String(val).replace(/"/g, '""');
+        // Prevent CSV Injection by prefixing dangerous characters with a single quote
+        if (/^[=+\-@]/.test(strVal)) {
+          return `"'${strVal}"`;
+        }
+        return `"${strVal}"`;
+      })
       .join(',');
   });
 
@@ -46,7 +59,7 @@ export function exportToCSV(photos) {
   link.download = `exifgrid_metadata_${new Date().getTime()}.csv`;
   document.body.appendChild(link);
   link.click();
-  
+
   // Cleanup
   document.body.removeChild(link);
   URL.revokeObjectURL(url);

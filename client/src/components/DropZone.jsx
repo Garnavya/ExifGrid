@@ -1,7 +1,27 @@
 import React, { useState } from 'react';
 
+// Recursive helper to traverse directories and extract files
+async function getFilesFromEntry(entry) {
+  if (entry.isFile) {
+    return new Promise((resolve) => {
+      entry.file((file) => resolve(file));
+    });
+  } else if (entry.isDirectory) {
+    const dirReader = entry.createReader();
+    return new Promise((resolve) => {
+      // readEntries reads a batch of files in the directory
+      dirReader.readEntries(async (entries) => {
+        const promises = entries.map(getFilesFromEntry);
+        const filesArrays = await Promise.all(promises);
+        // Flatten the nested arrays into a single array of files
+        resolve(filesArrays.flat());
+      });
+    });
+  }
+  return [];
+}
+
 export default function DropZone({ onFilesSelected, onBrowse }) {
-  // 1. Safe React state for hover tracking
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleDragOver = (e) => {
@@ -14,19 +34,38 @@ export default function DropZone({ onFilesSelected, onBrowse }) {
     setIsDragOver(false);
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault();
     setIsDragOver(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+
+    // Modern API: Supports folder traversal
+    if (e.dataTransfer.items) {
+      const promises = [];
+      for (let i = 0; i < e.dataTransfer.items.length; i++) {
+        const item = e.dataTransfer.items[i];
+        if (item.kind === 'file') {
+          const entry = item.webkitGetAsEntry();
+          if (entry) {
+            promises.push(getFilesFromEntry(entry));
+          }
+        }
+      }
+      
+      const fileArrays = await Promise.all(promises);
+      const allFiles = fileArrays.flat();
+      
+      if (allFiles.length > 0) {
+        onFilesSelected(allFiles);
+      }
+    } 
+    // Fallback for older browsers
+    else if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       onFilesSelected(e.dataTransfer.files);
     }
   };
 
   return (
     <div id="drop-zone-wrapper">
-      {/* 1. The new "dead space" wrapper (No clicks or drag events here!) */}
-      
-      {/* 2. Your original drop-zone, now acting as the true interactive core */}
       <div 
         id="drop-zone"
         onClick={onBrowse}
@@ -36,8 +75,8 @@ export default function DropZone({ onFilesSelected, onBrowse }) {
         className={isDragOver ? 'drag-over' : ''}
       >
         <div className="drop-inner">
-          <div className="drop-icon">📂</div>
-          <h3 className="drop-title">Drop photos here</h3>
+          <div className="drop-icon">📁</div>
+          <h3 className="drop-title">Drop photos or folders here</h3>
           <p className="drop-sub">or click to browse your files</p>
           <span className="drop-accent">Supports JPG, PNG, WEBP</span>
           <div className="drop-hints">

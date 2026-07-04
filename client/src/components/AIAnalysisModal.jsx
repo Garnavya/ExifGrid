@@ -11,6 +11,9 @@ const CONNECTIONS = [
   [11, 12]          // Hips
 ];
 
+// Initialize the AI worker ONCE as a singleton
+const aiWorker = new Worker(new URL('../utils/onnxWorker.js', import.meta.url), { type: 'module' });
+
 export default function AIAnalysisModal({ imageSrc, onClose }) {
   const [status, setStatus] = useState('idle'); // 'idle' | 'processing' | 'success' | 'error'
   const [advice, setAdvice] = useState([]);
@@ -21,10 +24,8 @@ export default function AIAnalysisModal({ imageSrc, onClose }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    // 1. Initialize the Web Worker safely
-    workerRef.current = new Worker(new URL('../utils/onnxWorker.js', import.meta.url), { type: 'module' });
-
-    workerRef.current.onmessage = (event) => {
+    // 1. Attach the listener to the shared worker
+    aiWorker.onmessage = (event) => {
       const data = event.data;
       
       if (data.status === 'loading' || data.status === 'processing') {
@@ -32,12 +33,8 @@ export default function AIAnalysisModal({ imageSrc, onClose }) {
         setStatusMessage(data.message);
       } else if (data.status === 'success') {
         setStatus('success');
-        
-        // Translate raw math into human advice
         const generatedAdvice = generateAdvice(data.pose, data.lighting);
         setAdvice(generatedAdvice);
-        
-        // Draw the skeleton overlay
         drawSkeleton(data.pose);
       } else if (data.status === 'error') {
         setStatus('error');
@@ -51,14 +48,13 @@ export default function AIAnalysisModal({ imageSrc, onClose }) {
     img.src = imageSrc;
     img.onload = async () => {
       setStatus('processing');
-      // Create a bitmap for the worker to process natively
       const bitmap = await createImageBitmap(img);
-      workerRef.current.postMessage({ action: 'analyze', imageBitmap: bitmap });
+      aiWorker.postMessage({ action: 'analyze', imageBitmap: bitmap });
     };
 
-    // Cleanup worker when modal closes
+    // 3. Cleanup: Clear the handler, but DO NOT terminate the worker
     return () => {
-      if (workerRef.current) workerRef.current.terminate();
+      aiWorker.onmessage = null;
     };
   }, [imageSrc]);
 

@@ -27,26 +27,6 @@ const globalStatsSchema = new mongoose.Schema({
 
 const GlobalStats = mongoose.model('GlobalStats', globalStatsSchema);
 
-app.post('/api/telemetry', async (req, res) => {
-  const count = parseInt(req.body.count, 10);
-  
-  if (isNaN(count) || count <= 0) {
-    return res.status(400).send();
-  }
-
-  try {
-    await GlobalStats.findOneAndUpdate(
-      { doc_id: 'exifgrid_master' },
-      { $inc: { total_images: count } },
-      { upsert: true, new: true }
-    );
-    res.status(204).send();
-  } catch (error) {
-    console.error("Telemetry save failed", error);
-    res.status(500).send();
-  }
-});
-
 // Remove ALL routes for /api/settings/sync below this point
 
 // --- Telemetry Routes ---

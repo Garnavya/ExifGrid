@@ -12,7 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
-app.use(express.json({ limit: '32kb' }));
+app.use(express.json({ limit: '50kb' }));
 
 // --- MongoDB Connection ---
 mongoose.connect(process.env.MONGODB_URI)

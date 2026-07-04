@@ -60,13 +60,27 @@ export default defineConfig({
     },
   },
   
-  // ADD THESE TWO BLOCKS:
+  // ADD THIS TO FORCE VITE TO IGNORE BACKEND MODULES
   build: {
     rollupOptions: {
-      external: ['mongoose']
+      external: [
+        'mongoose', 
+        'mongodb', 
+        'crypto', 
+        'fs', 
+        'net', 
+        'tls', 
+        'dns', 
+        'stream', 
+        'util', 
+        'os', 
+        'path', 
+        'events', 
+        'zlib'
+      ]
     }
   },
   optimizeDeps: {
-    exclude: ['onnxruntime-web', 'mongoose']
+    exclude: ['onnxruntime-web', 'mongoose', 'mongodb']
   }
 });

@@ -59,7 +59,14 @@ export default defineConfig({
       },
     },
   },
-  optimizeDeps: {
-    exclude: ['onnxruntime-web']
+  
+  // ADD THESE TWO BLOCKS:
+  build: {
+    rollupOptions: {
+      external: ['mongoose']
+    }
   },
+  optimizeDeps: {
+    exclude: ['onnxruntime-web', 'mongoose']
+  }
 });

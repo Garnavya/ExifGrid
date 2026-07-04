@@ -222,7 +222,7 @@ export default function App() {
       )}
       
       {hasPhotos && viewMode === 'map' && <JourneyMap photos={filteredPhotos} />}
-      {showInsights && <InsightsDashboard onClose={() => setShowInsights(false)} />}
+      {showInsights && <InsightsDashboard photos={photos} onClose={() => setShowInsights(false)} />}
       {showBatchModal && <BatchSettingsModal onCancel={() => setShowBatchModal(false)} onConfirm={executeBatchDownload} />}
       
       {isZipping && (

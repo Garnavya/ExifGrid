@@ -12,3 +12,18 @@ export function trackAction(action, data = {}) {
     });
   }
 }
+
+export async function fetchGlobalInsights() {
+  try {
+    const response = await fetch('/api/telemetry');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch global insights:', error);
+    // Return a safe fallback so the dashboard doesn't crash
+    return { images: 0 }; 
+  }
+}

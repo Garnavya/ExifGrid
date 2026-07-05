@@ -241,19 +241,34 @@ export default function App() {
       <Lightbox photo={activePhoto} photoIds={photoIds} onClose={() => setActivePhotoId(null)} onNavigate={setActivePhotoId} />
       
       <footer>
-        <span className="footer-text">ExifGrid processes everything locally. Only anonymous image counts are tracked (if opted in).</span>
-        
-        {/* 3. The Footer Toggle with Neon Cyan Indicator */}
-        <div className="privacy-toggle-wrap" onClick={() => setShowPrivacySettings(true)}>
-          <span className="footer-text" style={{ textDecoration: 'underline' }}>Privacy Settings</span>
-          <span 
-            className={`privacy-indicator ${isOptedIn ? 'active' : 'inactive'}`}
-            title={isOptedIn ? "Telemetry Active" : "Telemetry Disabled"}
-          ></span>
-        </div>
-        
-        <span className="footer-text">v3.0</span>
-      </footer>
+  <span className="footer-text">ExifGrid processes everything locally. Only anonymous image counts are tracked (if opted in).</span>
+  
+  {/* Dynamic Product Hunt Badge */}
+<a 
+  href="https://www.producthunt.com/products/exifgrid?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-exifgrid" 
+  target="_blank" 
+  rel="noopener noreferrer"
+  className="ph-badge"
+>
+  <img 
+    alt="ExifGrid - Batch EXIF viewer with journey maps & Polaroid export | Product Hunt" 
+    width="250" 
+    height="54" 
+    src={`https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1186358&theme=${isLight ? 'light' : 'dark'}&t=1783192071873`} 
+  />
+</a>
+
+  {/* The Footer Toggle with Neon Cyan Indicator */}
+  <div className="privacy-toggle-wrap" onClick={() => setShowPrivacySettings(true)}>
+    <span className="footer-text" style={{ textDecoration: 'underline' }}>Privacy Settings</span>
+    <span 
+      className={`privacy-indicator ${isOptedIn ? 'active' : 'inactive'}`}
+      title={isOptedIn ? "Telemetry Active" : "Telemetry Disabled"}
+    ></span>
+  </div>
+  
+  <span className="footer-text">v3.0</span>
+</footer>
     </>
   );
 }

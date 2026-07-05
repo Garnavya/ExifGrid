@@ -1,78 +1,52 @@
-// client/src/App.jsx
-
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useRef } from 'react';
 import Header from './components/Header.jsx';
 import StatsBar from './components/StatsBar.jsx';
 import DropZone from './components/DropZone.jsx';
-import ComparisonFeed from './components/ComparisonFeed.jsx';
-import Gallery from './components/Gallery.jsx';
 import Lightbox from './components/Lightbox.jsx';
-import JourneyMap from './components/JourneyMap.jsx';
-import { createBatchPolaroidZip } from './utils/batchProcessor.js';
 import BatchSettingsModal from './components/BatchSettingsModal.jsx';
-import { usePhotoFilters } from './hooks/usePhotoFilters.js';
 import FilterMatrix from './components/FilterMatrix.jsx';
 import InsightsDashboard from './components/InsightsDashboard.jsx';
 import GridLoader from './components/GridLoader.jsx';
-import ConsentModal from './components/ConsentModal.jsx';               // Initial Launch Popup
-import PrivacySettingsModal from './components/PrivacySettingsModal.jsx'; // Footer Settings Modal
-import { ingestPhotoMeta, createPhotoId } from './utils/exifReader.js';
-import { computeStats } from './utils/stats.js';
+import ConsentModal from './components/ConsentModal.jsx';
+import PrivacySettingsModal from './components/PrivacySettingsModal.jsx';
+import MainWorkspace from './components/MainWorkspace.jsx';
+
+import { UIProvider, useUI } from './context/UIContext.jsx';
+import { TelemetryProvider, useTelemetry } from './context/TelemetryContext.jsx';
+import { PhotoProvider, usePhotos } from './context/PhotoContext.jsx';
+import { usePhotoFilters } from './hooks/usePhotoFilters.js';
 import { useDownload } from './hooks/useDownload.js';
+
+import { createBatchPolaroidZip } from './utils/batchProcessor.js';
+import { ingestPhotoMeta, createPhotoId } from './utils/exifReader.js';
 import { generateCSVBlob } from './utils/csvExport.js';
 import { trackAction } from './api/telemetry.js';
 
-export default function App() {
-  const [photos, setPhotos] = useState([]);
-  const [isLight, setIsLight] = useState(false);
-  const [activePhotoId, setActivePhotoId] = useState(null);
-  const [viewMode, setViewMode] = useState('gallery');
-  const [gridProgress, setGridProgress] = useState({ active: false, percent: 0 });
-  const fileInputRef = useRef(null);
-  
-  const hasPhotos = photos.length > 0;
-  const stats = useMemo(() => computeStats(photos), [photos]);
-  const photoIds = useMemo(() => photos.map((p) => p.id), [photos]);
-  const activePhoto = photos.find((p) => p.id === activePhotoId) || null;
-  
-  const [comparisonIds, setComparisonIds] = useState([]);
-  const [isZipping, setIsZipping] = useState(false);
-  const [zipProgress, setZipProgress] = useState(0);
+// --- Inner Application Logic ---
+function ExifGridMain() {
+  const { 
+    isLight, setIsLight, viewMode, setViewMode, gridProgress, setGridProgress,
+    showBatchModal, setShowBatchModal, showInsights, setShowInsights,
+    isZipping, setIsZipping, zipProgress, setZipProgress 
+  } = useUI();
+
+  const { 
+    showConsent, showPrivacySettings, isOptedIn, 
+    setShowPrivacySettings, handleConsentChoice, handleToggleTelemetry 
+  } = useTelemetry();
+
+  const { 
+    photos, setPhotos, activePhotoId, setActivePhotoId, 
+    hasPhotos, stats, photoIds, activePhoto, handleClearAll 
+  } = usePhotos();
+
   const { downloadFile } = useDownload();
-  const [showBatchModal, setShowBatchModal] = useState(false);
-  const [showInsights, setShowInsights] = useState(false);
+  const fileInputRef = useRef(null);
 
-  // --- Telemetry & Privacy State ---
-  const [showConsent, setShowConsent] = useState(false);
-  const [showPrivacySettings, setShowPrivacySettings] = useState(false);
-  const [isOptedIn, setIsOptedIn] = useState(false);
-
-  // Check for consent on initial load
-  useEffect(() => {
-    const consent = localStorage.getItem('exifgrid_telemetry_consent');
-    if (!consent) {
-      setShowConsent(true); // Show popup on first visit
-    } else {
-      setIsOptedIn(consent === 'granted');
-    }
-  }, []); // Empty array ensures this runs exactly once
-
-    useEffect(() => {
-    document.documentElement.classList.toggle('light-theme', isLight);
-  }, [isLight]);
-
-  // Handlers for privacy state
-  const handleConsentChoice = (granted) => {
-    localStorage.setItem('exifgrid_telemetry_consent', granted ? 'granted' : 'denied');
-    setIsOptedIn(granted);
-    setShowConsent(false);
-  };
-
-  const handleToggleTelemetry = () => {
-    const newState = !isOptedIn;
-    localStorage.setItem('exifgrid_telemetry_consent', newState ? 'granted' : 'denied');
-    setIsOptedIn(newState);
-  };
+  const { 
+    filters, updateFilter, clearFilters, filteredPhotos, 
+    availableCameras, availableFocals, availableApertures, isFiltering 
+  } = usePhotoFilters(photos);
 
   const handleExportCSV = () => {
     const csvData = generateCSVBlob(photos);
@@ -82,17 +56,11 @@ export default function App() {
     }
   };
 
-  const handleOpenBatchMenu = useCallback(() => {
-    if (photos.length > 0) setShowBatchModal(true);
-  }, [photos.length]);
-
-  const { filters, updateFilter, clearFilters, filteredPhotos, availableCameras, availableFocals, availableApertures, isFiltering } = usePhotoFilters(photos);
-
   const handleFiles = useCallback(async (fileList) => {
     if (!fileList?.length) return;
     const incoming = Array.from(fileList).filter((f) => f.type.startsWith('image/'));
     if (!incoming.length) return;
-
+    
     setGridProgress({ active: true, percent: 5 });
     
     const placeholders = incoming.map((file) => ({
@@ -115,12 +83,10 @@ export default function App() {
       setGridProgress({ active: true, percent: 5 + (processed / placeholders.length) * 95 });
     }
 
-    // Safely track the drop if they opted in
     trackAction('image_drop', { count: placeholders.length });
-    
     setTimeout(() => setGridProgress(prev => ({ ...prev, active: false })), 400);
     setTimeout(() => setGridProgress({ active: false, percent: 0 }), 700);
-  }, []);
+  }, [setPhotos, setGridProgress]);
 
   const handleRemovePhoto = useCallback((id) => {
     setGridProgress({ active: true, percent: 30 });
@@ -135,39 +101,17 @@ export default function App() {
       setTimeout(() => setGridProgress(prev => ({ ...prev, active: false })), 300);
       setTimeout(() => setGridProgress({ active: false, percent: 0 }), 600);
     }, 50);
-  }, []);
-
-  const handleToggleCompare = useCallback((id) => {
-    setComparisonIds((prev) => {
-      if (prev.includes(id)) return prev.filter(compId => compId !== id);
-      if (prev.length >= 2) return [prev[1], id];
-      return [...prev, id];
-    });
-  }, []);
-
-  const handleClearCompare = useCallback(() => setComparisonIds([]), []);
-  
-  const handleClearAll = useCallback(() => {
-    setPhotos((prev) => { prev.forEach((p) => URL.revokeObjectURL(p.src)); return []; });
-    setActivePhotoId(null);
-    setComparisonIds([]);
-    setViewMode('gallery');
-  }, []);
+  }, [setPhotos, setActivePhotoId, setGridProgress]);
 
   const executeBatchDownload = useCallback(async (settings) => {
     setShowBatchModal(false);
     setIsZipping(true);
     setZipProgress(0);
     try {
-      const zipBlob = await createBatchPolaroidZip(photos, settings, (progress) => {
-        setZipProgress(progress);
-      });
-      
-      // Use the hook to download the returned blob
+      const zipBlob = await createBatchPolaroidZip(photos, settings, setZipProgress);
       if (zipBlob) {
         downloadFile(zipBlob, `ExifGrid_Polaroids_${new Date().getTime()}.zip`);
       }
-      
       trackAction('polaroid_gen', { count: photos.length });
     } catch (error) {
       console.error("Batch processing failed", error);
@@ -175,21 +119,19 @@ export default function App() {
       setIsZipping(false);
       setZipProgress(0);
     }
-  }, [photos, downloadFile]);
+  }, [photos, downloadFile, setShowBatchModal, setIsZipping, setZipProgress]);
 
   return (
     <>
       <GridLoader active={gridProgress.active} percent={gridProgress.percent} />
       
-      {/* 1. The Initial Consent Popup */}
       {showConsent && <ConsentModal onChoice={handleConsentChoice} />}
       
-      {/* 2. The Persistent Privacy Settings Modal */}
       {showPrivacySettings && (
         <PrivacySettingsModal 
-          isOptedIn={isOptedIn} 
-          onToggle={handleToggleTelemetry} 
-          onClose={() => setShowPrivacySettings(false)} 
+          isOptedIn={isOptedIn}
+          onToggle={handleToggleTelemetry}
+          onClose={() => setShowPrivacySettings(false)}
         />
       )}
 
@@ -200,7 +142,7 @@ export default function App() {
         onClearAll={handleClearAll}
         onAddPhotos={() => fileInputRef.current?.click()}
         onExportCSV={handleExportCSV}
-        onBatchDownload={handleOpenBatchMenu}
+        onBatchDownload={() => setShowBatchModal(true)}
         fileInputRef={fileInputRef}
         onFilesSelected={handleFiles}
         viewMode={viewMode}
@@ -212,27 +154,17 @@ export default function App() {
       
       {hasPhotos && (
         <FilterMatrix 
-          filters={filters}
-          updateFilter={updateFilter}
-          clearFilters={clearFilters}
-          availableCameras={availableCameras}
-          availableFocals={availableFocals}
-          availableApertures={availableApertures}
-          isFiltering={isFiltering}
+          filters={filters} updateFilter={updateFilter} clearFilters={clearFilters}
+          availableCameras={availableCameras} availableFocals={availableFocals}
+          availableApertures={availableApertures} isFiltering={isFiltering}
           totalVisible={filteredPhotos.length}
         />
       )}
       
       {!hasPhotos && <DropZone onFilesSelected={handleFiles} onBrowse={() => fileInputRef.current?.click()} />}
       
-      {hasPhotos && (
-        <div style={{ display: viewMode === 'gallery' ? 'block' : 'none' }}>
-          <ComparisonFeed photos={photos} comparisonIds={comparisonIds} onClear={handleClearCompare} onRemove={handleToggleCompare} />
-          <Gallery photos={filteredPhotos} onOpenPhoto={setActivePhotoId} onRemovePhoto={handleRemovePhoto} comparisonIds={comparisonIds} onToggleCompare={handleToggleCompare} />
-        </div>
-      )}
+      {hasPhotos && <MainWorkspace filteredPhotos={filteredPhotos} handleRemovePhoto={handleRemovePhoto} />}
       
-      {hasPhotos && viewMode === 'map' && <JourneyMap photos={filteredPhotos} />}
       {showInsights && <InsightsDashboard photos={photos} onClose={() => setShowInsights(false)} />}
       {showBatchModal && <BatchSettingsModal onCancel={() => setShowBatchModal(false)} onConfirm={executeBatchDownload} />}
       
@@ -252,34 +184,26 @@ export default function App() {
       <Lightbox photo={activePhoto} photoIds={photoIds} onClose={() => setActivePhotoId(null)} onNavigate={setActivePhotoId} />
       
       <footer>
-  <span className="footer-text">ExifGrid processes everything locally. Only anonymous image counts are tracked (if opted in).</span>
-  
-  {/* Dynamic Product Hunt Badge */}
-<a 
-  href="https://www.producthunt.com/products/exifgrid?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-exifgrid" 
-  target="_blank" 
-  rel="noopener noreferrer"
-  className="ph-badge"
->
-  <img 
-    alt="ExifGrid - Batch EXIF viewer with journey maps & Polaroid export | Product Hunt" 
-    width="250" 
-    height="54" 
-    src={`https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1186358&theme=${isLight ? 'light' : 'dark'}&t=1783192071873`} 
-  />
-</a>
-
-  {/* The Footer Toggle with Neon Cyan Indicator */}
-  <div className="privacy-toggle-wrap" onClick={() => setShowPrivacySettings(true)}>
-    <span className="footer-text" style={{ textDecoration: 'underline' }}>Privacy Settings</span>
-    <span 
-      className={`privacy-indicator ${isOptedIn ? 'active' : 'inactive'}`}
-      title={isOptedIn ? "Telemetry Active" : "Telemetry Disabled"}
-    ></span>
-  </div>
-  
-  <span className="footer-text">v3.0</span>
-</footer>
+        <span className="footer-text">ExifGrid processes everything locally. Only anonymous image counts are tracked (if opted in).</span>
+        <div className="privacy-toggle-wrap" onClick={() => setShowPrivacySettings(true)}>
+          <span className="footer-text" style={{ textDecoration: 'underline' }}>Privacy Settings</span>
+          <span className={`privacy-indicator ${isOptedIn ? 'active' : 'inactive'}`} title={isOptedIn ? "Telemetry Active" : "Telemetry Disabled"}></span>
+        </div>
+        <span className="footer-text">v3.0</span>
+      </footer>
     </>
+  );
+}
+
+// --- Outer Provider Wrapper ---
+export default function App() {
+  return (
+    <TelemetryProvider>
+      <UIProvider>
+        <PhotoProvider>
+          <ExifGridMain />
+        </PhotoProvider>
+      </UIProvider>
+    </TelemetryProvider>
   );
 }

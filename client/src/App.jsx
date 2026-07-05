@@ -18,7 +18,8 @@ import ConsentModal from './components/ConsentModal.jsx';               // Initi
 import PrivacySettingsModal from './components/PrivacySettingsModal.jsx'; // Footer Settings Modal
 import { ingestPhotoMeta, createPhotoId } from './utils/exifReader.js';
 import { computeStats } from './utils/stats.js';
-import { exportToCSV } from './utils/csvExport.js';
+import { useDownload } from './hooks/useDownload.js';
+import { generateCSVBlob } from './utils/csvExport.js';
 import { trackAction } from './api/telemetry.js';
 
 export default function App() {
@@ -37,6 +38,7 @@ export default function App() {
   const [comparisonIds, setComparisonIds] = useState([]);
   const [isZipping, setIsZipping] = useState(false);
   const [zipProgress, setZipProgress] = useState(0);
+  const { downloadFile } = useDownload();
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
 
@@ -73,8 +75,11 @@ export default function App() {
   };
 
   const handleExportCSV = () => {
-      exportToCSV(photos);
+    const csvData = generateCSVBlob(photos);
+    if (csvData) {
+      downloadFile(csvData.blob, csvData.filename);
       trackAction('csv_export'); 
+    }
   };
 
   const handleOpenBatchMenu = useCallback(() => {
@@ -154,9 +159,15 @@ export default function App() {
     setIsZipping(true);
     setZipProgress(0);
     try {
-      await createBatchPolaroidZip(photos, settings, (progress) => {
+      const zipBlob = await createBatchPolaroidZip(photos, settings, (progress) => {
         setZipProgress(progress);
       });
+      
+      // Use the hook to download the returned blob
+      if (zipBlob) {
+        downloadFile(zipBlob, `ExifGrid_Polaroids_${new Date().getTime()}.zip`);
+      }
+      
       trackAction('polaroid_gen', { count: photos.length });
     } catch (error) {
       console.error("Batch processing failed", error);
@@ -164,7 +175,7 @@ export default function App() {
       setIsZipping(false);
       setZipProgress(0);
     }
-  }, [photos]);
+  }, [photos, downloadFile]);
 
   return (
     <>

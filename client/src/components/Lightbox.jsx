@@ -4,7 +4,7 @@ import L from 'leaflet';
 import { formatAperture, formatBytes, formatExifDate, formatShutter } from '../utils/formatters.js';
 import { extractDominantColor, glowStyle } from '../utils/colorExtract.js';
 import { useKeyboardNav } from '../hooks/useKeyboardNav.js';
-import { stripExifData, downloadScrubbedImage } from '../utils/exifStripper.js';
+import { stripExifData } from '../utils/exifStripper.js';
 import { downloadPolaroid, generatePolaroidDataURL } from '../utils/polaroid.js'; 
 import AIAnalysisModal from './AIAnalysisModal';
 

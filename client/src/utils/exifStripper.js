@@ -47,25 +47,3 @@ export function stripExifData(file) {
     img.src = objectUrl;
   });
 }
-
-/**
- * Helper function to trigger a native browser download for the scrubbed file.
- */
-export function downloadScrubbedImage(blob, originalFileName) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  
-  // Format the new filename (e.g., photo.jpg -> photo_scrubbed.jpg)
-  const nameParts = originalFileName.split('.');
-  const ext = nameParts.pop();
-  const baseName = nameParts.join('.');
-  
-  a.href = url;
-  a.download = `${baseName}_scrubbed.${ext}`;
-  document.body.appendChild(a);
-  a.click();
-  
-  // Clean up the DOM and memory
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}

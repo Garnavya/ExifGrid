@@ -1,5 +1,5 @@
-// client/src/utils/exifReader.js
 import exifr from 'exifr';
+import { RawParser } from './rawParser.js';
 
 // Initialize the worker using Vite's native worker import syntax
 const exifWorker = new Worker(new URL('./exifWorker.js', import.meta.url), {
@@ -33,7 +33,9 @@ function parseExifInWorker(file) {
 
 export async function ingestPhotoMeta(file, src) {
   try {
-    // Run dimension checking and worker EXIF extraction in parallel
+    const isRawFile = await RawParser.isRAW(file);
+    
+    // In future iterations, swap exifr for a dedicated WASM raw parser here if needed[cite: 2]
     const [dims, exifData] = await Promise.all([
       loadImageDimensions(src),
       parseExifInWorker(file),
@@ -46,6 +48,7 @@ export async function ingestPhotoMeta(file, src) {
       naturalH: dims.naturalH,
       exif: exifData || {},
       status: 'ready',
+      isRaw: isRawFile
     };
   } catch (err) {
     return {
@@ -55,6 +58,7 @@ export async function ingestPhotoMeta(file, src) {
       naturalH: 0,
       exif: {},
       status: 'ready',
+      isRaw: false
     };
   }
 }

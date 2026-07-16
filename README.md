@@ -40,6 +40,10 @@ Checking basic camera metadata — aperture, shutter speed, ISO — across a bat
 - **Custom Polaroid Generator** — Canvas-based export of any photo as a vintage Polaroid, with customizable captions, typography (handwriting, typewriter, editorial fonts), and togglable EXIF captions. Supports batch export as a zipped archive.
 - **Privacy-Safe "Scrubbed" Export** — One-click download that strips all EXIF and GPS metadata via re-encoding through the Canvas/Blob pipeline, so images are safe to share on social media.
 - **CSV Metadata Export** — Export all extracted metadata from a batch into a structured spreadsheet.
+- **Professional Metadata Injection (IPTC/XMP Standard)**
+  Protect your work before exporting. Inject custom "Artist" and "Copyright" tags directly into the EXIF data of your batch. An "Advanced Mode" toggle unlocks professional fields like Image Title, Contact Info, Usage Terms, and Job Identifiers—ensuring compatibility with industry-standard software like Lightroom.
+- **Asset Protection & CMI Alerts**
+  ExifGrid actively detects existing Copyright Management Information (CMI) on uploaded batches. Protected assets are flagged with high-contrast UI badges in the Lightbox, complete with educational tooltips regarding DMCA 17 U.S.C. § 1202 compliance, and trigger a legal disclaimer toast upon upload.
 - **Interactive Journey Map** — For geotagged photos, plots GPS points on an interactive map and traces the route between them, powered by Leaflet.
 
 <!--

@@ -1,8 +1,9 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import Header from './components/Header.jsx';
 import StatsBar from './components/StatsBar.jsx';
 import DropZone from './components/DropZone.jsx';
 import Lightbox from './components/Lightbox.jsx';
+import CopyrightToast from './components/CopyrightToast.jsx';
 import BatchSettingsModal from './components/BatchSettingsModal.jsx';
 import FilterMatrix from './components/FilterMatrix.jsx';
 import InsightsDashboard from './components/InsightsDashboard.jsx';
@@ -10,7 +11,10 @@ import GridLoader from './components/GridLoader.jsx';
 import ConsentModal from './components/ConsentModal.jsx';
 import PrivacySettingsModal from './components/PrivacySettingsModal.jsx';
 import MainWorkspace from './components/MainWorkspace.jsx';
+import JSZip from 'jszip';
+import MetadataForm from './components/MetadataForm.jsx';
 
+import { injectCopyrightData } from './utils/exifInjector.js';
 import { UIProvider, useUI } from './context/UIContext.jsx';
 import { TelemetryProvider, useTelemetry } from './context/TelemetryContext.jsx';
 import { PhotoProvider, usePhotos } from './context/PhotoContext.jsx';
@@ -27,8 +31,11 @@ function ExifGridMain() {
   const { 
     isLight, setIsLight, viewMode, setViewMode, gridProgress, setGridProgress,
     showBatchModal, setShowBatchModal, showInsights, setShowInsights,
-    isZipping, setIsZipping, zipProgress, setZipProgress 
+    isZipping, setIsZipping, zipProgress, setZipProgress,
+    showMetadataModal, setShowMetadataModal
   } = useUI();
+
+  const [showCopyrightToast, setShowCopyrightToast] = useState(false);
 
   const { 
     showConsent, showPrivacySettings, isOptedIn, 
@@ -57,36 +64,52 @@ function ExifGridMain() {
   };
 
   const handleFiles = useCallback(async (fileList) => {
-    if (!fileList?.length) return;
-    const incoming = Array.from(fileList).filter((f) => f.type.startsWith('image/'));
-    if (!incoming.length) return;
-    
-    setGridProgress({ active: true, percent: 5 });
-    
-    const placeholders = incoming.map((file) => ({
-      id: createPhotoId(), file, src: URL.createObjectURL(file), status: 'loading', exif: {}, name: file.name, size: file.size
-    }));
-    
-    setPhotos((prev) => [...prev, ...placeholders]);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    
-    let processed = 0;
-    
-    for (const placeholder of placeholders) {
-      try {
-        const meta = await ingestPhotoMeta(placeholder.file, placeholder.src);
-        setPhotos((prev) => prev.map((p) => (p.id === placeholder.id ? { ...p, ...meta } : p)));
-      } catch {
-        setPhotos((prev) => prev.map((p) => (p.id === placeholder.id ? { ...p, status: 'ready' } : p)));
-      }
-      processed++;
-      setGridProgress({ active: true, percent: 5 + (processed / placeholders.length) * 95 });
-    }
+  if (!fileList?.length) return;
+  const incoming = Array.from(fileList).filter((f) => f.type.startsWith('image/'));
+  if (!incoming.length) return;
+  
+  setGridProgress({ active: true, percent: 5 });
+  
+  const placeholders = incoming.map((file) => ({
+    id: createPhotoId(), file, src: URL.createObjectURL(file), status: 'loading', exif: {}, name: file.name, size: file.size
+  }));
+  
+  setPhotos((prev) => [...prev, ...placeholders]);
+  if (fileInputRef.current) fileInputRef.current.value = '';
+  
+  let processed = 0;
+  const protectedUploads = []; // 1. Array to track protected files
+  
+  for (const placeholder of placeholders) {
+    try {
+      const meta = await ingestPhotoMeta(placeholder.file, placeholder.src);
+      setPhotos((prev) => prev.map((p) => (p.id === placeholder.id ? { ...p, ...meta } : p)));
 
-    trackAction('image_drop', { count: placeholders.length });
-    setTimeout(() => setGridProgress(prev => ({ ...prev, active: false })), 400);
-    setTimeout(() => setGridProgress({ active: false, percent: 0 }), 700);
-  }, [setPhotos, setGridProgress]);
+      // 2. Check for industry-standard Copyright or Artist tags
+      if (meta.exif && (meta.exif.Copyright || meta.exif.Artist)) {
+        protectedUploads.push({
+          name: meta.name,
+          artist: meta.exif.Artist || 'Unknown Artist',
+          copyright: meta.exif.Copyright || 'Copyrighted'
+        });
+      }
+
+    } catch {
+      setPhotos((prev) => prev.map((p) => (p.id === placeholder.id ? { ...p, status: 'ready' } : p)));
+    }
+    processed++;
+    setGridProgress({ active: true, percent: 5 + (processed / placeholders.length) * 95 });
+  }
+
+  // 3. Fire the custom toast if protected files exist
+  if (protectedUploads.length > 0) {
+    setShowCopyrightToast(true);
+  }
+
+  trackAction('image_drop', { count: placeholders.length });
+  setTimeout(() => setGridProgress(prev => ({ ...prev, active: false })), 400);
+  setTimeout(() => setGridProgress({ active: false, percent: 0 }), 700);
+}, [setPhotos, setGridProgress]); 
 
   const handleRemovePhoto = useCallback((id) => {
     setGridProgress({ active: true, percent: 30 });
@@ -121,6 +144,49 @@ function ExifGridMain() {
     }
   }, [photos, downloadFile, setShowBatchModal, setIsZipping, setZipProgress]);
 
+  const executeMetadataExport = async ({ artist, copyright }) => {
+    setShowMetadataModal(false);
+    setIsZipping(true);
+    setZipProgress(0);
+
+    try {
+      const zip = new JSZip();
+      const folder = zip.folder("ExifGrid_Protected");
+
+      for (let i = 0; i < photos.length; i++) {
+        const photo = photos[i];
+        
+        // 1. Read the original file as a Base64 string
+        const base64 = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(photo.file);
+        });
+
+        // 2. Inject the EXIF data using our utility
+        const injectedBase64 = injectCopyrightData(base64, artist, copyright);
+
+        // 3. Convert back to a Blob to store in the ZIP
+        const res = await fetch(injectedBase64);
+        const blob = await res.blob();
+
+        // 4. Add to ZIP folder
+        folder.file(`Protected_${photo.name}`, blob);
+        setZipProgress(Math.round(((i + 1) / photos.length) * 100));
+      }
+
+      // 5. Generate the final ZIP and download
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      downloadFile(zipBlob, `ExifGrid_Protected_${new Date().getTime()}.zip`);
+
+    } catch (error) {
+      console.error("Metadata export failed", error);
+    } finally {
+      setIsZipping(false);
+      setZipProgress(0);
+    }
+  };
+
   return (
     <>
       <GridLoader active={gridProgress.active} percent={gridProgress.percent} />
@@ -143,6 +209,7 @@ function ExifGridMain() {
         onAddPhotos={() => fileInputRef.current?.click()}
         onExportCSV={handleExportCSV}
         onBatchDownload={() => setShowBatchModal(true)}
+        onOpenMetadata={() => setShowMetadataModal(true)} 
         fileInputRef={fileInputRef}
         onFilesSelected={handleFiles}
         viewMode={viewMode}
@@ -166,8 +233,16 @@ function ExifGridMain() {
       {hasPhotos && <MainWorkspace filteredPhotos={filteredPhotos} handleRemovePhoto={handleRemovePhoto} />}
       
       {showInsights && <InsightsDashboard photos={photos} onClose={() => setShowInsights(false)} />}
+      
       {showBatchModal && <BatchSettingsModal onCancel={() => setShowBatchModal(false)} onConfirm={executeBatchDownload} />}
       
+      {showMetadataModal && (
+        <MetadataForm 
+          onCancel={() => setShowMetadataModal(false)} 
+          onApply={executeMetadataExport} 
+        />
+      )}
+
       {isZipping && (
         <div className="zip-progress-overlay">
           <div className="zip-progress-box">
@@ -182,6 +257,10 @@ function ExifGridMain() {
       )}
       
       <Lightbox photo={activePhoto} photoIds={photoIds} onClose={() => setActivePhotoId(null)} onNavigate={setActivePhotoId} />
+      
+      {showCopyrightToast && (
+        <CopyrightToast onClose={() => setShowCopyrightToast(false)} />
+      )}
       
       <footer>
         <span className="footer-text">ExifGrid processes everything locally. Only anonymous image counts are tracked (if opted in).</span>

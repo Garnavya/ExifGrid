@@ -10,6 +10,7 @@ export function UIProvider({ children }) {
   const [showInsights, setShowInsights] = useState(false);
   const [isZipping, setIsZipping] = useState(false);
   const [zipProgress, setZipProgress] = useState(0);
+  const [showMetadataModal, setShowMetadataModal] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle('light-theme', isLight);
@@ -20,7 +21,8 @@ export function UIProvider({ children }) {
       isLight, setIsLight, viewMode, setViewMode,
       gridProgress, setGridProgress, showBatchModal, setShowBatchModal,
       showInsights, setShowInsights, isZipping, setIsZipping,
-      zipProgress, setZipProgress
+      zipProgress, setZipProgress,
+      showMetadataModal, setShowMetadataModal
     }}>
       {children}
     </UIContext.Provider>

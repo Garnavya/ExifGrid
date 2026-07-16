@@ -277,31 +277,34 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                 />
                 {photo.exif?.Artist && (
   <div className="meta-row">
-    <span className="meta-key" style={{ color: 'var(--red)', fontWeight: 'bold' }}>Artist</span>
-    <span className="meta-value" style={{ 
-      backgroundColor: 'var(--red)', 
-      color: '#000', 
-      padding: '2px 6px', 
-      borderRadius: '4px', 
-      fontWeight: 'bold' 
-    }}>
+    <span className="meta-key" style={{ color: 'var(--red)', fontWeight: 'bold' }}>Creator</span>
+    <span className="meta-value" style={{ backgroundColor: 'var(--red)', color: '#000', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
       {photo.exif.Artist}
     </span>
   </div>
 )}
 
 {photo.exif?.Copyright && (
-  <div className="meta-row">
-    <span className="meta-key" style={{ color: 'var(--red)', fontWeight: 'bold' }}>Copyright</span>
-    <span className="meta-value" style={{ 
-      backgroundColor: 'var(--red)', 
-      color: '#000', 
-      padding: '2px 6px', 
-      borderRadius: '4px', 
-      fontWeight: 'bold' 
-    }}>
+  <div className="meta-row" style={{ position: 'relative' }}>
+    <span className="meta-key" style={{ color: 'var(--red)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+      Copyright
+      <span title="CMI (Copyright Management Information) is protected under 17 U.S.C. § 1202 of the DMCA. Unauthorized removal is a federal offense." style={{
+        display: 'inline-flex', justifyContent: 'center', alignItems: 'center',
+        width: '14px', height: '14px', borderRadius: '50%', border: '1px solid var(--red)',
+        fontSize: '9px', cursor: 'help'
+      }}>i</span>
+    </span>
+    <span className="meta-value" style={{ backgroundColor: 'var(--red)', color: '#000', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
       {photo.exif.Copyright}
     </span>
+  </div>
+)}
+
+{/* Display Extended Data if injected via Advanced Mode */}
+{photo.exif?.ImageDescription && (
+  <div className="meta-row">
+    <span className="meta-key">Title</span>
+    <span className="meta-value">{photo.exif.ImageDescription}</span>
   </div>
 )}
                 {exif.Make && (

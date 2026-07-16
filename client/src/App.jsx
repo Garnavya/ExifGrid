@@ -144,7 +144,7 @@ function ExifGridMain() {
     }
   }, [photos, downloadFile, setShowBatchModal, setIsZipping, setZipProgress]);
 
-  const executeMetadataExport = async ({ artist, copyright }) => {
+  const executeMetadataExport = async (metadataObject) => {
     setShowMetadataModal(false);
     setIsZipping(true);
     setZipProgress(0);
@@ -156,26 +156,22 @@ function ExifGridMain() {
       for (let i = 0; i < photos.length; i++) {
         const photo = photos[i];
         
-        // 1. Read the original file as a Base64 string
         const base64 = await new Promise((resolve) => {
           const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result);
           reader.readAsDataURL(photo.file);
         });
 
-        // 2. Inject the EXIF data using our utility
-        const injectedBase64 = injectCopyrightData(base64, artist, copyright);
+        // Pass the entire metadata object to the injector
+        const injectedBase64 = injectCopyrightData(base64, metadataObject);
 
-        // 3. Convert back to a Blob to store in the ZIP
         const res = await fetch(injectedBase64);
         const blob = await res.blob();
 
-        // 4. Add to ZIP folder
         folder.file(`Protected_${photo.name}`, blob);
         setZipProgress(Math.round(((i + 1) / photos.length) * 100));
       }
 
-      // 5. Generate the final ZIP and download
       const zipBlob = await zip.generateAsync({ type: 'blob' });
       downloadFile(zipBlob, `ExifGrid_Protected_${new Date().getTime()}.zip`);
 

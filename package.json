@@ -15,8 +15,5 @@
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
-  },
-  "dependencies": {
-    "piexifjs": "^1.0.6"
   }
 }

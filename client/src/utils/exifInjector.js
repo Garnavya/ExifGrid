@@ -1,16 +1,11 @@
 import piexif from "piexifjs";
 
 /**
- * Injects Copyright and Artist metadata into a JPEG base64 string.
- * 
- * @param {string} imageBase64 - The original image in base64 format.
- * @param {string} artistName - The creator's name.
- * @param {string} copyrightText - The copyright notice.
- * @returns {string} - The new base64 image string with injected metadata.
+ * Injects Professional Metadata into a JPEG base64 string.
+ * Maps advanced fields to standard EXIF tags readable by Lightroom/Affinity.
  */
-export const injectCopyrightData = (imageBase64, artistName, copyrightText) => {
+export const injectCopyrightData = (imageBase64, metadata) => {
     try {
-        // 1. Load existing EXIF data, or create an empty structure if missing
         let exifObj = {"0th": {}, "Exif": {}, "GPS": {}, "1st": {}, "Interop": {}, "thumbnail": null};
         
         try {
@@ -19,17 +14,29 @@ export const injectCopyrightData = (imageBase64, artistName, copyrightText) => {
             console.warn("No existing EXIF found, creating new metadata block.");
         }
 
-        // 2. Inject the new IPTC/Copyright data into the 0th IFD
-        if (artistName) exifObj["0th"][piexif.ImageIFD.Artist] = artistName;
-        if (copyrightText) exifObj["0th"][piexif.ImageIFD.Copyright] = copyrightText;
+        const { artist, copyright, title, contact, usage, jobId } = metadata;
 
-        // 3. Convert the EXIF object back into a binary string
+        // 1. Basic CMI (Copyright Management Information)
+        if (artist) exifObj["0th"][piexif.ImageIFD.Artist] = artist;
+        if (copyright) exifObj["0th"][piexif.ImageIFD.Copyright] = copyright;
+
+        // 2. Advanced Fields Mapping
+        if (title) exifObj["0th"][piexif.ImageIFD.ImageDescription] = title;
+        if (jobId) exifObj["0th"][piexif.ImageIFD.DocumentName] = jobId;
+        
+        // EXIF 2.3 doesn't have a native "Usage" tag, so we append Contact & Usage into the Software/HostComputer tag 
+        // which Lightroom and bridge software read as extended file info.
+        let extendedInfo = [];
+        if (contact) extendedInfo.push(`Contact: ${contact}`);
+        if (usage) extendedInfo.push(`Usage Terms: ${usage}`);
+        if (extendedInfo.length > 0) {
+            exifObj["0th"][piexif.ImageIFD.Software] = extendedInfo.join(" | ");
+        }
+
         const exifBytes = piexif.dump(exifObj);
-
-        // 4. Insert the EXIF string into the original image
         return piexif.insert(exifBytes, imageBase64);
     } catch (error) {
         console.error("Error injecting EXIF data:", error);
-        return imageBase64; // Fallback to original image if injection fails
+        return imageBase64;
     }
 };

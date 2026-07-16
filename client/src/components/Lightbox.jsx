@@ -275,7 +275,35 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                     { k: 'Dimensions', v: `${photo.naturalW} × ${photo.naturalH} px` },
                   ]}
                 />
-                
+                {photo.exif?.Artist && (
+  <div className="meta-row">
+    <span className="meta-key" style={{ color: 'var(--red)', fontWeight: 'bold' }}>Artist</span>
+    <span className="meta-value" style={{ 
+      backgroundColor: 'var(--red)', 
+      color: '#000', 
+      padding: '2px 6px', 
+      borderRadius: '4px', 
+      fontWeight: 'bold' 
+    }}>
+      {photo.exif.Artist}
+    </span>
+  </div>
+)}
+
+{photo.exif?.Copyright && (
+  <div className="meta-row">
+    <span className="meta-key" style={{ color: 'var(--red)', fontWeight: 'bold' }}>Copyright</span>
+    <span className="meta-value" style={{ 
+      backgroundColor: 'var(--red)', 
+      color: '#000', 
+      padding: '2px 6px', 
+      borderRadius: '4px', 
+      fontWeight: 'bold' 
+    }}>
+      {photo.exif.Copyright}
+    </span>
+  </div>
+)}
                 {exif.Make && (
                   <MetaSection title="Camera" rows={[{ k: 'Make', v: exif.Make }, { k: 'Model', v: exif.Model }].filter(Boolean)} />
                 )}

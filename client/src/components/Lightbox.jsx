@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import gsap from 'gsap';
 import L from 'leaflet';
+import ImageFilters from './ImageFilters.jsx';
 import { formatAperture, formatBytes, formatExifDate, formatShutter } from '../utils/formatters.js';
 import { extractDominantColor, glowStyle } from '../utils/colorExtract.js';
 import { useKeyboardNav } from '../hooks/useKeyboardNav.js';
@@ -61,8 +62,29 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
   const [polaroidPreview, setPolaroidPreview] = useState(null);
   const [isGeneratingPolaroid, setIsGeneratingPolaroid] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
+  
+  // New state for handling multiple image filters
+  const [activeFilter, setActiveFilter] = useState('none');
 
   const isOpen = Boolean(photo);
+
+  // Reset the filter and other states if the user changes photos
+  useEffect(() => {
+    setEnlarged(false);
+    setPolaroidCaption('');
+    setPolaroidPreview(null);
+    setExifTextScale(1.0); 
+    setShowAIModal(false);
+    setActiveFilter('none'); // Reset to original image on change
+    
+    if (photo?.exif) {
+      const standardTags = ['Model', 'FNumber', 'ExposureTime', 'ISOSpeedRatings', 'ISO'];
+      const validDefaults = standardTags.filter(tag => photo.exif[tag] !== undefined);
+      setPolaroidToggles(validDefaults);
+    } else {
+      setPolaroidToggles([]);
+    }
+  }, [photo]);
 
   const availableExifOptions = useMemo(() => {
     if (!photo?.exif) return [];
@@ -79,22 +101,6 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     return [...new Set(cleanKeys)].sort();
   }, [photo]);
 
-  useEffect(() => {
-    setEnlarged(false);
-    setPolaroidCaption('');
-    setPolaroidPreview(null);
-    setExifTextScale(1.0); 
-    setShowAIModal(false);
-    
-    if (photo?.exif) {
-      const standardTags = ['Model', 'FNumber', 'ExposureTime', 'ISOSpeedRatings', 'ISO'];
-      const validDefaults = standardTags.filter(tag => photo.exif[tag] !== undefined);
-      setPolaroidToggles(validDefaults);
-    } else {
-      setPolaroidToggles([]);
-    }
-  }, [photo]);
-
   const handleClose = useCallback(() => {
     if (!overlayRef.current) { onClose(); return; }
     gsap.set(overlayRef.current, { pointerEvents: 'none' });
@@ -103,7 +109,7 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
 
   const handleEscapeKey = useCallback(() => {
     if (showAIModal) {
-      setShowAIModal(false); // Close AI modal first if it's open
+      setShowAIModal(false); 
     } else if (enlarged) {
       setEnlarged(false);
     } else {
@@ -218,6 +224,9 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
   const hasGps = lat !== undefined && lon !== undefined;
   const iso = exif.ISO || exif.ISOSpeedRatings;
 
+  // Determine the dynamic class based on the selected filter
+  const filterClass = activeFilter !== 'none' ? `filter-${activeFilter}` : '';
+
   return (
     <div className="lightbox-overlay" onClick={onClose}>
       <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
@@ -239,7 +248,7 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                   <img
                     ref={imgRef}
                     id="lb-img"
-                    className={`zoomable-img${enlarged ? ' enlarged' : ''}`}
+                    className={`zoomable-img ${enlarged ? 'enlarged' : ''} ${filterClass}`}
                     src={photo.src}
                     alt={photo.name}
                     onClick={() => setEnlarged((v) => !v)}
@@ -275,38 +284,39 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                     { k: 'Dimensions', v: `${photo.naturalW} × ${photo.naturalH} px` },
                   ]}
                 />
+                
                 {photo.exif?.Artist && (
-  <div className="meta-row">
-    <span className="meta-key" style={{ color: 'var(--red)', fontWeight: 'bold' }}>Creator</span>
-    <span className="meta-value" style={{ backgroundColor: 'var(--red)', color: '#000', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
-      {photo.exif.Artist}
-    </span>
-  </div>
-)}
+                  <div className="meta-row">
+                    <span className="meta-key" style={{ color: 'var(--red)', fontWeight: 'bold' }}>Creator</span>
+                    <span className="meta-value" style={{ backgroundColor: 'var(--red)', color: '#000', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                      {photo.exif.Artist}
+                    </span>
+                  </div>
+                )}
 
-{photo.exif?.Copyright && (
-  <div className="meta-row" style={{ position: 'relative' }}>
-    <span className="meta-key" style={{ color: 'var(--red)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
-      Copyright
-      <span title="CMI (Copyright Management Information) is protected under 17 U.S.C. § 1202 of the DMCA. Unauthorized removal is a federal offense." style={{
-        display: 'inline-flex', justifyContent: 'center', alignItems: 'center',
-        width: '14px', height: '14px', borderRadius: '50%', border: '1px solid var(--red)',
-        fontSize: '9px', cursor: 'help'
-      }}>i</span>
-    </span>
-    <span className="meta-value" style={{ backgroundColor: 'var(--red)', color: '#000', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
-      {photo.exif.Copyright}
-    </span>
-  </div>
-)}
+                {photo.exif?.Copyright && (
+                  <div className="meta-row" style={{ position: 'relative' }}>
+                    <span className="meta-key" style={{ color: 'var(--red)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      Copyright
+                      <span title="CMI (Copyright Management Information) is protected under 17 U.S.C. § 1202 of the DMCA. Unauthorized removal is a federal offense." style={{
+                        display: 'inline-flex', justifyContent: 'center', alignItems: 'center',
+                        width: '14px', height: '14px', borderRadius: '50%', border: '1px solid var(--red)',
+                        fontSize: '9px', cursor: 'help'
+                      }}>i</span>
+                    </span>
+                    <span className="meta-value" style={{ backgroundColor: 'var(--red)', color: '#000', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                      {photo.exif.Copyright}
+                    </span>
+                  </div>
+                )}
 
-{/* Display Extended Data if injected via Advanced Mode */}
-{photo.exif?.ImageDescription && (
-  <div className="meta-row">
-    <span className="meta-key">Title</span>
-    <span className="meta-value">{photo.exif.ImageDescription}</span>
-  </div>
-)}
+                {photo.exif?.ImageDescription && (
+                  <div className="meta-row">
+                    <span className="meta-key">Title</span>
+                    <span className="meta-value">{photo.exif.ImageDescription}</span>
+                  </div>
+                )}
+                
                 {exif.Make && (
                   <MetaSection title="Camera" rows={[{ k: 'Make', v: exif.Make }, { k: 'Model', v: exif.Model }].filter(Boolean)} />
                 )}
@@ -335,8 +345,35 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                     </a>
                   </div>
                 )}
+                
+                {/* NEW: Filter & Tools Section */}
+                <div className="meta-section">
+                  <div className="meta-section-title">Diagnostic & Creative Filters</div>
+                  <select 
+                    className="ps-select"
+                    value={activeFilter}
+                    onChange={(e) => setActiveFilter(e.target.value)}
+                    style={{ marginBottom: '16px' }}
+                  >
+                    <optgroup label="Standard">
+                      <option value="none">Original (No Filter)</option>
+                      <option value="invert">Color Inversion</option>
+                      <option value="bw">High Contrast B&W</option>
+                      <option value="sepia">Vintage Sepia</option>
+                    </optgroup>
+                    <optgroup label="Diagnostic">
+                      <option value="dust">Sensor Dust Aid</option>
+                      <option value="thermal">Thermal Vision</option>
+                    </optgroup>
+                    <optgroup label="Creative">
+                      <option value="cyberpunk">Cyberpunk Duotone</option>
+                      <option value="glitch">Chromatic Aberration (Glitch)</option>
+                      <option value="posterize">Posterize (Comic Book)</option>
+                    </optgroup>
+                  </select>
+                </div>
 
-                <div className="meta-actions" style={{ marginTop: '24px' }}>
+                <div className="meta-actions">
                   <button
                     type="button"
                     className="polaroid-btn"
@@ -436,29 +473,29 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                     </button>
                     
                     <button 
-  type="button" 
-  className="polaroid-btn"
-  onClick={() => setShowAIModal(true)}
-  style={{ 
-    marginTop: '16px',
-    backgroundColor: 'rgba(0, 255, 204, 0.05)', 
-    color: '#00ffcc', 
-    borderColor: 'rgba(0, 255, 204, 0.3)',
-    fontWeight: 'bold',
-    transition: 'all 0.3s ease',
-    boxShadow: '0 0 15px rgba(0, 255, 204, 0.1)'
-  }}
-  onMouseOver={(e) => {
-    e.target.style.backgroundColor = 'rgba(0, 255, 204, 0.15)';
-    e.target.style.borderColor = '#00ffcc';
-  }}
-  onMouseOut={(e) => {
-    e.target.style.backgroundColor = 'rgba(0, 255, 204, 0.05)';
-    e.target.style.borderColor = 'rgba(0, 255, 204, 0.3)';
-  }}
->
-  ✨ AI Posture & Light Analysis
-</button>
+                      type="button" 
+                      className="polaroid-btn"
+                      onClick={() => setShowAIModal(true)}
+                      style={{ 
+                        marginTop: '16px',
+                        backgroundColor: 'rgba(0, 255, 204, 0.05)', 
+                        color: '#00ffcc', 
+                        borderColor: 'rgba(0, 255, 204, 0.3)',
+                        fontWeight: 'bold',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 0 15px rgba(0, 255, 204, 0.1)'
+                      }}
+                      onMouseOver={(e) => {
+                        e.target.style.backgroundColor = 'rgba(0, 255, 204, 0.15)';
+                        e.target.style.borderColor = '#00ffcc';
+                      }}
+                      onMouseOut={(e) => {
+                        e.target.style.backgroundColor = 'rgba(0, 255, 204, 0.05)';
+                        e.target.style.borderColor = 'rgba(0, 255, 204, 0.3)';
+                      }}
+                    >
+                      ✨ AI Posture & Light Analysis
+                    </button>
                   </div>
                 </div>
               </div>
@@ -470,11 +507,14 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
       </div>
 
       {showAIModal && (
-  <AIAnalysisModal 
-    imageSrc={photo.src} // Change 'photo.url' to whatever variable holds your image source
-    onClose={() => setShowAIModal(false)} 
-  />
-)}
+        <AIAnalysisModal 
+          imageSrc={photo.src}
+          onClose={() => setShowAIModal(false)} 
+        />
+      )}
+      
+      {/* Hidden SVG Filters Array */}
+      <ImageFilters />
     </div>
   );
 }

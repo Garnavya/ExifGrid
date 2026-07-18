@@ -187,3 +187,38 @@
 html.light-theme #mini-map .leaflet-layer {
   filter: none;
 }
+
+/* --- Image Filters --- */
+.zoomable-img.filter-dust {
+  filter: url(#dust-spot-visualizer);
+  background: #000;
+}
+
+.zoomable-img.filter-invert {
+  filter: invert(100%);
+}
+
+.zoomable-img.filter-bw {
+  filter: grayscale(100%) contrast(150%);
+}
+
+.zoomable-img.filter-sepia {
+  filter: sepia(100%) contrast(1.1) brightness(0.9);
+}
+
+/* Custom Advanced SVG Filters */
+.zoomable-img.filter-cyberpunk {
+  filter: url(#filter-cyberpunk);
+}
+
+.zoomable-img.filter-posterize {
+  filter: url(#filter-posterize);
+}
+
+.zoomable-img.filter-glitch {
+  filter: url(#filter-glitch);
+}
+
+.zoomable-img.filter-thermal {
+  filter: url(#filter-thermal);
+}

@@ -45,6 +45,8 @@ Checking basic camera metadata — aperture, shutter speed, ISO — across a bat
 - **Asset Protection & CMI Alerts**
   ExifGrid actively detects existing Copyright Management Information (CMI) on uploaded batches. Protected assets are flagged with high-contrast UI badges in the Lightbox, complete with educational tooltips regarding DMCA 17 U.S.C. § 1202 compliance, and trigger a legal disclaimer toast upon upload.
 - **Interactive Journey Map** — For geotagged photos, plots GPS points on an interactive map and traces the route between them, powered by Leaflet.
+- **Diagnostic & Creative SVG Filters**
+  A hardware-accelerated filter suite built directly into the Lightbox. Includes a Lightroom-style **Sensor Dust Spotting Aid** (using Laplacian edge-detection convolution matrices) and creative color-mapping grades (Cyberpunk Duotone, Posterize, Glitch, Thermal) that run entirely on the browser's GPU via native SVG math with zero JavaScript memory bloat.
 
 <!--
   🖼️ FEATURE GALLERY GRID
@@ -82,6 +84,20 @@ Checking basic camera metadata — aperture, shutter speed, ISO — across a bat
     <td width="50%">
       <p align="center"><b>CSV Export</b></p>
       <img src="./assets/CSV Exp.png" width="100%" alt="CSV metadata export"/>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <p align="center"><b>Sensor Dust Spotting Aid</b></p>
+      <img src="./assets/Filters 1.png" width="100%" alt="Laplacian edge detection sensor dust aid"/>
+    </td>
+    <td width="50%">
+      <p align="center"><b>Black and White</b></p>
+      <img src="./assets/Filters 2.png" width="100%" alt="Laplacian edge detection sensor dust aid"/>
+    </td>
+    <td width="50%">
+      <p align="center"><b>Creative SVG Filters</b></p>
+      <img src="./assets/Filters 3.png" width="100%" alt="Cyberpunk and Glitch SVG filters"/>
     </td>
   </tr>
 </table>
@@ -149,7 +165,7 @@ Map tiles for the Journey feature are loaded from OpenStreetMap, which — like 
 
 **Frontend:** React, Vite, HTML5 (Canvas & FileReader APIs)
 **Backend:** Express.js, MongoDB Atlas (for the anonymous image-count telemetry only)
-**Styling:** CSS3 (Custom Properties, CSS Columns for masonry, Backdrop-Filter)
+**Styling & Processing:** CSS3 (Custom Properties, CSS Columns, Backdrop-Filter) and Native SVG (`<feConvolveMatrix>`, `<feColorMatrix>`) for zero-latency GPU image processing.
 **Metadata Parsing:** [exifr](https://github.com/MikeKovarik/exifr)
 **Animation:** [GSAP](https://gsap.com/)
 **Mapping:** [Leaflet.js](https://leafletjs.com/)

@@ -11,6 +11,7 @@ import { downloadPolaroid, generatePolaroidDataURL } from '../utils/polaroid.js'
 import { calculateRpgStats, generateRpgCardDataURL, downloadRpgCard } from '../utils/rpgCard.js';
 import AIAnalysisModal from './AIAnalysisModal';
 import ChromaticDonut from './ChromaticDonut.jsx';
+import SunTracker from './SunTracker.jsx';
 
 function MetaSection({ title, rows }) {
   return (
@@ -423,6 +424,9 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                     </a>
                   </div>
                 )}
+
+                {/* Golden Hour & Sun Elevation Tracker */}
+                <SunTracker dateString={photo.exif?.DateTimeOriginal} lat={lat} lon={lon} />
                 
                 {/* NEW: Filter & Tools Section */}
                 <div className="meta-section">

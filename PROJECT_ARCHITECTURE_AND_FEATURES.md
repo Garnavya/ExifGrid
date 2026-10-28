@@ -372,6 +372,29 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 
 ---
 
+### Feature 20: Golden Hour & Sun Elevation Path Tracker
+
+* **Purpose & Workflow:**  
+  Computes exact celestial solar metrics from image capture timestamps and GPS coordinates. Evaluates solar altitude (elevation above/below the horizon in degrees), compass azimuth heading (0°–360°), and classifies natural lighting phases (*High Overhead Sun*, *Direct Daylight*, *Late Afternoon*, *Golden Hour ✨*, *Blue Hour 🌌*, *Nautical Twilight*, *Astronomical Twilight*, *True Night Astro Window*). Renders an SVG sky dome with horizon baseline, a glowing sun marker, photographic lighting guidance, and an expandable daily golden hour timetable (Sunrise, Morning Golden Hour, Solar Noon, Evening Golden Hour, Sunset, Blue Hour).
+* **Component & File Footprint:**  
+  [`client/src/utils/sunCalc.js`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/utils/sunCalc.js), [`client/src/components/SunTracker.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/components/SunTracker.jsx), [`client/src/components/Lightbox.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/components/Lightbox.jsx).
+* **Astronomical Algorithmic Basis:**  
+  * **Julian Day & Ephemeris:** Converts timestamp to Julian Day $d = JD - 2451545.0$.
+  * **Solar Anomaly & Ecliptic Longitude:** Evaluates mean solar anomaly $M$ and equation of center $C$ to derive true ecliptic longitude $\Lambda$.
+  * **Coordinate Transformation:** Calculates solar declination $\delta$ and right ascension $\alpha_{RA}$, Greenwich Mean Sidereal Time (GMST), and local hour angle $H = \theta_0 + \lambda - \alpha_{RA}$.
+  * **Spherical Trigonometry:**
+    $$\sin(\alpha) = \sin(\phi)\sin(\delta) + \cos(\phi)\cos(\delta)\cos(H)$$
+    $$\cos(A) = \frac{\sin(\delta) - \sin(\phi)\sin(\alpha)}{\cos(\phi)\cos(\alpha)}$$
+  * **Photometric Classification:**
+    * $\alpha > 45^\circ \implies$ **Zenith Overhead**
+    * $6^\circ < \alpha \le 45^\circ \implies$ **Daylight**
+    * $0^\circ < \alpha \le 6^\circ \implies$ **Golden Hour ✨**
+    * $-4^\circ \le \alpha \le 0^\circ \implies$ **Civil Twilight / Blue Hour 🌌**
+    * $-12^\circ \le \alpha < -4^\circ \implies$ **Nautical Twilight**
+    * $\alpha < -18^\circ \implies$ **True Night (Astrophotography Window)**
+
+---
+
 ## 3. Technology Cross-Reference Matrix
 
 | Feature | Primary Component / Util | Libraries / Frameworks | Web APIs / Standards | Algorithmic / Math Basis |
@@ -384,6 +407,7 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 | **Polaroid Gen** | `polaroid.js`, `batchProcessor.js`| `jszip` | Canvas 2D, Blob | Iterative Text Scaling, Zip Deflate Compression |
 | **RPG Stat Cards**| `rpgCard.js`, `Lightbox.jsx` | Canvas 2D, React 18 | HTML5 Canvas, Blob, DataURL | Weighted Stat Matrix, Tier Classifier, Word-Wrap Canvas |
 | **Chromatic Donut**| `chromaticAnalysis.js`, `ChromaticDonut.jsx` | Canvas 2D, React 18 | `createImageBitmap`, ImageData | 36-Bin Angular Hue Histogram, Shortest Angular Distance |
+| **Sun Path Tracker**| `sunCalc.js`, `SunTracker.jsx` | SVG, React 18 | Native Math, Spherical Trig | Jean Meeus Solar Ephemeris, Elevation/Azimuth Vector |
 | **SVG Filters** | `ImageFilters.jsx` | Native SVG | `<feConvolveMatrix>`, `<feColorMatrix>` | $3\times3$ Discrete Laplacian Edge Matrix |
 | **EXIF Scrubber** | `exifStripper.js` | Native Canvas | Canvas `toBlob()`, Object URL | Binary Pixel Re-encoding (Dropping Segment APP1) |
 | **CMI Injector** | `exifInjector.js` | `piexifjs` | FileReader, Base64 | TIFF Tag IFD Segment Encoding (Artist, Copyright) |

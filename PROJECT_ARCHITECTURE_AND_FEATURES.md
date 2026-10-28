@@ -329,6 +329,27 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 
 ---
 
+### Feature 18: RPG-Style "Stat Card" Generator (Collectible Trading Cards)
+
+* **Purpose & Workflow:**  
+  Transforms technical camera EXIF metadata into collectible trading cards. Calculates gamified attributes (Agility, Lumens/Power, Sensor Purity, Optical Reach), auto-detects character archetypes (*Bokeh Sorcerer*, *Speed Berserker*, *Photon Sniper*, *Shadow Stalker*, *Chronomancer*, *Horizon Warden*, *Hyperfocal Sage*, *Street Vanguard*), computes equipment levels (LVL 1–99), assigns rarity tiers (*COMMON*, *RARE*, *EPIC*, *LEGENDARY*, *MYTHIC*), and generates unique passive perks with technical lore. Provides interactive live previewing in `Lightbox.jsx` with customizable titles, archetypes, and holographic frames, exported as high-resolution 800×1140 px collectible prints.
+* **Component & File Footprint:**  
+  [`client/src/utils/rpgCard.js`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/utils/rpgCard.js), [`client/src/components/Lightbox.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/components/Lightbox.jsx), [`client/src/css/polaroid.css`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/css/polaroid.css).
+* **Algorithmic & Mathematical Basis:**  
+  * **Agility ($AGI$):** Shutter speed kinetics freeze scale ($1/8000\text{s} \to 99$, $1/4000\text{s} \to 95$, $\dots$, $\ge 1\text{s} \to 18$).
+  * **Power / Lumens ($PWR$):** Inverse optical aperture intake ($f/1.2 \to 100$, $f/1.4 \to 96$, $\dots$, $f/16 \to 24$).
+  * **Sensor Purity ($PUR$):** Quantum fidelity vs. ISO sensor gain ($ISO\ 100 \to 99$, $\dots$, $ISO\ 6400+ \to 25$).
+  * **Optical Reach ($RCH$):** Telephoto focal distance metric ($400\text{mm}+ \to 99$, $\dots$, $14\text{mm} \to 32$).
+  * **Weighted Gear Level:** $L = \text{clamp}\left(15, 99, \text{round}\left(\frac{1.1 AGI + 1.1 PWR + 0.9 PUR + 0.9 RCH}{4}\right)\right)$.
+  * **Rarity Tier Classifier:** Discretized power distribution ($\ge 85 \implies \text{MYTHIC}$, $\ge 75 \implies \text{LEGENDARY}$, $\ge 64 \implies \text{EPIC}$, $\ge 50 \implies \text{RARE}$, else $\text{COMMON}$).
+* **Canvas Rendering Architecture:**  
+  * **Dual Border & Corner Bevels:** Multi-stop linear gradients mapped to rarity palettes with corner gem anchors.
+  * **Aspect-Fill Artwork Window:** High-resolution photo crop with inner vignette shading and floating archetype shield.
+  * **Glowing Stat Gauges:** Track and fill bars rendered with dynamic canvas linear gradients and soft drop-shadow glows.
+  * **Lore Inset Box:** Word-wrapped ability description with EXIF synergy footnote and serial verification tag.
+
+---
+
 ## 3. Technology Cross-Reference Matrix
 
 | Feature | Primary Component / Util | Libraries / Frameworks | Web APIs / Standards | Algorithmic / Math Basis |
@@ -339,6 +360,7 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 | **Dual Compare** | `ComparisonFeed.jsx` | React 18, GSAP | CSS Matrix, Pointer Events | Normalized Cursor Ratio Panning, Sync Zoom |
 | **Filter Matrix** | `FilterMatrix.jsx` | React 18 | ES6 `Set`, Array Methods | Compound Boolean Set Deduplication |
 | **Polaroid Gen** | `polaroid.js`, `batchProcessor.js`| `jszip` | Canvas 2D, Blob | Iterative Text Scaling, Zip Deflate Compression |
+| **RPG Stat Cards**| `rpgCard.js`, `Lightbox.jsx` | Canvas 2D, React 18 | HTML5 Canvas, Blob, DataURL | Weighted Stat Matrix, Tier Classifier, Word-Wrap Canvas |
 | **SVG Filters** | `ImageFilters.jsx` | Native SVG | `<feConvolveMatrix>`, `<feColorMatrix>` | $3\times3$ Discrete Laplacian Edge Matrix |
 | **EXIF Scrubber** | `exifStripper.js` | Native Canvas | Canvas `toBlob()`, Object URL | Binary Pixel Re-encoding (Dropping Segment APP1) |
 | **CMI Injector** | `exifInjector.js` | `piexifjs` | FileReader, Base64 | TIFF Tag IFD Segment Encoding (Artist, Copyright) |

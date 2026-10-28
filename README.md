@@ -41,6 +41,7 @@ Checking basic camera metadata — aperture, shutter speed, ISO — across a bat
 - **EXIF Extraction & Smart Filtering** — Instantly view camera model, focal length, shutter speed, ISO, and aperture per photo. Filter the grid by any of these fields.
 - **Advanced Photo Comparison Mode** — Select two images to open a split-screen lightbox comparing their visuals and EXIF stats side by side.
 - **Custom Polaroid Generator** — Canvas-based export of any photo as a vintage Polaroid, with customizable captions, typography (handwriting, typewriter, editorial fonts), and togglable EXIF captions. Supports batch export as a zipped archive.
+- **Collectible RPG "Stat Card" Generator** — Turn technical camera settings into gamified trading cards. Features dynamic algorithmic stats (Agility, Lumens, Sensor Purity, Optical Reach), automated class archetypes (*Bokeh Sorcerer*, *Speed Berserker*, *Photon Sniper*, *Shadow Stalker*, etc.), equipment power levels, and holographic rarity tiers (*MYTHIC*, *LEGENDARY*, *EPIC*, *RARE*, *COMMON*) exported as high-resolution 300 DPI collectible cards.
 - **Privacy-Safe "Scrubbed" Export** — One-click download that strips all EXIF and GPS metadata via re-encoding through the Canvas/Blob pipeline, so images are safe to share on social media.
 - **CSV Metadata Export** — Export all extracted metadata from a batch into a structured spreadsheet.
 - **Professional Metadata Injection (IPTC/XMP Standard)**

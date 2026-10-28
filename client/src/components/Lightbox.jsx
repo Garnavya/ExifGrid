@@ -8,6 +8,7 @@ import { useKeyboardNav } from '../hooks/useKeyboardNav.js';
 import { useDownload } from '../hooks/useDownload.js';
 import { stripExifData } from '../utils/exifStripper.js';
 import { downloadPolaroid, generatePolaroidDataURL } from '../utils/polaroid.js'; 
+import { calculateRpgStats, generateRpgCardDataURL, downloadRpgCard } from '../utils/rpgCard.js';
 import AIAnalysisModal from './AIAnalysisModal';
 
 function MetaSection({ title, rows }) {
@@ -64,6 +65,18 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
   const [polaroidPreview, setPolaroidPreview] = useState(null);
   const [isGeneratingPolaroid, setIsGeneratingPolaroid] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
+
+  // RPG Stat Card generator state
+  const [exportMode, setExportMode] = useState('polaroid'); // 'polaroid' | 'rpg'
+  const [rpgPreview, setRpgPreview] = useState(null);
+  const [rpgTitle, setRpgTitle] = useState('');
+  const [rpgArchetype, setRpgArchetype] = useState('auto');
+  const [rpgRarity, setRpgRarity] = useState('auto');
+  const [isGeneratingRpg, setIsGeneratingRpg] = useState(false);
+
+  const rpgBaseInfo = useMemo(() => {
+    return photo ? calculateRpgStats(photo) : null;
+  }, [photo]);
   
   // New state for handling multiple image filters
   const [activeFilter, setActiveFilter] = useState('none');
@@ -78,6 +91,10 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     setExifTextScale(1.0); 
     setShowAIModal(false);
     setActiveFilter('none'); // Reset to original image on change
+    setRpgPreview(null);
+    setRpgTitle(photo ? photo.name.replace(/\.[^/.]+$/, '') : '');
+    setRpgArchetype('auto');
+    setRpgRarity('auto');
     
     if (photo?.exif) {
       const standardTags = ['Model', 'FNumber', 'ExposureTime', 'ISOSpeedRatings', 'ISO'];
@@ -175,6 +192,29 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     };
   }, [photo, polaroidCaption, polaroidToggles, polaroidFont, exifBold, exifItalic, exifTextScale]);
 
+  useEffect(() => {
+    if (!photo?.src || exportMode !== 'rpg') return;
+    let cancelled = false;
+
+    const timer = setTimeout(async () => {
+      try {
+        const dataUrl = await generateRpgCardDataURL(photo, {
+          title: rpgTitle.trim() || undefined,
+          archetype: rpgArchetype !== 'auto' ? rpgArchetype : undefined,
+          rarity: rpgRarity !== 'auto' ? rpgRarity : undefined
+        });
+        if (!cancelled) setRpgPreview(dataUrl);
+      } catch (err) {
+        console.error("RPG Card preview generation failed", err);
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      cancelled = true;
+    };
+  }, [photo, exportMode, rpgTitle, rpgArchetype, rpgRarity]);
+
   const handleScrubDownload = async () => {
     if (!photo) return;
     setIsScrubbing(true);
@@ -212,6 +252,23 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
       alert('Failed to generate polaroid frame.');
     } finally {
       setIsGeneratingPolaroid(false);
+    }
+  };
+
+  const handleRpgDownload = async () => {
+    if (!photo) return;
+    setIsGeneratingRpg(true);
+    try {
+      await downloadRpgCard(photo, {
+        title: rpgTitle.trim() || undefined,
+        archetype: rpgArchetype !== 'auto' ? rpgArchetype : undefined,
+        rarity: rpgRarity !== 'auto' ? rpgRarity : undefined
+      });
+    } catch (err) {
+      console.error('Failed to generate RPG card:', err);
+      alert('Failed to generate collectible RPG card.');
+    } finally {
+      setIsGeneratingRpg(false);
     }
   };
 
@@ -261,17 +318,32 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                 </div>
 
                 <div className="compare-item" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minWidth: 0 }}>
-                  {polaroidPreview ? (
-                    <img 
-                      src={polaroidPreview} 
-                      alt="Polaroid Live Preview" 
-                      className="zoomable-img" 
-                      style={{ cursor: 'default', filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))' }}
-                    />
+                  {exportMode === 'polaroid' ? (
+                    polaroidPreview ? (
+                      <img 
+                        src={polaroidPreview} 
+                        alt="Polaroid Live Preview" 
+                        className="zoomable-img" 
+                        style={{ cursor: 'default', filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))' }}
+                      />
+                    ) : (
+                      <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>
+                        Rendering Polaroid Preview...
+                      </div>
+                    )
                   ) : (
-                    <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>
-                      Rendering Preview...
-                    </div>
+                    rpgPreview ? (
+                      <img 
+                        src={rpgPreview} 
+                        alt="RPG Stat Card Live Preview" 
+                        className="zoomable-img" 
+                        style={{ cursor: 'default', filter: 'drop-shadow(0 15px 35px rgba(0,0,0,0.6))', maxHeight: '76vh' }}
+                      />
+                    ) : (
+                      <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>
+                        Synthesizing RPG Stat Card...
+                      </div>
+                    )
                   )}
                 </div>
 
@@ -398,84 +470,233 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                   </button>
 
                   <div className="polaroid-settings" style={{ borderRadius: '8px' }}>
-                    <div className="ps-title">Polaroid Generator</div>
                     
-                    <div className="ps-label">Custom Caption</div>
-                    <input 
-                      type="text" 
-                      className="ps-input" 
-                      placeholder="Add a caption..."
-                      value={polaroidCaption}
-                      onChange={(e) => setPolaroidCaption(e.target.value)}
-                    />
-
-                    <div className="ps-label">Font Style</div>
-                    <select 
-                      className="ps-select"
-                      value={polaroidFont}
-                      onChange={(e) => setPolaroidFont(e.target.value)}
-                    >
-                      <option value="sans-serif">System Sans-Serif</option>
-                      <option value="'Caveat', cursive">Caveat (Handwriting)</option>
-                      <option value="'Courier New', monospace">Courier New (Typewriter)</option>
-                      <option value="'Playfair Display', serif">Playfair Display (Elegant)</option>
-                      <option value="'Impact', sans-serif">Impact (Bold)</option>
-                      <option value="'Inter', sans-serif">Inter (Modern)</option>
-                    </select>
-
-                    <div className="ps-label" style={{ marginTop: '12px' }}>EXIF Text Formatting</div>
-                    <div style={{ display: 'flex', gap: '16px', marginTop: '6px' }}>
-                      <label style={{ fontSize: '12px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-                        <input type="checkbox" checked={exifBold} onChange={(e) => setExifBold(e.target.checked)} />
-                        Bold
-                      </label>
-                      <label style={{ fontSize: '12px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-                        <input type="checkbox" checked={exifItalic} onChange={(e) => setExifItalic(e.target.checked)} />
-                        Italic
-                      </label>
+                    {/* Mode Switcher Tabs */}
+                    <div className="generator-tab-bar">
+                      <button 
+                        type="button" 
+                        className={`gen-tab-btn ${exportMode === 'polaroid' ? 'active' : ''}`}
+                        onClick={() => setExportMode('polaroid')}
+                      >
+                        🖼️ Vintage Polaroid
+                      </button>
+                      <button 
+                        type="button" 
+                        className={`gen-tab-btn ${exportMode === 'rpg' ? 'active' : ''}`}
+                        onClick={() => setExportMode('rpg')}
+                      >
+                        ⚔️ RPG Stat Card
+                      </button>
                     </div>
 
-                    <div className="ps-label" style={{ marginTop: '12px' }}>EXIF Text Size: {Math.round(exifTextScale * 100)}%</div>
-                    <input 
-                      type="range" 
-                      min="0.5" 
-                      max="2.0" 
-                      step="0.05" 
-                      value={exifTextScale}
-                      onChange={(e) => setExifTextScale(parseFloat(e.target.value))}
-                      style={{ width: '100%', cursor: 'pointer', marginTop: '4px' }}
-                    />
+                    {exportMode === 'polaroid' ? (
+                      <>
+                        <div className="ps-title">Polaroid Generator</div>
+                        
+                        <div className="ps-label">Custom Caption</div>
+                        <input 
+                          type="text" 
+                          className="ps-input" 
+                          placeholder="Add a caption..."
+                          value={polaroidCaption}
+                          onChange={(e) => setPolaroidCaption(e.target.value)}
+                        />
 
-                    <div className="ps-label" style={{ marginTop: '12px' }}>Include EXIF Data (Scroll for more)</div>
-                    <div className="ps-toggles" style={{ 
-                      maxHeight: '140px', 
-                      overflowY: 'auto', 
-                      padding: '8px', 
-                      background: 'var(--surface2)', 
-                      borderRadius: '6px', 
-                      border: '1px solid var(--border2)' 
-                    }}>
-                      {availableExifOptions.map(field => (
-                        <label key={field} style={{ flex: '1 1 45%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          <input 
-                            type="checkbox" 
-                            checked={polaroidToggles.includes(field)}
-                            onChange={() => togglePolaroidExif(field)}
-                          />
-                          {field}
-                        </label>
-                      ))}
-                    </div>
+                        <div className="ps-label">Font Style</div>
+                        <select 
+                          className="ps-select"
+                          value={polaroidFont}
+                          onChange={(e) => setPolaroidFont(e.target.value)}
+                        >
+                          <option value="sans-serif">System Sans-Serif</option>
+                          <option value="'Caveat', cursive">Caveat (Handwriting)</option>
+                          <option value="'Courier New', monospace">Courier New (Typewriter)</option>
+                          <option value="'Playfair Display', serif">Playfair Display (Elegant)</option>
+                          <option value="'Impact', sans-serif">Impact (Bold)</option>
+                          <option value="'Inter', sans-serif">Inter (Modern)</option>
+                        </select>
 
-                    <button 
-                      type="button" 
-                      className="polaroid-btn"
-                      onClick={handlePolaroidDownload}
-                      disabled={isGeneratingPolaroid}
-                      style={{ marginTop: '16px' }}
-                    >
-                      {isGeneratingPolaroid ? 'Generating...' : '🖼️ Download Polaroid'}
-                    </button>
+                        <div className="ps-label" style={{ marginTop: '12px' }}>EXIF Text Formatting</div>
+                        <div style={{ display: 'flex', gap: '16px', marginTop: '6px' }}>
+                          <label style={{ fontSize: '12px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                            <input type="checkbox" checked={exifBold} onChange={(e) => setExifBold(e.target.checked)} />
+                            Bold
+                          </label>
+                          <label style={{ fontSize: '12px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                            <input type="checkbox" checked={exifItalic} onChange={(e) => setExifItalic(e.target.checked)} />
+                            Italic
+                          </label>
+                        </div>
+
+                        <div className="ps-label" style={{ marginTop: '12px' }}>EXIF Text Size: {Math.round(exifTextScale * 100)}%</div>
+                        <input 
+                          type="range" 
+                          min="0.5" 
+                          max="2.0" 
+                          step="0.05" 
+                          value={exifTextScale}
+                          onChange={(e) => setExifTextScale(parseFloat(e.target.value))}
+                          style={{ width: '100%', cursor: 'pointer', marginTop: '4px' }}
+                        />
+
+                        <div className="ps-label" style={{ marginTop: '12px' }}>Include EXIF Data (Scroll for more)</div>
+                        <div className="ps-toggles" style={{ 
+                          maxHeight: '140px', 
+                          overflowY: 'auto', 
+                          padding: '8px', 
+                          background: 'var(--surface2)', 
+                          borderRadius: '6px', 
+                          border: '1px solid var(--border2)' 
+                        }}>
+                          {availableExifOptions.map(field => (
+                            <label key={field} style={{ flex: '1 1 45%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={polaroidToggles.includes(field)}
+                                onChange={() => togglePolaroidExif(field)}
+                              />
+                              {field}
+                            </label>
+                          ))}
+                        </div>
+
+                        <button 
+                          type="button" 
+                          className="polaroid-btn"
+                          onClick={handlePolaroidDownload}
+                          disabled={isGeneratingPolaroid}
+                          style={{ marginTop: '16px' }}
+                        >
+                          {isGeneratingPolaroid ? 'Generating...' : '🖼️ Download Polaroid'}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div className="ps-title" style={{ color: '#818cf8' }}>RPG Trading Card Generator</div>
+                          {rpgBaseInfo && (
+                            <span className={`rpg-badge-pill rpg-badge-${(rpgRarity !== 'auto' ? rpgRarity : rpgBaseInfo.rarity).toLowerCase()}`}>
+                              LVL {rpgBaseInfo.gearLevel} • {rpgRarity !== 'auto' ? rpgRarity : rpgBaseInfo.rarity}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="ps-label">Card Title</div>
+                        <input 
+                          type="text" 
+                          className="ps-input" 
+                          placeholder="Hero or Photo Name..."
+                          value={rpgTitle}
+                          onChange={(e) => setRpgTitle(e.target.value)}
+                        />
+
+                        <div className="ps-label">Archetype Class</div>
+                        <select 
+                          className="ps-select"
+                          value={rpgArchetype}
+                          onChange={(e) => setRpgArchetype(e.target.value)}
+                        >
+                          <option value="auto">Auto-Detected ({rpgBaseInfo?.archetype || 'Street Vanguard'})</option>
+                          <option value="Bokeh Sorcerer">Bokeh Sorcerer (Aperture-focused)</option>
+                          <option value="Speed Berserker">Speed Berserker (High Shutter)</option>
+                          <option value="Photon Sniper">Photon Sniper (Telephoto Range)</option>
+                          <option value="Shadow Stalker">Shadow Stalker (High-ISO Low Light)</option>
+                          <option value="Chronomancer">Chronomancer (Long Exposure)</option>
+                          <option value="Horizon Warden">Horizon Warden (Ultra-Wide Panorama)</option>
+                          <option value="Hyperfocal Sage">Hyperfocal Sage (Deep Precision Field)</option>
+                          <option value="Street Vanguard">Street Vanguard (Spontaneous Action)</option>
+                        </select>
+
+                        <div className="ps-label">Card Theme & Rarity Frame</div>
+                        <select 
+                          className="ps-select"
+                          value={rpgRarity}
+                          onChange={(e) => setRpgRarity(e.target.value)}
+                        >
+                          <option value="auto">Auto-Ranked ({rpgBaseInfo?.rarity || 'COMMON'})</option>
+                          <option value="MYTHIC">★ MYTHIC ★ (Prismatic Cosmic Hologram)</option>
+                          <option value="LEGENDARY">★ LEGENDARY ★ (Molten Gold Armor)</option>
+                          <option value="EPIC">✦ EPIC ✦ (Cyber Neon Amethyst)</option>
+                          <option value="RARE">◆ RARE ◆ (Cobalt Emerald Surge)</option>
+                          <option value="COMMON">● COMMON ● (Brushed Steel Plate)</option>
+                        </select>
+
+                        {rpgBaseInfo && (
+                          <div style={{ marginTop: '8px' }}>
+                            <div className="ps-label">Calculated Attributes</div>
+                            <div className="rpg-stat-grid">
+                              <div className="rpg-stat-chip">
+                                <div className="rpg-stat-chip-header">
+                                  <span>⚡ AGI</span>
+                                  <span>Shutter</span>
+                                </div>
+                                <div className="rpg-stat-chip-score">
+                                  <span>{rpgBaseInfo.stats.agi}</span>
+                                  <span className="rpg-stat-chip-raw">{rpgBaseInfo.rawValues.shutter}</span>
+                                </div>
+                              </div>
+                              <div className="rpg-stat-chip">
+                                <div className="rpg-stat-chip-header">
+                                  <span>💥 PWR</span>
+                                  <span>Aperture</span>
+                                </div>
+                                <div className="rpg-stat-chip-score">
+                                  <span>{rpgBaseInfo.stats.pwr}</span>
+                                  <span className="rpg-stat-chip-raw">{rpgBaseInfo.rawValues.aperture}</span>
+                                </div>
+                              </div>
+                              <div className="rpg-stat-chip">
+                                <div className="rpg-stat-chip-header">
+                                  <span>🛡️ PUR</span>
+                                  <span>Purity</span>
+                                </div>
+                                <div className="rpg-stat-chip-score">
+                                  <span>{rpgBaseInfo.stats.pur}</span>
+                                  <span className="rpg-stat-chip-raw">{rpgBaseInfo.rawValues.iso}</span>
+                                </div>
+                              </div>
+                              <div className="rpg-stat-chip">
+                                <div className="rpg-stat-chip-header">
+                                  <span>🎯 RCH</span>
+                                  <span>Reach</span>
+                                </div>
+                                <div className="rpg-stat-chip-score">
+                                  <span>{rpgBaseInfo.stats.rch}</span>
+                                  <span className="rpg-stat-chip-raw">{rpgBaseInfo.rawValues.focal}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div style={{ 
+                              padding: '8px 10px', 
+                              background: 'var(--surface2)', 
+                              border: '1px solid var(--border2)', 
+                              borderRadius: '6px',
+                              borderLeft: '3px solid #818cf8',
+                              fontSize: '11px',
+                              lineHeight: '1.4'
+                            }}>
+                              <div style={{ fontWeight: 'bold', color: '#a5b4fc', marginBottom: '2px' }}>
+                                ✦ {rpgBaseInfo.perkName}
+                              </div>
+                              <div style={{ color: 'var(--text-dim)', fontSize: '10px' }}>
+                                {rpgBaseInfo.perkDesc}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        <button 
+                          type="button" 
+                          className="polaroid-btn rpg-download-btn"
+                          onClick={handleRpgDownload}
+                          disabled={isGeneratingRpg}
+                          style={{ marginTop: '16px' }}
+                        >
+                          {isGeneratingRpg ? 'Minting Card...' : '⚔️ Download RPG Card'}
+                        </button>
+                      </>
+                    )}
                     
                     <button 
                       type="button" 

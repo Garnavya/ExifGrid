@@ -395,6 +395,20 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 
 ---
 
+### Feature 21: Automated Folder Organization & Batch Export Suite
+
+* **Purpose & Workflow:**  
+  Solves flat SD card clutter by automatically organizing photo batches into hierarchical subfolder structures based on camera EXIF tags. Supports sorting by Capture Date (`YYYY-MM-DD/`), Camera Model (`Sony_A7RV/`, `Canon_EOS_R5/`), Focal Length (`35mm/`, `85mm/`), ISO Noise Gain Tiers (`ISO_100-400_LowNoise/`, `ISO_6400+_HighGain/`), or Solar Phase (`Golden_Hour/`, `Daylight/`). Enables format transformation (Polaroids, Collectible RPG Stat Cards, Privacy-Scrubbed assets, or Pristine Originals), optional metadata slug renaming (`[Date]_[Camera]_[Filename]`), and provides a live ASCII directory tree preview inside `BatchSettingsModal.jsx` before asynchronous ZIP compression and packaging.
+* **Component & File Footprint:**  
+  [`client/src/utils/batchProcessor.js`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/utils/batchProcessor.js), [`client/src/components/BatchSettingsModal.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/components/BatchSettingsModal.jsx), [`client/src/App.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/App.jsx), [`client/src/css/modal.css`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/css/modal.css).
+* **Algorithmic & Archival Basis:**  
+  * **Dynamic Subfolder Resolution:** Path mapping based on sanitized EXIF strings:
+    $\text{path} = \text{sanitize}(\text{folderKey}(photo, strategy)) + '/' + \text{formatPrefix} + \text{metaSlug} + \text{baseName}$.
+  * **Asynchronous Multi-Format Pipeline:** Queues in-memory Blobs into `JSZip` folder nodes while reporting real-time percent progress (0–50% generation, 50–100% compression deflate).
+  * **Interactive ASCII Directory Synthesizer:** Computes sample 3-tier branch tree (`├──`, `└──`, `│`) to preview exact archive layout before execution.
+
+---
+
 ## 3. Technology Cross-Reference Matrix
 
 | Feature | Primary Component / Util | Libraries / Frameworks | Web APIs / Standards | Algorithmic / Math Basis |
@@ -408,6 +422,7 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 | **RPG Stat Cards**| `rpgCard.js`, `Lightbox.jsx` | Canvas 2D, React 18 | HTML5 Canvas, Blob, DataURL | Weighted Stat Matrix, Tier Classifier, Word-Wrap Canvas |
 | **Chromatic Donut**| `chromaticAnalysis.js`, `ChromaticDonut.jsx` | Canvas 2D, React 18 | `createImageBitmap`, ImageData | 36-Bin Angular Hue Histogram, Shortest Angular Distance |
 | **Sun Path Tracker**| `sunCalc.js`, `SunTracker.jsx` | SVG, React 18 | Native Math, Spherical Trig | Jean Meeus Solar Ephemeris, Elevation/Azimuth Vector |
+| **Auto Folders** | `batchProcessor.js`, `BatchSettingsModal.jsx` | `jszip`, React 18 | Blob, ArrayBuffer | EXIF Rule-Based Directory Mapping, Deflate Stream |
 | **SVG Filters** | `ImageFilters.jsx` | Native SVG | `<feConvolveMatrix>`, `<feColorMatrix>` | $3\times3$ Discrete Laplacian Edge Matrix |
 | **EXIF Scrubber** | `exifStripper.js` | Native Canvas | Canvas `toBlob()`, Object URL | Binary Pixel Re-encoding (Dropping Segment APP1) |
 | **CMI Injector** | `exifInjector.js` | `piexifjs` | FileReader, Base64 | TIFF Tag IFD Segment Encoding (Artist, Copyright) |

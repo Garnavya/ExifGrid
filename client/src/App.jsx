@@ -21,7 +21,7 @@ import { PhotoProvider, usePhotos } from './context/PhotoContext.jsx';
 import { usePhotoFilters } from './hooks/usePhotoFilters.js';
 import { useDownload } from './hooks/useDownload.js';
 
-import { createBatchPolaroidZip } from './utils/batchProcessor.js';
+import { createStructuredBatchZip, createBatchPolaroidZip } from './utils/batchProcessor.js';
 import { ingestPhotoMeta, createPhotoId } from './utils/exifReader.js';
 import { generateCSVBlob } from './utils/csvExport.js';
 import { trackAction } from './api/telemetry.js';
@@ -138,9 +138,11 @@ function ExifGridMain() {
     setIsZipping(true);
     setZipProgress(0);
     try {
-      const zipBlob = await createBatchPolaroidZip(photos, settings, setZipProgress);
+      const zipBlob = await createStructuredBatchZip(photos, settings, setZipProgress);
       if (zipBlob) {
-        downloadFile(zipBlob, `ExifGrid_Polaroids_${new Date().getTime()}.zip`);
+        const formatTag = settings.exportFormat ? `${settings.exportFormat.toUpperCase()}_` : '';
+        const sortTag = settings.organizeBy && settings.organizeBy !== 'none' ? `by_${settings.organizeBy}_` : '';
+        downloadFile(zipBlob, `ExifGrid_${formatTag}${sortTag}${new Date().getTime()}.zip`);
       }
       trackAction('polaroid_gen', { count: photos.length });
     } catch (error) {
@@ -238,7 +240,7 @@ function ExifGridMain() {
       
       {showInsights && <InsightsDashboard photos={photos} onClose={() => setShowInsights(false)} />}
       
-      {showBatchModal && <BatchSettingsModal onCancel={() => setShowBatchModal(false)} onConfirm={executeBatchDownload} />}
+      {showBatchModal && <BatchSettingsModal photos={photos} onCancel={() => setShowBatchModal(false)} onConfirm={executeBatchDownload} />}
       
       {showMetadataModal && (
         <MetadataForm 

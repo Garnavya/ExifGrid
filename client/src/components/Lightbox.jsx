@@ -529,7 +529,6 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                 </div>
               )}
             </div>
-            </div>
             
             {/* RIGHT SIDE: Sidebar / Meta Settings */}
             <div className="lb-sidebar-column" ref={sidebarRef}>

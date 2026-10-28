@@ -166,15 +166,6 @@ export default function SunTracker({ dateString, lat, lon }) {
             </span>
           </div>
         </div>
-          }}>
-            <span style={{ color: 'var(--text)' }}>
-              Altitude: <strong style={{ color: solarData.phaseColor }}>{solarData.altitude.toFixed(1)}°</strong>
-            </span>
-            <span style={{ color: 'var(--text-dim)' }}>
-              Heading: <strong style={{ color: 'var(--text)' }}>{Math.round(solarData.azimuth)}° {solarData.cardinal}</strong>
-            </span>
-          </div>
-        </div>
 
         {/* Phase Lighting Guidance Note */}
         <div style={{

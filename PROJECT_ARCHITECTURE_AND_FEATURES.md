@@ -27,6 +27,7 @@
    * [Feature 15: Progressive Web App (PWA) Offline Engine & Tile Caching](#feature-15-progressive-web-app-pwa-offline-engine--tile-caching)
    * [Feature 16: Fault-Tolerant React Error Boundary](#feature-16-fault-tolerant-react-error-boundary)
    * [Feature 17: Hardened Telemetry Backend & Rate Limiter](#feature-17-hardened-telemetry-backend--rate-limiter)
+   * [Feature 18: RPG-Style "Stat Card" Generator (Collectible Trading Cards)](#feature-18-rpg-style-stat-card-generator-collectible-trading-cards)
 3. [Technology Cross-Reference Matrix](#3-technology-cross-reference-matrix)
 
 ---
@@ -350,6 +351,27 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 
 ---
 
+### Feature 19: Radial RGB Chromatic Donut & Color Harmony Suite
+
+* **Purpose & Workflow:**  
+  An interactive color grading and color theory analysis suite integrated into the Lightbox sidebar. Decodes and downsamples the image off-thread to sample 10,000 pixels, constructing a 36-bin ($10^\circ$) angular hue histogram, calculating overall RGB channel saturation split percentages (Red, Green, Blue), determining warm-vs-cool spectrum balance, isolating top 5 dominant palette swatches with one-click HEX clipboard copying, and classifying classical color harmony (*Monochromatic*, *Analogous*, *Complementary*, *Split-Complementary*, *Triadic*, or *Polychromatic*).
+* **Component & File Footprint:**  
+  [`client/src/utils/chromaticAnalysis.js`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/utils/chromaticAnalysis.js), [`client/src/components/ChromaticDonut.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/components/ChromaticDonut.jsx), [`client/src/components/Lightbox.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/components/Lightbox.jsx).
+* **Algorithmic & Mathematical Basis:**  
+  * **Color Space Transformation:** Fast RGB $\to$ HSL mapping for all sample pixels:
+    $L = \frac{\max(R,G,B) + \min(R,G,B)}{2}$, with saturation and hue calculated per hexagonal sector.
+  * **Angular Histogram Quantization:** Discretizes hues into 36 angular bins ($10^\circ$ each), weighting each count by pixel saturation $S$ while filtering extreme blacks ($L < 0.08$) and whites ($L > 0.94$).
+  * **Shortest Angular Distance:** $\Delta\theta = \min(|\theta_1 - \theta_2|, 360^\circ - |\theta_1 - \theta_2|)$.
+  * **Classical Harmony Classification:** Evaluates angular divergence $\Delta\theta$ between dominant hue peaks:
+    * $\Delta\theta \le 35^\circ \implies$ **Analogous Harmony**
+    * $155^\circ \le \Delta\theta \le 180^\circ \implies$ **Complementary Contrast**
+    * $120^\circ \le \Delta\theta \le 165^\circ \implies$ **Split-Complementary**
+    * $\Delta\theta_1, \Delta\theta_2 \approx 120^\circ \implies$ **Triadic Harmony**
+    * Average saturation $< 0.15 \implies$ **Monochromatic / Tonal**
+  * **Retina Canvas Donut Renderer:** Renders base $360^\circ$ chromatic track with dynamic glowing radial pulses scaling with image hue concentration and a central dominant color orb.
+
+---
+
 ## 3. Technology Cross-Reference Matrix
 
 | Feature | Primary Component / Util | Libraries / Frameworks | Web APIs / Standards | Algorithmic / Math Basis |
@@ -361,6 +383,7 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 | **Filter Matrix** | `FilterMatrix.jsx` | React 18 | ES6 `Set`, Array Methods | Compound Boolean Set Deduplication |
 | **Polaroid Gen** | `polaroid.js`, `batchProcessor.js`| `jszip` | Canvas 2D, Blob | Iterative Text Scaling, Zip Deflate Compression |
 | **RPG Stat Cards**| `rpgCard.js`, `Lightbox.jsx` | Canvas 2D, React 18 | HTML5 Canvas, Blob, DataURL | Weighted Stat Matrix, Tier Classifier, Word-Wrap Canvas |
+| **Chromatic Donut**| `chromaticAnalysis.js`, `ChromaticDonut.jsx` | Canvas 2D, React 18 | `createImageBitmap`, ImageData | 36-Bin Angular Hue Histogram, Shortest Angular Distance |
 | **SVG Filters** | `ImageFilters.jsx` | Native SVG | `<feConvolveMatrix>`, `<feColorMatrix>` | $3\times3$ Discrete Laplacian Edge Matrix |
 | **EXIF Scrubber** | `exifStripper.js` | Native Canvas | Canvas `toBlob()`, Object URL | Binary Pixel Re-encoding (Dropping Segment APP1) |
 | **CMI Injector** | `exifInjector.js` | `piexifjs` | FileReader, Base64 | TIFF Tag IFD Segment Encoding (Artist, Copyright) |

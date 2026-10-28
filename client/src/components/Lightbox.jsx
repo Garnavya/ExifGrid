@@ -10,6 +10,7 @@ import { stripExifData } from '../utils/exifStripper.js';
 import { downloadPolaroid, generatePolaroidDataURL } from '../utils/polaroid.js'; 
 import { calculateRpgStats, generateRpgCardDataURL, downloadRpgCard } from '../utils/rpgCard.js';
 import AIAnalysisModal from './AIAnalysisModal';
+import ChromaticDonut from './ChromaticDonut.jsx';
 
 function MetaSection({ title, rows }) {
   return (
@@ -449,6 +450,9 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                     </optgroup>
                   </select>
                 </div>
+
+                {/* Chromatic Color Composition & Radial Donut */}
+                <ChromaticDonut photoSrc={photo.src} photoName={photo.name} />
 
                 <div className="meta-actions">
                   <button

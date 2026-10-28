@@ -48,8 +48,13 @@ export default function AIAnalysisModal({ imageSrc, onClose }) {
     img.src = imageSrc;
     img.onload = async () => {
       setStatus('processing');
-      const bitmap = await createImageBitmap(img);
-      aiWorker.postMessage({ action: 'analyze', imageBitmap: bitmap });
+      try {
+        const bitmap = await createImageBitmap(img);
+        aiWorker.postMessage({ action: 'analyze', imageBitmap: bitmap }, [bitmap]);
+      } catch (err) {
+        setStatus('error');
+        setStatusMessage('Failed to prepare image for AI analysis.');
+      }
     };
 
     // 3. Cleanup: Clear the handler, but DO NOT terminate the worker
@@ -68,9 +73,10 @@ export default function AIAnalysisModal({ imageSrc, onClose }) {
     canvas.height = img.clientHeight;
     const ctx = canvas.getContext('2d');
     
-    // Calculate scale (ONNX outputs coordinates based on a 224x224 square)
-    const scaleX = canvas.width / 224;
-    const scaleY = canvas.height / 224;
+    // Calculate scale (ONNX outputs coordinates based on 384x384 tensor)
+    const MODEL_DIM = 384;
+    const scaleX = canvas.width / MODEL_DIM;
+    const scaleY = canvas.height / MODEL_DIM;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineWidth = 3;

@@ -20,6 +20,8 @@ export default function ComparisonFeed({ photos, comparisonIds, onClear, onRemov
   const photoA = photos.find(p => p.id === comparisonIds[0]);
   const photoB = comparisonIds.length === 2 ? photos.find(p => p.id === comparisonIds[1]) : null;
 
+  if (!photoA) return null;
+
   // Helper to extract and format stats safely
   const getStats = (photo) => {
     if (!photo || !photo.exif) return { camera: '--', aperture: '--', shutter: '--', iso: '--', focal: '--' };

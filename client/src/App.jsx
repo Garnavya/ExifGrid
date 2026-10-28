@@ -44,6 +44,7 @@ function ExifGridMain() {
 
   const { 
     photos, setPhotos, activePhotoId, setActivePhotoId, 
+    setComparisonIds,
     hasPhotos, stats, photoIds, activePhoto, handleClearAll 
   } = usePhotos();
 
@@ -119,12 +120,13 @@ function ExifGridMain() {
       return prev.filter((p) => p.id !== id);
     });
     setActivePhotoId((current) => (current === id ? null : current));
+    setComparisonIds((current) => current.filter((cId) => cId !== id));
     setTimeout(() => {
       setGridProgress({ active: true, percent: 100 });
       setTimeout(() => setGridProgress(prev => ({ ...prev, active: false })), 300);
       setTimeout(() => setGridProgress({ active: false, percent: 0 }), 600);
     }, 50);
-  }, [setPhotos, setActivePhotoId, setGridProgress]);
+  }, [setPhotos, setActivePhotoId, setComparisonIds, setGridProgress]);
 
   const executeBatchDownload = useCallback(async (settings) => {
     setShowBatchModal(false);
@@ -156,9 +158,10 @@ function ExifGridMain() {
       for (let i = 0; i < photos.length; i++) {
         const photo = photos[i];
         
-        const base64 = await new Promise((resolve) => {
+        const base64 = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
           reader.readAsDataURL(photo.file);
         });
 

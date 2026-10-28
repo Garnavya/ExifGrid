@@ -1,22 +1,43 @@
 import React, { useState } from 'react';
 
+// Helper to read all entries from a directory reader (handles W3C pagination)
+async function readAllEntriesFromReader(dirReader) {
+  const entries = [];
+  const readBatch = () => {
+    return new Promise((resolve) => {
+      dirReader.readEntries((batch) => resolve(batch || []), () => resolve([]));
+    });
+  };
+
+  let batch;
+  do {
+    batch = await readBatch();
+    if (batch.length > 0) entries.push(...batch);
+  } while (batch.length > 0);
+
+  return entries;
+}
+
 // Recursive helper to traverse directories and extract files
 async function getFilesFromEntry(entry) {
+  if (!entry) return [];
   if (entry.isFile) {
     return new Promise((resolve) => {
-      entry.file((file) => resolve(file));
+      entry.file(
+        (file) => resolve(file ? [file] : []),
+        () => resolve([])
+      );
     });
   } else if (entry.isDirectory) {
-    const dirReader = entry.createReader();
-    return new Promise((resolve) => {
-      // readEntries reads a batch of files in the directory
-      dirReader.readEntries(async (entries) => {
-        const promises = entries.map(getFilesFromEntry);
-        const filesArrays = await Promise.all(promises);
-        // Flatten the nested arrays into a single array of files
-        resolve(filesArrays.flat());
-      });
-    });
+    try {
+      const dirReader = entry.createReader();
+      const entries = await readAllEntriesFromReader(dirReader);
+      const promises = entries.map(getFilesFromEntry);
+      const filesArrays = await Promise.all(promises);
+      return filesArrays.flat();
+    } catch {
+      return [];
+    }
   }
   return [];
 }

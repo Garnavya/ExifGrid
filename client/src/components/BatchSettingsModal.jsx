@@ -21,6 +21,20 @@ export default function BatchSettingsModal({ onCancel, onConfirm }) {
     }, 300); 
   };
 
+  const handleConfirm = () => {
+    const exifToggles = [];
+    if (settings.showCamera) exifToggles.push('Model');
+    if (settings.showLens) exifToggles.push('FocalLength');
+    if (settings.showAperture) exifToggles.push('FNumber');
+    if (settings.showShutter) exifToggles.push('ExposureTime');
+    if (settings.showIso) exifToggles.push('ISO', 'ISOSpeedRatings');
+
+    onConfirm({
+      ...settings,
+      exifToggles
+    });
+  };
+
   return (
     <div className="modal-overlay" onClick={onCancel}>
       <div className="modal-content batch-settings" onClick={(e) => e.stopPropagation()}>
@@ -59,7 +73,7 @@ export default function BatchSettingsModal({ onCancel, onConfirm }) {
 
         <div className="modal-actions">
           <button className="btn-secondary" onClick={onCancel}>Cancel</button>
-          <button className="btn-primary" onClick={() => onConfirm(settings)}>Package Zip</button>
+          <button className="btn-primary" onClick={handleConfirm}>Package Zip</button>
         </div>
       </div>
     </div>

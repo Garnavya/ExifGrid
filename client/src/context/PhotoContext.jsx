@@ -25,15 +25,19 @@ export function PhotoProvider({ children }) {
       });
   }, []);
 
-  // 2. Auto-save session whenever the photos array changes (but only AFTER the initial load)
+  // 2. Debounced auto-save session whenever the photos array changes (only AFTER initial load)
   useEffect(() => {
     if (!isSessionLoaded) return; 
 
-    if (photos.length > 0) {
-      SessionPersistence.saveSession(photos);
-    } else {
-      SessionPersistence.clearSession();
-    }
+    const timer = setTimeout(() => {
+      if (photos.length > 0) {
+        SessionPersistence.saveSession(photos);
+      } else {
+        SessionPersistence.clearSession();
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
   }, [photos, isSessionLoaded]);
 
   const hasPhotos = photos.length > 0;

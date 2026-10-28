@@ -22,25 +22,29 @@ export default function PhotoCard({ photo, index, onOpen, onRemove, isComparing,
     let cancelled = false;
 
     (async () => {
-      const rgb = await extractDominantColor(photo.src);
-      
-      // Directly mutate DOM variables instead of using React state
-      if (!cancelled && rgb && cardRef.current) {
-        const styles = glowStyle(rgb, true);
-        cardRef.current.style.setProperty('--card-glow', styles['--card-glow']);
-        cardRef.current.style.setProperty('--card-glow-shadow', styles['--card-glow-shadow']);
+      try {
+        const rgb = await extractDominantColor(photo.src);
+        
+        // Directly mutate DOM variables instead of using React state
+        if (!cancelled && rgb && cardRef.current) {
+          const styles = glowStyle(rgb, true);
+          cardRef.current.style.setProperty('--card-glow', styles['--card-glow']);
+          cardRef.current.style.setProperty('--card-glow-shadow', styles['--card-glow-shadow']);
+        }
+      } catch (err) {
+        // Non-blocking color extract failure
       }
 
       if (!cancelled && cardRef.current) {
         gsap.fromTo(cardRef.current,
           { opacity: 0, scale: 0.9, y: 20 },
-          { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: 'back.out(1.2)', delay: (index % 10) * 0.05 }
+          { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: 'back.out(1.2)', delay: Math.min((index % 10) * 0.04, 0.4) }
         );
       }
     })();
 
     return () => { cancelled = true; };
-  }, [photo.status, photo.src, index]);
+  }, [photo.status, photo.src, photo.id]);
 
   if (photo.status === 'loading') {
     return <div className="card-loading" aria-label="Loading EXIF" />;

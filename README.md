@@ -16,6 +16,7 @@ Full-stack monorepo — React + Vite + Express.
 - [Features](#features)
 - [AI Engine (Experimental)](#ai-engine-experimental)
 - [Privacy](#privacy)
+- [Security & Audit Log](#security--audit-log)
 - [Tech Stack](#tech-stack)
 - [Development Process](#development-process)
 - [Known Limitations](#known-limitations)
@@ -108,9 +109,11 @@ Checking basic camera metadata — aperture, shutter speed, ISO — across a bat
 - **Dynamic Smart Filters** — Filter UI automatically maps to the active theme's CSS variables for consistent contrast across light/dark modes.
 
 ### Architecture & Stability
-- **Bulletproof React State** — Vanilla JS DOM manipulation replaced with strict React `useState` tracking, plus manual memory management (`URL.revokeObjectURL()`) to prevent leaks during heavy batch uploads.
-- **Precision DropZone** — Custom "dead space wrapper" hit detection so drag-and-drop only activates within the exact pixel bounds of the upload box.
-- **Hook-Order Optimization** — Core components (`Lightbox.jsx`, `ComparisonFeed.jsx`) are structured for strict React Hook ordering, with rigorous optional chaining (`photo?.src`) to eliminate crash loops when images unmount mid-comparison.
+- **React Error Boundary** — Top-level `<ErrorBoundary>` isolates unexpected runtime errors with visual recovery workflows ("Reload Page" / "Reset Session"), eliminating blank white-screen crash states.
+- **Resource-Safe Memory Management** — Strict lifecycle management on all native handles: `ImageBitmap.close()` cleanup in color extraction and ONNX inference, plus automated `URL.revokeObjectURL()` garbage collection to prevent GPU and heap leaks.
+- **Debounced IndexedDB Persistence** — Connection-cached persistence pipeline with a 1,000ms debounce prevents disk thrashing and storage quota saturation during multi-image batch uploads.
+- **W3C Paginated Directory Ingestion** — Recursive directory traversal properly drains `FileSystemDirectoryReader.readEntries()` batches, guaranteeing that folders containing more than 100 images are never silently truncated.
+- **Hook-Order Optimization & Isolated Card Renders** — Decoupled lifecycle animation triggers from list index positions, preventing full-gallery re-render storms during image deletion or filtering.
 
 ---
 
@@ -157,7 +160,17 @@ The model is a custom dual-head architecture (`ExifGridDualHead`) built in PyTor
 
 The only thing sent to the server is an anonymous count of **how many images were processed in a session** — a single incrementing number, with no EXIF content, camera data, or file information attached. This count resets client-side on refresh or tab close and is used solely to track aggregate, anonymous usage across all users. It can be fully disabled anytime via the opt-out toggle in **Settings → Privacy**.
 
-Map tiles for the Journey feature are loaded from OpenStreetMap, which — like any mapping service — sees your IP address when tiles are requested. This is standard for any app using free map tiles and isn't something the app can avoid while using OSM.
+Map tiles for the Journey feature are loaded from OpenStreetMap and CartoDB, which — like any mapping service — see your IP address when tiles are requested. This is standard for any app using map tiles and isn't something the app can avoid while rendering interactive maps.
+
+---
+
+## Security & Audit Log
+
+ExifGrid underwent a zero-sugarcoating technical and architectural audit addressing supply-chain exposure, backend lock-contention DoS vectors, and client-side memory safety.
+
+* **Full Security Audit & Resolution Log:** See [VULNERABILITY_REPORT.md](./VULNERABILITY_REPORT.md) for full CVE-style breakdowns, threat levels, exploit mechanics, and patches.
+* **Backend Hardening:** In-memory sliding-window rate limiting (60 req/15 min), OWASP HTTP security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection`), and strict numeric type sanitization for database operations.
+* **Pinned Dependencies:** All remote WebAssembly resources are pinned to exact immutable versions (`onnxruntime-web@1.26.0`), and offline caching covers all map tile domains.
 
 ---
 
@@ -204,15 +217,32 @@ Open an issue or PR — happy to discuss direction before you put in the work on
 
 ## Setup
 
+### 1. Clone & Install Dependencies
 ```bash
 # Clone the repository
 git clone https://github.com/Garnavya/ExifGrid
 cd ExifGrid
 
-# Install dependencies for both client and server
-npm install
+# Install client dependencies
 cd client && npm install
+
+# (Optional) Install server dependencies if using the telemetry backend
 cd ../server && npm install
+cd ..
+```
+
+### 2. Environment Configuration
+Environment templates are provided in both sub-packages:
+* **Server (Optional):** Copy `server/.env.example` to `server/.env` and configure your `MONGODB_URI` if you wish to track aggregate anonymous usage. If left unconfigured, the server operates gracefully without crashing.
+* **Client:** Copy `client/.env.example` to `client/.env`. Leave `VITE_API_URL` empty in local development to leverage Vite's automatic `/api` proxy to port 3001.
+
+### 3. Running the Application
+```bash
+# Run client only (100% local-first, zero server dependencies needed)
+npm run dev -w client
+
+# Or run both client and telemetry server concurrently
+npm run dev
 ```
 
 ---

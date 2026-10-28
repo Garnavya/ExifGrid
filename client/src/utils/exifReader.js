@@ -1,4 +1,3 @@
-import exifr from 'exifr';
 import { RawParser } from './rawParser.js';
 
 // Initialize the worker using Vite's native worker import syntax
@@ -15,18 +14,36 @@ function loadImageDimensions(src) {
   });
 }
 
-function parseExifInWorker(file) {
+function parseExifInWorker(file, timeoutMs = 8000) {
   return new Promise((resolve) => {
-    const id = Math.random().toString(36).substring(2, 9); // Temporary ID for matching messages
-    
+    const id = Math.random().toString(36).substring(2, 9);
+    let timer = null;
+
+    const cleanup = () => {
+      if (timer) clearTimeout(timer);
+      exifWorker.removeEventListener('message', messageHandler);
+      exifWorker.removeEventListener('error', errorHandler);
+    };
+
     const messageHandler = (e) => {
-      if (e.data.id === id) {
-        exifWorker.removeEventListener('message', messageHandler);
-        resolve(e.data.exifData);
+      if (e.data && e.data.id === id) {
+        cleanup();
+        resolve(e.data.exifData || {});
       }
     };
-    
+
+    const errorHandler = () => {
+      cleanup();
+      resolve({});
+    };
+
+    timer = setTimeout(() => {
+      cleanup();
+      resolve({});
+    }, timeoutMs);
+
     exifWorker.addEventListener('message', messageHandler);
+    exifWorker.addEventListener('error', errorHandler);
     exifWorker.postMessage({ file, id });
   });
 }

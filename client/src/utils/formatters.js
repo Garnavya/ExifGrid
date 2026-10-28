@@ -35,9 +35,10 @@ export function formatExifDate(str) {
 
 export function convertDMStoDD(dms, ref) {
   if (!dms || dms.length < 3) return 0;
-  const d = dms[0].numerator / dms[0].denominator;
-  const m = dms[1].numerator / dms[1].denominator;
-  const s = dms[2].numerator / dms[2].denominator;
+  const toNum = (v) => (typeof v === 'object' && v !== null && v.denominator ? v.numerator / v.denominator : Number(v) || 0);
+  const d = toNum(dms[0]);
+  const m = toNum(dms[1]);
+  const s = toNum(dms[2]);
   let dd = d + m / 60 + s / 3600;
   if (ref === 'S' || ref === 'W') dd = -dd;
   return dd;

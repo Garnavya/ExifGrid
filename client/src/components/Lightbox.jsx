@@ -5,6 +5,7 @@ import ImageFilters from './ImageFilters.jsx';
 import { formatAperture, formatBytes, formatExifDate, formatShutter } from '../utils/formatters.js';
 import { extractDominantColor, glowStyle } from '../utils/colorExtract.js';
 import { useKeyboardNav } from '../hooks/useKeyboardNav.js';
+import { useDownload } from '../hooks/useDownload.js';
 import { stripExifData } from '../utils/exifStripper.js';
 import { downloadPolaroid, generatePolaroidDataURL } from '../utils/polaroid.js'; 
 import AIAnalysisModal from './AIAnalysisModal';
@@ -46,6 +47,7 @@ function MiniMap({ lat, lon }) {
 }
 
 export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
+  const { downloadFile } = useDownload();
   const overlayRef = useRef(null);
   const imgRef = useRef(null);
   const sidebarRef = useRef(null);
@@ -181,7 +183,10 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
       const blob = await res.blob();
       const fileLikeObject = new File([blob], photo.name, { type: blob.type });
       const scrubbedBlob = await stripExifData(fileLikeObject);
-      downloadScrubbedImage(scrubbedBlob, photo.name);
+      const nameParts = photo.name.split('.');
+      const ext = nameParts.length > 1 ? nameParts.pop() : 'jpg';
+      const baseName = nameParts.join('.');
+      downloadFile(scrubbedBlob, `${baseName}_scrubbed.${ext}`);
     } catch (err) {
       console.error('Failed to scrub EXIF data:', err);
       alert('Failed to scrub image. Ensure it is a valid format.');

@@ -49,14 +49,5 @@ export async function createBatchPolaroidZip(photos, settings, onProgress) {
     }
   });
 
-  // Step 3: Trigger the local download
-  const downloadUrl = URL.createObjectURL(zipBlob);
-  link.href = downloadUrl;
-  link.download = `ExifGrid_Polaroids_${new Date().getTime()}.zip`;
-  document.body.appendChild(link); // Required for Firefox
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(downloadUrl);
-
   return zipBlob;
 }

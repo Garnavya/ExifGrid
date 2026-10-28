@@ -1,7 +1,8 @@
 import * as ort from 'onnxruntime-web';
 
+// Pin exact matching version to prevent unpinned CDN supply chain drift
 ort.env.wasm.numThreads = 1; 
-ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/';
+ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.26.0/dist/';
 let session = null;
 let isProcessing = false;
 
@@ -70,6 +71,9 @@ self.onmessage = async (event) => {
 
         self.postMessage({ status: 'processing', message: 'Analyzing Kinematics & Light...' });
         const tensor = preprocessImage(imageBitmap);
+        if (imageBitmap && typeof imageBitmap.close === 'function') {
+            imageBitmap.close();
+        }
         
         const feeds = { input_image: tensor };
         const results = await session.run(feeds);

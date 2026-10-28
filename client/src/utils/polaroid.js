@@ -52,8 +52,16 @@ export async function generatePolaroidDataURL(photo, settings = {}) {
   const exif = photo.exif || {};
   const exifParts = [];
 
-  // Strictly map exactly what the user selected to prevent hardcoded overrides
-  settings.exifToggles?.forEach(key => {
+  // Strictly map what the user selected or fallback to boolean flags if passed
+  const activeToggles = settings.exifToggles || [
+    ...(settings.showCamera ? ['Model'] : []),
+    ...(settings.showLens ? ['FocalLength'] : []),
+    ...(settings.showAperture ? ['FNumber'] : []),
+    ...(settings.showShutter ? ['ExposureTime'] : []),
+    ...(settings.showIso ? ['ISO', 'ISOSpeedRatings'] : [])
+  ];
+
+  activeToggles.forEach(key => {
     if (key === 'Model' && exif.Model) exifParts.push(`📸 ${exif.Model}`);
     else if (key === 'Make' && exif.Make) exifParts.push(exif.Make);
     else if (key === 'FNumber' && exif.FNumber) exifParts.push(formatAperture(exif.FNumber));
@@ -124,5 +132,7 @@ export async function downloadPolaroid(photo, settings) {
   const link = document.createElement('a');
   link.download = `ExifGrid-Polaroid-${photo.id}.jpg`;
   link.href = dataUrl;
+  document.body.appendChild(link);
   link.click();
+  document.body.removeChild(link);
 }

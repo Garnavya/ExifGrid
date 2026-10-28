@@ -1,11 +1,12 @@
 export async function extractDominantColor(src) {
+  let bitmap = null;
   try {
     // Fetch the local object URL
     const response = await fetch(src);
     const blob = await response.blob();
 
     // Decode and resize on a background thread (prevents UI freezing)
-    const bitmap = await createImageBitmap(blob, {
+    bitmap = await createImageBitmap(blob, {
       resizeWidth: 1,
       resizeHeight: 1,
       resizeQuality: 'low'
@@ -22,6 +23,10 @@ export async function extractDominantColor(src) {
     return { r, g, b };
   } catch {
     return null; // Fallback if extraction fails
+  } finally {
+    if (bitmap) {
+      try { bitmap.close(); } catch (_) {}
+    }
   }
 }
 

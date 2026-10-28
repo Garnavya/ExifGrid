@@ -1,10 +1,13 @@
+let cachedDb = null;
+
 export const SessionPersistence = {
     DB_NAME: 'ExifGridDB',
     STORE_NAME: 'photos',
     VERSION: 1,
 
-    // Initialize the IndexedDB connection
+    // Initialize the IndexedDB connection with connection caching
     async initDB() {
+        if (cachedDb) return cachedDb;
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(this.DB_NAME, this.VERSION);
             
@@ -15,7 +18,14 @@ export const SessionPersistence = {
                 }
             };
             
-            request.onsuccess = () => resolve(request.result);
+            request.onsuccess = () => {
+                cachedDb = request.result;
+                cachedDb.onversionchange = () => {
+                    cachedDb.close();
+                    cachedDb = null;
+                };
+                resolve(cachedDb);
+            };
             request.onerror = () => reject(request.error);
         });
     },

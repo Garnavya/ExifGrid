@@ -45,6 +45,20 @@ export default defineConfig({
                 statuses: [0, 200]
               }
             }
+          },
+          {
+            urlPattern: /^https:\/\/.*\.basemaps\.cartocdn\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'carto-map-tiles',
+              expiration: {
+                maxEntries: 500,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 Days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
           }
         ]
       }
@@ -59,28 +73,7 @@ export default defineConfig({
       },
     },
   },
-  
-  // ADD THIS TO FORCE VITE TO IGNORE BACKEND MODULES
-  build: {
-    rollupOptions: {
-      external: [
-        'mongoose', 
-        'mongodb', 
-        'crypto', 
-        'fs', 
-        'net', 
-        'tls', 
-        'dns', 
-        'stream', 
-        'util', 
-        'os', 
-        'path', 
-        'events', 
-        'zlib'
-      ]
-    }
-  },
   optimizeDeps: {
-    exclude: ['onnxruntime-web', 'mongoose', 'mongodb']
+    exclude: ['onnxruntime-web']
   }
 });

@@ -22,12 +22,31 @@ export default function JourneyMap({ photos }) {
 
     const map = mapInstanceRef.current;
 
+    const parseTimestamp = (val) => {
+      if (!val) return 0;
+      if (val instanceof Date) return val.getTime();
+      if (typeof val === 'string') {
+        const cleaned = val.trim().replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
+        const d = new Date(cleaned);
+        return isNaN(d.getTime()) ? 0 : d.getTime();
+      }
+      return 0;
+    };
+
     const journeyPoints = photos
-      .filter(p => p.exif && (p.exif.latitude || p.exif.gpsLat) && (p.exif.longitude || p.exif.gpsLng))
-      .sort((a, b) => new Date(a.exif.dateTimeOriginal || a.exif.dateTime) - new Date(b.exif.dateTimeOriginal || b.exif.dateTime))
+      .filter(p => {
+        const lat = p.exif?.latitude ?? p.exif?.gpsLat;
+        const lng = p.exif?.longitude ?? p.exif?.gpsLng;
+        return lat != null && lng != null && !isNaN(Number(lat)) && !isNaN(Number(lng));
+      })
+      .sort((a, b) => {
+        const timeA = parseTimestamp(a.exif?.dateTimeOriginal || a.exif?.DateTimeOriginal || a.exif?.dateTime);
+        const timeB = parseTimestamp(b.exif?.dateTimeOriginal || b.exif?.DateTimeOriginal || b.exif?.dateTime);
+        return timeA - timeB;
+      })
       .map(p => {
-         const lat = p.exif.latitude || p.exif.gpsLat;
-         const lng = p.exif.longitude || p.exif.gpsLng;
+         const lat = Number(p.exif.latitude ?? p.exif.gpsLat);
+         const lng = Number(p.exif.longitude ?? p.exif.gpsLng);
          return [lat, lng];
       });
 

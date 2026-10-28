@@ -71,6 +71,8 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
 
   // Export Mode: 'polaroid' | 'stamp' | 'rpg'
   const [exportMode, setExportMode] = useState('polaroid');
+  // Lightbox View Mode: 'photo' (full enlarged) | 'export' (full artifact) | 'split' (side-by-side)
+  const [lightboxView, setLightboxView] = useState('photo');
 
   // RPG Stat Card generator state
   const [rpgPreview, setRpgPreview] = useState(null);
@@ -110,6 +112,7 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     setWatermarkPreview(null);
     setWatermarkArtist(photo?.exif?.Artist || '');
     setWatermarkCamera(photo?.exif?.Model || photo?.exif?.Make || '');
+    setLightboxView('photo'); // Always open in full enlarged photo view
     
     if (photo?.exif) {
       const standardTags = ['Model', 'FNumber', 'ExposureTime', 'ISOSpeedRatings', 'ISO'];
@@ -352,6 +355,69 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
           
           <div className="lb-header">
             <div className="lb-title">{photo.name}</div>
+
+            {/* View Switcher Controls */}
+            <div style={{
+              display: 'flex',
+              background: 'var(--surface2)',
+              border: '1px solid var(--border2)',
+              borderRadius: '6px',
+              padding: '2px',
+              gap: '2px'
+            }}>
+              <button
+                type="button"
+                onClick={() => setLightboxView('photo')}
+                style={{
+                  padding: '4px 10px',
+                  background: lightboxView === 'photo' ? 'var(--surface)' : 'transparent',
+                  border: lightboxView === 'photo' ? '1px solid var(--border)' : 'none',
+                  borderRadius: '4px',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '11px',
+                  fontWeight: lightboxView === 'photo' ? 'bold' : 'normal',
+                  color: lightboxView === 'photo' ? 'var(--accent)' : 'var(--text-dim)',
+                  cursor: 'pointer'
+                }}
+              >
+                🔍 Enlarged Photo
+              </button>
+              <button
+                type="button"
+                onClick={() => setLightboxView('export')}
+                style={{
+                  padding: '4px 10px',
+                  background: lightboxView === 'export' ? 'var(--surface)' : 'transparent',
+                  border: lightboxView === 'export' ? '1px solid var(--border)' : 'none',
+                  borderRadius: '4px',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '11px',
+                  fontWeight: lightboxView === 'export' ? 'bold' : 'normal',
+                  color: lightboxView === 'export' ? 'var(--accent)' : 'var(--text-dim)',
+                  cursor: 'pointer'
+                }}
+              >
+                🖼️ Export Preview
+              </button>
+              <button
+                type="button"
+                onClick={() => setLightboxView('split')}
+                style={{
+                  padding: '4px 10px',
+                  background: lightboxView === 'split' ? 'var(--surface)' : 'transparent',
+                  border: lightboxView === 'split' ? '1px solid var(--border)' : 'none',
+                  borderRadius: '4px',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '11px',
+                  fontWeight: lightboxView === 'split' ? 'bold' : 'normal',
+                  color: lightboxView === 'split' ? 'var(--accent)' : 'var(--text-dim)',
+                  cursor: 'pointer'
+                }}
+              >
+                ◫ Split View
+              </button>
+            </div>
+
             <button type="button" className="lb-close" onClick={handleClose}>✕</button>
           </div>
       
@@ -359,9 +425,8 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
             
             {/* LEFT SIDE: Image Preview Area */}
             <div className="lb-img-wrap" ref={imgWrapRef}>
-              <div className="compare-container" style={{ display: 'flex', flexDirection: 'row', width: '100%', height: '100%', gap: '24px', alignItems: 'center', justifyContent: 'center' }}>
-                
-                <div className="compare-item" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minWidth: 0 }}>
+              {lightboxView === 'photo' && (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>
                   <img
                     ref={imgRef}
                     id="lb-img"
@@ -369,17 +434,20 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                     src={photo.src}
                     alt={photo.name}
                     onClick={() => setEnlarged((v) => !v)}
+                    style={{ maxHeight: '82vh', width: 'auto', maxWidth: '100%', objectFit: 'contain' }}
                   />
                 </div>
+              )}
 
-                <div className="compare-item" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minWidth: 0 }}>
+              {lightboxView === 'export' && (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>
                   {exportMode === 'polaroid' && (
                     polaroidPreview ? (
-                      <img 
-                        src={polaroidPreview} 
-                        alt="Polaroid Live Preview" 
-                        className="zoomable-img" 
-                        style={{ cursor: 'default', filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))' }}
+                      <img
+                        src={polaroidPreview}
+                        alt="Polaroid Preview"
+                        className="zoomable-img"
+                        style={{ cursor: 'default', filter: 'drop-shadow(0 15px 40px rgba(0,0,0,0.6))', maxHeight: '82vh' }}
                       />
                     ) : (
                       <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>
@@ -390,26 +458,26 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
 
                   {exportMode === 'stamp' && (
                     watermarkPreview ? (
-                      <img 
-                        src={watermarkPreview} 
-                        alt="Brand Stamp Live Preview" 
-                        className="zoomable-img" 
-                        style={{ cursor: 'default', filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))' }}
+                      <img
+                        src={watermarkPreview}
+                        alt="Brand Stamp Preview"
+                        className="zoomable-img"
+                        style={{ cursor: 'default', filter: 'drop-shadow(0 15px 40px rgba(0,0,0,0.6))', maxHeight: '82vh' }}
                       />
                     ) : (
                       <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>
-                        Applying Brand Stamp...
+                        Applying Brand Stamp Preview...
                       </div>
                     )
                   )}
 
                   {exportMode === 'rpg' && (
                     rpgPreview ? (
-                      <img 
-                        src={rpgPreview} 
-                        alt="RPG Stat Card Live Preview" 
-                        className="zoomable-img" 
-                        style={{ cursor: 'default', filter: 'drop-shadow(0 15px 35px rgba(0,0,0,0.6))', maxHeight: '76vh' }}
+                      <img
+                        src={rpgPreview}
+                        alt="RPG Stat Card Preview"
+                        className="zoomable-img"
+                        style={{ cursor: 'default', filter: 'drop-shadow(0 20px 50px rgba(0,0,0,0.7))', maxHeight: '84vh' }}
                       />
                     ) : (
                       <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>
@@ -418,8 +486,49 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                     )
                   )}
                 </div>
+              )}
 
-              </div>
+              {lightboxView === 'split' && (
+                <div className="compare-container" style={{ display: 'flex', flexDirection: 'row', width: '100%', height: '100%', gap: '24px', alignItems: 'center', justifyContent: 'center' }}>
+                  <div className="compare-item" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minWidth: 0 }}>
+                    <img
+                      ref={imgRef}
+                      id="lb-img"
+                      className={`zoomable-img ${enlarged ? 'enlarged' : ''} ${filterClass}`}
+                      src={photo.src}
+                      alt={photo.name}
+                      onClick={() => setEnlarged((v) => !v)}
+                    />
+                  </div>
+
+                  <div className="compare-item" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minWidth: 0 }}>
+                    {exportMode === 'polaroid' && (
+                      polaroidPreview ? (
+                        <img src={polaroidPreview} alt="Polaroid Live Preview" className="zoomable-img" style={{ cursor: 'default', filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))' }} />
+                      ) : (
+                        <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>Rendering Polaroid...</div>
+                      )
+                    )}
+
+                    {exportMode === 'stamp' && (
+                      watermarkPreview ? (
+                        <img src={watermarkPreview} alt="Brand Stamp Live Preview" className="zoomable-img" style={{ cursor: 'default', filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))' }} />
+                      ) : (
+                        <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>Applying Stamp...</div>
+                      )
+                    )}
+
+                    {exportMode === 'rpg' && (
+                      rpgPreview ? (
+                        <img src={rpgPreview} alt="RPG Stat Card Live Preview" className="zoomable-img" style={{ cursor: 'default', filter: 'drop-shadow(0 15px 35px rgba(0,0,0,0.6))', maxHeight: '76vh' }} />
+                      ) : (
+                        <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>Synthesizing Card...</div>
+                      )
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
             </div>
             
             {/* RIGHT SIDE: Sidebar / Meta Settings */}

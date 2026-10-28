@@ -33,17 +33,14 @@ export default function SunTracker({ dateString, lat, lon }) {
     return null;
   }
 
-  // SVG Arc Geometry (Dimensions: 220 x 100)
-  const arcRadius = 80;
-  const cx = 110;
-  const cy = 88;
+  // SVG Arc Geometry (Dimensions: 240 x 120)
+  const arcRadius = 76;
+  const cx = 120;
+  const cy = 100;
 
   // Normalized angle: horizon (0°) is at angle 0 rad, zenith (90°) is at angle -pi/2
   // Map solar altitude (-20° to 90°) to arc angle
   const clampedAlt = Math.max(-20, Math.min(90, solarData.altitude));
-  // Scale -20°..90° onto visual sweep from 195° to 345° (or left-to-right arc)
-  // Let's draw a half-dome arc where left is East horizon (0°), top is Zenith (90°), right is West horizon (0°)
-  // If azimuth is East (0..180), plot on rising half; if West (180..360), plot on setting half.
   const isSetting = solarData.azimuth >= 180;
   let angleOnDome;
   if (!isSetting) {
@@ -64,11 +61,11 @@ export default function SunTracker({ dateString, lat, lon }) {
         <span style={{
           fontSize: '9px',
           fontFamily: 'var(--font-mono)',
-          padding: '2px 6px',
+          padding: '2px 8px',
           borderRadius: '4px',
-          background: `${solarData.phaseColor}22`,
+          background: `${solarData.phaseColor}25`,
           color: solarData.phaseColor,
-          border: `1px solid ${solarData.phaseColor}55`,
+          border: `1px solid ${solarData.phaseColor}66`,
           fontWeight: 700
         }}>
           {solarData.phaseName}
@@ -79,44 +76,49 @@ export default function SunTracker({ dateString, lat, lon }) {
         
         {/* Sky Dome Elevation Arc */}
         <div style={{
-          background: 'var(--surface2)',
+          background: '#121312',
           borderRadius: '8px',
-          padding: '12px 10px 4px',
+          padding: '12px 10px 8px',
           border: '1px solid var(--border2)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           position: 'relative'
         }}>
-          <svg width="220" height="96" viewBox="0 0 220 96">
+          <svg width="240" height="120" viewBox="0 0 240 120">
             <defs>
               <linearGradient id="skyArcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.4" />
-                <stop offset="50%" stopColor="#38bdf8" stopOpacity="0.7" />
-                <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.4" />
+                <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.9" />
+                <stop offset="30%" stopColor="#38bdf8" stopOpacity="0.95" />
+                <stop offset="70%" stopColor="#38bdf8" stopOpacity="0.95" />
+                <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.9" />
               </linearGradient>
               <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
                 <stop offset="0%" stopColor={solarData.phaseColor} stopOpacity="1" />
+                <stop offset="60%" stopColor={solarData.phaseColor} stopOpacity="0.5" />
                 <stop offset="100%" stopColor={solarData.phaseColor} stopOpacity="0" />
               </radialGradient>
             </defs>
 
+            {/* Ground Baseline Fill */}
+            <rect x="10" y={cy} width="220" height="18" fill="rgba(255,255,255,0.03)" rx="2" />
+
             {/* Ground Horizon Line */}
-            <line x1="15" y1={cy} x2="205" y2={cy} stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="3,3" />
+            <line x1="12" y1={cy} x2="228" y2={cy} stroke="#64748b" strokeWidth="1.5" strokeDasharray="4,3" />
 
             {/* Golden Hour Zone Indicator (0° - 6° altitude) */}
             <path
               d={`M ${cx - arcRadius} ${cy} A ${arcRadius} ${arcRadius} 0 0 1 ${cx - arcRadius * Math.cos((6 * Math.PI)/180)} ${cy - arcRadius * Math.sin((6 * Math.PI)/180)}`}
               fill="none"
               stroke="#fbbf24"
-              strokeWidth="4"
+              strokeWidth="5"
               strokeLinecap="round"
             />
             <path
               d={`M ${cx + arcRadius * Math.cos((6 * Math.PI)/180)} ${cy - arcRadius * Math.sin((6 * Math.PI)/180)} A ${arcRadius} ${arcRadius} 0 0 1 ${cx + arcRadius} ${cy}`}
               fill="none"
               stroke="#fbbf24"
-              strokeWidth="4"
+              strokeWidth="5"
               strokeLinecap="round"
             />
 
@@ -125,25 +127,22 @@ export default function SunTracker({ dateString, lat, lon }) {
               d={`M ${cx - arcRadius} ${cy} A ${arcRadius} ${arcRadius} 0 0 1 ${cx + arcRadius} ${cy}`}
               fill="none"
               stroke="url(#skyArcGrad)"
-              strokeWidth="2"
+              strokeWidth="2.5"
             />
 
-            {/* Horizon Labels */}
-            <text x="18" y={cy - 4} fill="rgba(255,255,255,0.4)" fontSize="8" fontFamily="monospace">E</text>
-            <text x={cx} y={cy - arcRadius - 4} fill="rgba(255,255,255,0.4)" fontSize="8" fontFamily="monospace" textAnchor="middle">ZENITH 90°</text>
-            <text x="202" y={cy - 4} fill="rgba(255,255,255,0.4)" fontSize="8" fontFamily="monospace" textAnchor="end">W</text>
+            {/* Horizon & Zenith Labels */}
+            <text x="16" y={cy - 6} fill="#94a3b8" fontSize="9" fontFamily="monospace" fontWeight="bold">E 0°</text>
+            <text x={cx} y="16" fill="#f8fafc" fontSize="9" fontFamily="monospace" textAnchor="middle" fontWeight="bold">ZENITH 90°</text>
+            <text x="224" y={cy - 6} fill="#94a3b8" fontSize="9" fontFamily="monospace" textAnchor="end" fontWeight="bold">W 0°</text>
 
             {/* Sun Marker with Glow */}
-            {solarData.altitude >= -4 && (
+            {solarData.altitude >= -4 ? (
               <>
-                <circle cx={sunX} cy={sunY} r="10" fill="url(#sunGlow)" />
-                <circle cx={sunX} cy={sunY} r="4.5" fill={solarData.phaseColor} stroke="#ffffff" strokeWidth="1.5" />
+                <circle cx={sunX} cy={sunY} r="14" fill="url(#sunGlow)" />
+                <circle cx={sunX} cy={sunY} r="5" fill="#ffffff" stroke={solarData.phaseColor} strokeWidth="2.5" />
               </>
-            )}
-
-            {/* If Night/Below Horizon */}
-            {solarData.altitude < -4 && (
-              <text x={cx} y={cy - 20} fill="#a855f7" fontSize="10" fontFamily="monospace" textAnchor="middle" fontWeight="bold">
+            ) : (
+              <text x={cx} y={cy - 24} fill="#c084fc" fontSize="11" fontFamily="monospace" textAnchor="middle" fontWeight="bold">
                 🌙 Below Horizon ({solarData.altitude.toFixed(1)}°)
               </text>
             )}
@@ -154,10 +153,19 @@ export default function SunTracker({ dateString, lat, lon }) {
             display: 'flex',
             justifyContent: 'space-between',
             width: '100%',
-            padding: '4px 6px 0',
+            padding: '8px 8px 0',
             fontFamily: 'var(--font-mono)',
             fontSize: '11px',
-            borderTop: '1px solid rgba(255,255,255,0.06)'
+            borderTop: '1px solid rgba(255,255,255,0.08)'
+          }}>
+            <span style={{ color: '#94a3b8' }}>
+              Altitude: <strong style={{ color: '#fbbf24' }}>{solarData.altitude.toFixed(1)}°</strong>
+            </span>
+            <span style={{ color: '#94a3b8' }}>
+              Azimuth: <strong style={{ color: '#38bdf8' }}>{Math.round(solarData.azimuth)}° {solarData.cardinal}</strong>
+            </span>
+          </div>
+        </div>
           }}>
             <span style={{ color: 'var(--text)' }}>
               Altitude: <strong style={{ color: solarData.phaseColor }}>{solarData.altitude.toFixed(1)}°</strong>

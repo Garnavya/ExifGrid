@@ -286,18 +286,26 @@ export async function analyzeImageChromaticComposition(src) {
  * 
  * @param {HTMLCanvasElement} canvas Target canvas
  * @param {Object} chromaticData Result from analyzeImageChromaticComposition
+ * @param {number} size Logical display size (width and height in px)
  */
-export function drawChromaticDonut(canvas, chromaticData) {
+export function drawChromaticDonut(canvas, chromaticData, size = 200) {
   if (!canvas || !chromaticData) return;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(size * dpr);
+  canvas.height = Math.round(size * dpr);
+  canvas.style.width = `${size}px`;
+  canvas.style.height = `${size}px`;
+
   const ctx = canvas.getContext('2d');
-  const width = canvas.width;
-  const height = canvas.height;
-  const cx = width / 2;
-  const cy = height / 2;
+  ctx.save();
+  ctx.scale(dpr, dpr);
 
-  ctx.clearRect(0, 0, width, height);
+  const cx = size / 2;
+  const cy = size / 2;
 
-  const outerR = Math.min(cx, cy) - 10;
+  ctx.clearRect(0, 0, size, size);
+
+  const outerR = (size / 2) - 18;
   const innerR = outerR * 0.58;
   const bins = chromaticData.bins || [];
 
@@ -312,7 +320,7 @@ export function drawChromaticDonut(canvas, chromaticData) {
     ctx.arc(cx, cy, innerR, endAngle, startAngle, true);
     ctx.closePath();
 
-    ctx.fillStyle = `hsla(${hue}, 85%, 50%, 0.18)`;
+    ctx.fillStyle = `hsla(${hue}, 85%, 50%, 0.22)`;
     ctx.fill();
   }
 
@@ -332,15 +340,15 @@ export function drawChromaticDonut(canvas, chromaticData) {
     ctx.arc(cx, cy, innerR, endAngle, startAngle, true);
     ctx.closePath();
 
-    ctx.fillStyle = `hsla(${hue}, 95%, ${Math.round(45 + weight * 15)}%, ${Math.min(1.0, 0.45 + weight * 0.55)})`;
-    ctx.shadowColor = `hsla(${hue}, 100%, 50%, 0.6)`;
+    ctx.fillStyle = `hsla(${hue}, 95%, ${Math.round(45 + weight * 15)}%, ${Math.min(1.0, 0.5 + weight * 0.5)})`;
+    ctx.shadowColor = `hsla(${hue}, 100%, 50%, 0.7)`;
     ctx.shadowBlur = Math.round(weight * 8);
     ctx.fill();
     ctx.shadowColor = 'transparent';
   }
 
   // 3. Inner Bevel Rings
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
   ctx.lineWidth = 1;
 
   ctx.beginPath();
@@ -351,26 +359,34 @@ export function drawChromaticDonut(canvas, chromaticData) {
   ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
   ctx.stroke();
 
-  // 4. Center Hub Display
-  const primaryColor = chromaticData.dominantPalette?.[0]?.hex || '#888888';
-  ctx.fillStyle = 'rgba(10, 10, 16, 0.92)';
+  // 4. Center Hub Display (Pick most saturated chromatic accent color, not dark shadow)
+  const chromaticSwatch = chromaticData.dominantPalette?.find(c => c.s > 0.18) || chromaticData.dominantPalette?.[0];
+  const primaryColor = chromaticSwatch?.hex || '#b5a684';
+
+  ctx.fillStyle = '#121312';
   ctx.beginPath();
   ctx.arc(cx, cy, innerR - 2, 0, Math.PI * 2);
   ctx.fill();
 
-  // Inner color swatch orb
+  // Inner color swatch orb with glowing border
+  ctx.shadowColor = primaryColor;
+  ctx.shadowBlur = 10;
   ctx.fillStyle = primaryColor;
   ctx.beginPath();
   ctx.arc(cx, cy, 14, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+  ctx.shadowColor = 'transparent';
+
+  ctx.strokeStyle = '#ffffff';
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  // Contrast ring
+  // Hex label
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 9px monospace';
+  ctx.font = 'bold 10px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(primaryColor, cx, cy + 24);
+
+  ctx.restore();
 }

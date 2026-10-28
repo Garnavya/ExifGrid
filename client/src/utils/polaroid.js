@@ -13,15 +13,11 @@ export async function generatePolaroidDataURL(photo, settings = {}) {
     img.onerror = rej;
   });
 
-  const MAX_WIDTH = 1920;
-  let imgWidth = img.width;
-  let imgHeight = img.height;
-
-  if (imgWidth > MAX_WIDTH) {
-    const scaleFactor = MAX_WIDTH / imgWidth;
-    imgWidth = MAX_WIDTH;
-    imgHeight = Math.round(imgHeight * scaleFactor);
-  }
+  // Ensure high-DPI rendering for export (min 1400px, max 2560px)
+  const targetWidth = Math.min(2560, Math.max(1400, img.width));
+  const scaleFactor = targetWidth / img.width;
+  const imgWidth = targetWidth;
+  const imgHeight = Math.round(img.height * scaleFactor);
 
   const baseSize = Math.max(imgWidth, imgHeight);
   const frameThick = Math.round(imgWidth * 0.06);

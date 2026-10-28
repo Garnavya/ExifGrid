@@ -14,7 +14,7 @@ function loadImageDimensions(src) {
   });
 }
 
-function parseExifInWorker(file, timeoutMs = 8000) {
+function parseExifInWorker(file, isRaw = false, timeoutMs = 8000) {
   return new Promise((resolve) => {
     const id = Math.random().toString(36).substring(2, 9);
     let timer = null;
@@ -47,7 +47,7 @@ function parseExifInWorker(file, timeoutMs = 8000) {
 
     exifWorker.addEventListener('message', messageHandler);
     exifWorker.addEventListener('error', errorHandler);
-    exifWorker.postMessage({ file, id });
+    exifWorker.postMessage({ file, id, isRaw });
   });
 }
 
@@ -57,14 +57,15 @@ export async function ingestPhotoMeta(file, src) {
     
     const [dims, workerResult] = await Promise.all([
       loadImageDimensions(src),
-      parseExifInWorker(file),
+      parseExifInWorker(file, isRawFile),
     ]);
 
     let finalSrc = src;
     let finalDims = dims;
 
-    // If an embedded JPEG preview is available (e.g. from Sony/Canon/Nikon RAW), upgrade the preview
-    if (workerResult.previewBuffer) {
+    // Only for true unrenderable RAW formats (CR2, NEF, ARW, etc.):
+    // upgrade to extracted embedded preview if present
+    if (isRawFile && workerResult.previewBuffer) {
       try {
         const previewBlob = new Blob([workerResult.previewBuffer], { type: 'image/jpeg' });
         finalSrc = URL.createObjectURL(previewBlob);

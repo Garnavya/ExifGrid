@@ -149,68 +149,68 @@ export function calculateRpgStats(photo) {
 }
 
 /**
- * Rarity Visual Theme Palettes
+ * Rarity Visual Theme Palettes (ExifGrid Tungsten & Brass Heritage Design)
  */
 export const RARITY_THEMES = {
   MYTHIC: {
-    name: 'Mythic Prismatic',
-    badge: '★ MYTHIC ★',
-    primary: '#f43f5e',
-    secondary: '#d946ef',
-    accent: '#06b6d4',
-    bgStart: '#11071f',
-    bgEnd: '#05020a',
-    borderGradient: ['#f43f5e', '#ec4899', '#a855f7', '#06b6d4', '#f43f5e'],
-    barColor: '#d946ef',
-    glow: 'rgba(217, 70, 239, 0.45)'
+    name: 'Platinum & Heritage Brass',
+    badge: '★ HERITAGE MYTHIC ★',
+    primary: '#d4af37', // 24K Polished Gold
+    secondary: '#b5a684', // Vintage Champagne Brass
+    accent: '#fef3c7',
+    bgStart: '#141513',
+    bgEnd: '#090a08',
+    borderGradient: ['#d4af37', '#b5a684', '#e2d4b7', '#aa7c11', '#d4af37'],
+    barColor: '#d4af37',
+    glow: 'rgba(212, 175, 55, 0.45)'
   },
   LEGENDARY: {
-    name: 'Molten Gold',
-    badge: '★ LEGENDARY ★',
-    primary: '#fbbf24',
-    secondary: '#f59e0b',
+    name: 'Obsidian & Amber Gold',
+    badge: '★ MASTER LEGENDARY ★',
+    primary: '#f59e0b',
+    secondary: '#d97706',
     accent: '#fef08a',
-    bgStart: '#181206',
-    bgEnd: '#0a0702',
-    borderGradient: ['#fbbf24', '#f59e0b', '#d97706', '#fef08a', '#fbbf24'],
-    barColor: '#fbbf24',
-    glow: 'rgba(251, 191, 36, 0.45)'
+    bgStart: '#121210',
+    bgEnd: '#070706',
+    borderGradient: ['#f59e0b', '#d97706', '#b5a684', '#fef08a', '#f59e0b'],
+    barColor: '#f59e0b',
+    glow: 'rgba(245, 158, 11, 0.4)'
   },
   EPIC: {
-    name: 'Cyber Amethyst',
-    badge: '✦ EPIC ✦',
-    primary: '#a855f7',
-    secondary: '#6366f1',
-    accent: '#e9d5ff',
-    bgStart: '#0f0e26',
-    bgEnd: '#050410',
-    borderGradient: ['#a855f7', '#818cf8', '#6366f1', '#c084fc', '#a855f7'],
-    barColor: '#a855f7',
-    glow: 'rgba(168, 85, 247, 0.4)'
+    name: 'Midnight Sapphire Pro',
+    badge: '✦ PRO SAPPHIRE ✦',
+    primary: '#60a5fa',
+    secondary: '#3b82f6',
+    accent: '#dbeafe',
+    bgStart: '#0f131a',
+    bgEnd: '#07090d',
+    borderGradient: ['#60a5fa', '#3b82f6', '#93c5fd', '#1d4ed8', '#60a5fa'],
+    barColor: '#60a5fa',
+    glow: 'rgba(96, 165, 250, 0.35)'
   },
   RARE: {
-    name: 'Cobalt Emerald',
-    badge: '◆ RARE ◆',
-    primary: '#0ea5e9',
+    name: 'Optical Emerald Jade',
+    badge: '◆ OPTICAL RARE ◆',
+    primary: '#34d399',
     secondary: '#10b981',
-    accent: '#7dd3fc',
-    bgStart: '#061726',
-    bgEnd: '#020910',
-    borderGradient: ['#0ea5e9', '#38bdf8', '#10b981', '#34d399', '#0ea5e9'],
-    barColor: '#0ea5e9',
-    glow: 'rgba(14, 165, 233, 0.35)'
+    accent: '#a7f3d0',
+    bgStart: '#0c1612',
+    bgEnd: '#050a08',
+    borderGradient: ['#34d399', '#10b981', '#6ee7b7', '#047857', '#34d399'],
+    barColor: '#34d399',
+    glow: 'rgba(52, 211, 153, 0.35)'
   },
   COMMON: {
-    name: 'Steel Titanium',
-    badge: '● COMMON ●',
-    primary: '#94a3b8',
-    secondary: '#64748b',
-    accent: '#cbd5e1',
-    bgStart: '#141824',
-    bgEnd: '#090b10',
-    borderGradient: ['#94a3b8', '#64748b', '#475569', '#cbd5e1', '#94a3b8'],
-    barColor: '#94a3b8',
-    glow: 'rgba(148, 163, 184, 0.25)'
+    name: 'Tungsten Brushed Slate',
+    badge: '● TUNGSTEN SLATE ●',
+    primary: '#b5a684', // ExifGrid signature Brass
+    secondary: '#8a7d65',
+    accent: '#edece8',
+    bgStart: '#1c1d1a',
+    bgEnd: '#0f100e',
+    borderGradient: ['#b5a684', '#8a7d65', '#d4c4a8', '#616059', '#b5a684'],
+    barColor: '#b5a684',
+    glow: 'rgba(181, 166, 132, 0.3)'
   }
 };
 

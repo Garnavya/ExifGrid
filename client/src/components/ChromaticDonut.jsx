@@ -25,18 +25,7 @@ export default function ChromaticDonut({ photoSrc, photoName }) {
 
   useEffect(() => {
     if (!canvasRef.current || !chromaticData) return;
-    const canvas = canvasRef.current;
-    const dpr = window.devicePixelRatio || 1;
-    const size = 180;
-    canvas.width = size * dpr;
-    canvas.height = size * dpr;
-    canvas.style.width = `${size}px`;
-    canvas.style.height = `${size}px`;
-
-    const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-
-    drawChromaticDonut(canvas, chromaticData);
+    drawChromaticDonut(canvasRef.current, chromaticData, 200);
   }, [chromaticData]);
 
   const copyHex = (hex) => {
@@ -75,8 +64,8 @@ export default function ChromaticDonut({ photoSrc, photoName }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           
           {/* Radial Donut and Harmony Info */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', justifyContent: 'center' }}>
-            <div style={{ position: 'relative', width: '180px', height: '180px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'relative', width: '200px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <canvas ref={canvasRef} />
             </div>
           </div>

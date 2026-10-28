@@ -430,10 +430,10 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                   <img
                     ref={imgRef}
                     id="lb-img"
-                    className={`zoomable-img ${enlarged ? 'enlarged' : ''} ${filterClass}`}
+                    className={`zoomable-img ${filterClass}`}
                     src={photo.src}
                     alt={photo.name}
-                    onClick={() => setEnlarged((v) => !v)}
+                    onClick={() => setEnlarged(true)}
                     style={{ maxHeight: '82vh', width: 'auto', maxWidth: '100%', objectFit: 'contain' }}
                   />
                 </div>
@@ -494,10 +494,10 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                     <img
                       ref={imgRef}
                       id="lb-img"
-                      className={`zoomable-img ${enlarged ? 'enlarged' : ''} ${filterClass}`}
+                      className={`zoomable-img ${filterClass}`}
                       src={photo.src}
                       alt={photo.name}
-                      onClick={() => setEnlarged((v) => !v)}
+                      onClick={() => setEnlarged(true)}
                     />
                   </div>
 
@@ -996,6 +996,65 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
         </div>
         
       </div>
+
+      {/* Fullscreen Immersion Theater Zoom */}
+      {enlarged && (
+        <div 
+          className="lb-fullscreen-overlay"
+          onClick={() => setEnlarged(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 99999,
+            backgroundColor: 'rgba(0, 0, 0, 0.95)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'zoom-out',
+            padding: '24px'
+          }}
+        >
+          <img
+            src={photo.src}
+            alt={photo.name}
+            className={filterClass}
+            onClick={(e) => {
+              e.stopPropagation();
+              setEnlarged(false);
+            }}
+            style={{
+              maxWidth: '96vw',
+              maxHeight: '94vh',
+              width: 'auto',
+              height: 'auto',
+              objectFit: 'contain',
+              boxShadow: '0 25px 80px rgba(0, 0, 0, 0.95)',
+              borderRadius: '6px',
+              cursor: 'zoom-out',
+              userSelect: 'none'
+            }}
+          />
+          <div style={{
+            position: 'absolute',
+            bottom: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '11px',
+            color: 'rgba(255, 255, 255, 0.7)',
+            background: 'rgba(18, 18, 18, 0.85)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            padding: '6px 16px',
+            borderRadius: '20px',
+            letterSpacing: '0.04em',
+            pointerEvents: 'none'
+          }}>
+            Click anywhere or press Esc to close zoom
+          </div>
+        </div>
+      )}
 
       {showAIModal && (
         <AIAnalysisModal 

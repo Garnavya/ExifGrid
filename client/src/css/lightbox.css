@@ -78,17 +78,7 @@
 }
 
 .zoomable-img.enlarged {
-  position: fixed;
-  inset: 20px;
-  width: calc(100% - 40px);
-  height: calc(100% - 40px);
-  max-width: none;
-  max-height: none;
-  z-index: 9999;
-  background: rgba(0, 0, 0, 0.9);
-  object-fit: contain;
   cursor: zoom-out;
-  border-radius: 0;
 }
 
 .lb-sidebar-column {

@@ -409,6 +409,19 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 
 ---
 
+### Feature 22: Visual EXIF Watermarking & Brand Stamp Suite
+
+* **Purpose & Workflow:**  
+  Generates social-media-ready branded letterbox stamps and metadata badges inspired by Leica, Hasselblad, and Xiaomi flagship cameras while preserving native photo aspect ratios. Renders vector typographic banners with brand emblems (Leica classic red dot, Hasselblad orange square), bold camera models, artist signatures, and clean exposure clusters (`focal | aperture | shutter | ISO`). Integrated into `Lightbox.jsx` with real-time reactive preview and multiple aesthetic presets (*Leica Minimalist White*, *Matte Obsidian Black Letterbox*, *Floating Frosted Glass Inset Badge*, and *Hasselblad Modern Border*).
+* **Component & File Footprint:**  
+  [`client/src/utils/watermark.js`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/utils/watermark.js), [`client/src/components/Lightbox.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/components/Lightbox.jsx), [`client/src/css/polaroid.css`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/css/polaroid.css).
+* **Canvas 2D Vector Architecture:**  
+  * **Dynamic Letterbox Sizing:** Computes proportional letterbox bar ($H_{bar} \approx 11\% \times W_{img}$) preserving high resolution up to 2560px.
+  * **Alignment & Kerning:** Precision horizontal alignment separating brand identity/artist on the left from technical camera parameters on the right.
+  * **Floating Glass Composite:** Inset pill rendering using alpha composite (`rgba(15, 15, 20, 0.75)`), drop shadow blur, and hairline stroke border without expanding outer canvas dimensions.
+
+---
+
 ## 3. Technology Cross-Reference Matrix
 
 | Feature | Primary Component / Util | Libraries / Frameworks | Web APIs / Standards | Algorithmic / Math Basis |
@@ -420,6 +433,7 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 | **Filter Matrix** | `FilterMatrix.jsx` | React 18 | ES6 `Set`, Array Methods | Compound Boolean Set Deduplication |
 | **Polaroid Gen** | `polaroid.js`, `batchProcessor.js`| `jszip` | Canvas 2D, Blob | Iterative Text Scaling, Zip Deflate Compression |
 | **RPG Stat Cards**| `rpgCard.js`, `Lightbox.jsx` | Canvas 2D, React 18 | HTML5 Canvas, Blob, DataURL | Weighted Stat Matrix, Tier Classifier, Word-Wrap Canvas |
+| **Brand Watermark**| `watermark.js`, `Lightbox.jsx` | Canvas 2D, React 18 | HTML5 Canvas, Blob, DataURL | Vector Kerning, Proportional Letterbox, Glass Overlay |
 | **Chromatic Donut**| `chromaticAnalysis.js`, `ChromaticDonut.jsx` | Canvas 2D, React 18 | `createImageBitmap`, ImageData | 36-Bin Angular Hue Histogram, Shortest Angular Distance |
 | **Sun Path Tracker**| `sunCalc.js`, `SunTracker.jsx` | SVG, React 18 | Native Math, Spherical Trig | Jean Meeus Solar Ephemeris, Elevation/Azimuth Vector |
 | **Auto Folders** | `batchProcessor.js`, `BatchSettingsModal.jsx` | `jszip`, React 18 | Blob, ArrayBuffer | EXIF Rule-Based Directory Mapping, Deflate Stream |

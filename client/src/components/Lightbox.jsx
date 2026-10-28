@@ -9,6 +9,7 @@ import { useDownload } from '../hooks/useDownload.js';
 import { stripExifData } from '../utils/exifStripper.js';
 import { downloadPolaroid, generatePolaroidDataURL } from '../utils/polaroid.js'; 
 import { calculateRpgStats, generateRpgCardDataURL, downloadRpgCard } from '../utils/rpgCard.js';
+import { WATERMARK_STYLES, generateWatermarkDataURL, downloadWatermarkedPhoto } from '../utils/watermark.js';
 import AIAnalysisModal from './AIAnalysisModal';
 import ChromaticDonut from './ChromaticDonut.jsx';
 import SunTracker from './SunTracker.jsx';
@@ -68,13 +69,22 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
   const [isGeneratingPolaroid, setIsGeneratingPolaroid] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
 
+  // Export Mode: 'polaroid' | 'stamp' | 'rpg'
+  const [exportMode, setExportMode] = useState('polaroid');
+
   // RPG Stat Card generator state
-  const [exportMode, setExportMode] = useState('polaroid'); // 'polaroid' | 'rpg'
   const [rpgPreview, setRpgPreview] = useState(null);
   const [rpgTitle, setRpgTitle] = useState('');
   const [rpgArchetype, setRpgArchetype] = useState('auto');
   const [rpgRarity, setRpgRarity] = useState('auto');
   const [isGeneratingRpg, setIsGeneratingRpg] = useState(false);
+
+  // Visual EXIF Watermark & Brand Stamp state
+  const [watermarkPreview, setWatermarkPreview] = useState(null);
+  const [watermarkStyle, setWatermarkStyle] = useState(WATERMARK_STYLES.LEICA_WHITE);
+  const [watermarkArtist, setWatermarkArtist] = useState('');
+  const [watermarkCamera, setWatermarkCamera] = useState('');
+  const [isGeneratingWatermark, setIsGeneratingWatermark] = useState(false);
 
   const rpgBaseInfo = useMemo(() => {
     return photo ? calculateRpgStats(photo) : null;
@@ -97,6 +107,9 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     setRpgTitle(photo ? photo.name.replace(/\.[^/.]+$/, '') : '');
     setRpgArchetype('auto');
     setRpgRarity('auto');
+    setWatermarkPreview(null);
+    setWatermarkArtist(photo?.exif?.Artist || '');
+    setWatermarkCamera(photo?.exif?.Model || photo?.exif?.Make || '');
     
     if (photo?.exif) {
       const standardTags = ['Model', 'FNumber', 'ExposureTime', 'ISOSpeedRatings', 'ISO'];
@@ -274,6 +287,46 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     }
   };
 
+  useEffect(() => {
+    if (!photo?.src || exportMode !== 'stamp') return;
+    let cancelled = false;
+
+    const timer = setTimeout(async () => {
+      try {
+        const dataUrl = await generateWatermarkDataURL(photo, {
+          style: watermarkStyle,
+          artist: watermarkArtist,
+          cameraModel: watermarkCamera
+        });
+        if (!cancelled) setWatermarkPreview(dataUrl);
+      } catch (err) {
+        console.error("Watermark preview generation failed", err);
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      cancelled = true;
+    };
+  }, [photo, exportMode, watermarkStyle, watermarkArtist, watermarkCamera]);
+
+  const handleWatermarkDownload = async () => {
+    if (!photo) return;
+    setIsGeneratingWatermark(true);
+    try {
+      await downloadWatermarkedPhoto(photo, {
+        style: watermarkStyle,
+        artist: watermarkArtist,
+        cameraModel: watermarkCamera
+      });
+    } catch (err) {
+      console.error('Failed to generate watermarked photo:', err);
+      alert('Failed to generate visual brand stamp.');
+    } finally {
+      setIsGeneratingWatermark(false);
+    }
+  };
+
   const togglePolaroidExif = (field) => {
     setPolaroidToggles(prev => 
       prev.includes(field) ? prev.filter(f => f !== field) : [...prev, field]
@@ -320,7 +373,7 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                 </div>
 
                 <div className="compare-item" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minWidth: 0 }}>
-                  {exportMode === 'polaroid' ? (
+                  {exportMode === 'polaroid' && (
                     polaroidPreview ? (
                       <img 
                         src={polaroidPreview} 
@@ -333,7 +386,24 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                         Rendering Polaroid Preview...
                       </div>
                     )
-                  ) : (
+                  )}
+
+                  {exportMode === 'stamp' && (
+                    watermarkPreview ? (
+                      <img 
+                        src={watermarkPreview} 
+                        alt="Brand Stamp Live Preview" 
+                        className="zoomable-img" 
+                        style={{ cursor: 'default', filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))' }}
+                      />
+                    ) : (
+                      <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>
+                        Applying Brand Stamp...
+                      </div>
+                    )
+                  )}
+
+                  {exportMode === 'rpg' && (
                     rpgPreview ? (
                       <img 
                         src={rpgPreview} 
@@ -486,14 +556,21 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                         className={`gen-tab-btn ${exportMode === 'polaroid' ? 'active' : ''}`}
                         onClick={() => setExportMode('polaroid')}
                       >
-                        🖼️ Vintage Polaroid
+                        🖼️ Polaroid
+                      </button>
+                      <button 
+                        type="button" 
+                        className={`gen-tab-btn ${exportMode === 'stamp' ? 'active' : ''}`}
+                        onClick={() => setExportMode('stamp')}
+                      >
+                        🏷️ Brand Stamp
                       </button>
                       <button 
                         type="button" 
                         className={`gen-tab-btn ${exportMode === 'rpg' ? 'active' : ''}`}
                         onClick={() => setExportMode('rpg')}
                       >
-                        ⚔️ RPG Stat Card
+                        ⚔️ RPG Card
                       </button>
                     </div>
 
@@ -576,6 +653,78 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                           style={{ marginTop: '16px' }}
                         >
                           {isGeneratingPolaroid ? 'Generating...' : '🖼️ Download Polaroid'}
+                        </button>
+                      </>
+                    ) : exportMode === 'stamp' ? (
+                      <>
+                        <div className="ps-title" style={{ color: '#f43f5e' }}>Visual EXIF Brand Stamp</div>
+                        
+                        <div className="ps-label">Stamp Aesthetic Style</div>
+                        <select
+                          className="ps-select"
+                          value={watermarkStyle}
+                          onChange={(e) => setWatermarkStyle(e.target.value)}
+                        >
+                          <option value={WATERMARK_STYLES.LEICA_WHITE}>Leica-Style Minimalist White Letterbox</option>
+                          <option value={WATERMARK_STYLES.OBSIDIAN_BLACK}>Matte Obsidian Black Letterbox</option>
+                          <option value={WATERMARK_STYLES.FLOATING_GLASS}>Floating Frosted Glass Inset Badge</option>
+                          <option value={WATERMARK_STYLES.HASSELBLAD_BORDER}>Hasselblad Modern Border</option>
+                        </select>
+
+                        <div className="ps-label">Camera Brand Label</div>
+                        <input
+                          type="text"
+                          className="ps-input"
+                          placeholder="E.g., SONY ILCE-7RM5"
+                          value={watermarkCamera}
+                          onChange={(e) => setWatermarkCamera(e.target.value)}
+                        />
+
+                        <div className="ps-label">Photographer / Creator Credit</div>
+                        <input
+                          type="text"
+                          className="ps-input"
+                          placeholder="Your Name / Studio..."
+                          value={watermarkArtist}
+                          onChange={(e) => setWatermarkArtist(e.target.value)}
+                        />
+
+                        <div style={{
+                          marginTop: '10px',
+                          padding: '8px 10px',
+                          background: 'var(--surface2)',
+                          border: '1px solid var(--border2)',
+                          borderRadius: '6px',
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: '11px',
+                          color: 'var(--text-dim)',
+                          display: 'flex',
+                          justifyContent: 'space-between'
+                        }}>
+                          <span>Exposure Cluster:</span>
+                          <span style={{ color: 'var(--text)' }}>
+                            {[
+                              photo.exif?.FocalLength && `${Math.round(photo.exif.FocalLength)}mm`,
+                              photo.exif?.FNumber && formatAperture(photo.exif.FNumber),
+                              photo.exif?.ExposureTime && formatShutter(photo.exif.ExposureTime),
+                              photo.exif?.ISO && `ISO ${photo.exif.ISO}`
+                            ].filter(Boolean).join(' | ') || 'Default Optics'}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="polaroid-btn"
+                          onClick={handleWatermarkDownload}
+                          disabled={isGeneratingWatermark}
+                          style={{
+                            marginTop: '16px',
+                            background: 'linear-gradient(135deg, #1f1d2b, #2d2b3f)',
+                            color: '#f43f5e',
+                            borderColor: '#e11d48'
+                          }}
+                        >
+                          {isGeneratingWatermark ? 'Applying Stamp...' : '🏷️ Download Stamped Photo'}
                         </button>
                       </>
                     ) : (

@@ -99,7 +99,7 @@ export default function DropZone({ onFilesSelected, onBrowse }) {
           <div className="drop-icon">📁</div>
           <h3 className="drop-title">Drop photos or folders here</h3>
           <p className="drop-sub">or click to browse your files</p>
-          <span className="drop-accent">Supports JPG, PNG, WEBP</span>
+          <span className="drop-accent">Supports JPG, PNG, WEBP & RAW (Sony, Canon, Nikon, DNG)</span>
           <div className="drop-hints">
             <span className="hint-pill">Max 50MB</span>
             <span className="hint-pill">Exif Preserved</span>

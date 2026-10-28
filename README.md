@@ -14,6 +14,7 @@ Full-stack monorepo — React + Vite + Express.
 
 - [The Problem](#the-problem)
 - [Features](#features)
+- [Detailed Technical Reference](./PROJECT_ARCHITECTURE_AND_FEATURES.md)
 - [AI Engine (Experimental)](#ai-engine-experimental)
 - [Privacy](#privacy)
 - [Security & Audit Log](#security--audit-log)

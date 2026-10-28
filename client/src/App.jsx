@@ -66,7 +66,12 @@ function ExifGridMain() {
 
   const handleFiles = useCallback(async (fileList) => {
   if (!fileList?.length) return;
-  const incoming = Array.from(fileList).filter((f) => f.type.startsWith('image/'));
+  const RAW_EXTENSIONS = ['.cr2', '.cr3', '.nef', '.arw', '.dng', '.raf', '.orf', '.rw2', '.pef'];
+  const incoming = Array.from(fileList).filter((f) => {
+    if (f.type && f.type.startsWith('image/')) return true;
+    const lowerName = (f.name || '').toLowerCase();
+    return RAW_EXTENSIONS.some(ext => lowerName.endsWith(ext));
+  });
   if (!incoming.length) return;
   
   setGridProgress({ active: true, percent: 5 });

@@ -28,18 +28,21 @@ function parseExifInWorker(file, timeoutMs = 8000) {
     const messageHandler = (e) => {
       if (e.data && e.data.id === id) {
         cleanup();
-        resolve(e.data.exifData || {});
+        resolve({
+          exifData: e.data.exifData || {},
+          previewBuffer: e.data.previewBuffer || null
+        });
       }
     };
 
     const errorHandler = () => {
       cleanup();
-      resolve({});
+      resolve({ exifData: {}, previewBuffer: null });
     };
 
     timer = setTimeout(() => {
       cleanup();
-      resolve({});
+      resolve({ exifData: {}, previewBuffer: null });
     }, timeoutMs);
 
     exifWorker.addEventListener('message', messageHandler);
@@ -52,18 +55,34 @@ export async function ingestPhotoMeta(file, src) {
   try {
     const isRawFile = await RawParser.isRAW(file);
     
-    // In future iterations, swap exifr for a dedicated WASM raw parser here if needed[cite: 2]
-    const [dims, exifData] = await Promise.all([
+    const [dims, workerResult] = await Promise.all([
       loadImageDimensions(src),
       parseExifInWorker(file),
     ]);
 
+    let finalSrc = src;
+    let finalDims = dims;
+
+    // If an embedded JPEG preview is available (e.g. from Sony/Canon/Nikon RAW), upgrade the preview
+    if (workerResult.previewBuffer) {
+      try {
+        const previewBlob = new Blob([workerResult.previewBuffer], { type: 'image/jpeg' });
+        finalSrc = URL.createObjectURL(previewBlob);
+        finalDims = await loadImageDimensions(finalSrc);
+        // Revoke the unrendered raw blob url if it was replaced
+        if (src && src !== finalSrc) {
+          URL.revokeObjectURL(src);
+        }
+      } catch (_) {}
+    }
+
     return {
       name: file.name,
       size: file.size,
-      naturalW: dims.naturalW,
-      naturalH: dims.naturalH,
-      exif: exifData || {},
+      src: finalSrc,
+      naturalW: finalDims.naturalW || dims.naturalW,
+      naturalH: finalDims.naturalH || dims.naturalH,
+      exif: workerResult.exifData || {},
       status: 'ready',
       isRaw: isRawFile
     };

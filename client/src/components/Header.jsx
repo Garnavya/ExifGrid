@@ -43,11 +43,11 @@ export default function Header({
       </div>
 
       <div className="header-actions">
-        {/* Hidden file input for adding photos */}
+        {/* Hidden file input for adding photos and camera RAW files */}
         <input
           type="file"
           multiple
-          accept="image/*"
+          accept="image/*,.cr2,.cr3,.nef,.arw,.dng,.raf,.orf,.rw2,.pef"
           ref={fileInputRef}
           style={{ display: 'none' }}
           onChange={(e) => onFilesSelected(e.target.files)}

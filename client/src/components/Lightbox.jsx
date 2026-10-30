@@ -749,7 +749,7 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                           {isGeneratingWatermark ? 'Applying Stamp...' : '🏷️ Download Stamped Photo'}
                         </button>
                       </>
-                    )}
+                    ) : null}
                     
                     <button 
                       type="button" 

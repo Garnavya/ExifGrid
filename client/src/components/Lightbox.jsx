@@ -8,7 +8,7 @@ import { useKeyboardNav } from '../hooks/useKeyboardNav.js';
 import { useDownload } from '../hooks/useDownload.js';
 import { stripExifData } from '../utils/exifStripper.js';
 import { downloadPolaroid, generatePolaroidDataURL } from '../utils/polaroid.js'; 
-import { calculateRpgStats, generateRpgCardDataURL, downloadRpgCard } from '../utils/rpgCard.js';
+import { calculateRpgStats, generateRpgCardDataURL, downloadRpgCard, RPG_CONCEPTS } from '../utils/rpgCard.js';
 import { WATERMARK_STYLES, generateWatermarkDataURL, downloadWatermarkedPhoto } from '../utils/watermark.js';
 import AIAnalysisModal from './AIAnalysisModal';
 import ChromaticDonut from './ChromaticDonut.jsx';
@@ -79,6 +79,12 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
   const [rpgTitle, setRpgTitle] = useState('');
   const [rpgArchetype, setRpgArchetype] = useState('auto');
   const [rpgRarity, setRpgRarity] = useState('auto');
+  const [rpgConcept, setRpgConcept] = useState('darkroom');
+  const [rpgPanY, setRpgPanY] = useState(15); // default 15% favors faces/portraits
+  const [rpgPanX, setRpgPanX] = useState(50);
+  const [rpgCropZoom, setRpgCropZoom] = useState(1.0);
+  const [rpgResolution, setRpgResolution] = useState(3); // 3x Ultra-HD Master (2400x3420)
+  const [rpgFormat, setRpgFormat] = useState('image/png'); // Lossless PNG
   const [isGeneratingRpg, setIsGeneratingRpg] = useState(false);
 
   // Visual EXIF Watermark & Brand Stamp state
@@ -109,6 +115,9 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     setRpgTitle(photo ? photo.name.replace(/\.[^/.]+$/, '') : '');
     setRpgArchetype('auto');
     setRpgRarity('auto');
+    setRpgPanY(15);
+    setRpgPanX(50);
+    setRpgCropZoom(1.0);
     setWatermarkPreview(null);
     setWatermarkArtist(photo?.exif?.Artist || '');
     setWatermarkCamera(photo?.exif?.Model || photo?.exif?.Make || '');
@@ -218,20 +227,25 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
       try {
         const dataUrl = await generateRpgCardDataURL(photo, {
           title: rpgTitle.trim() || undefined,
+          concept: rpgConcept,
           archetype: rpgArchetype !== 'auto' ? rpgArchetype : undefined,
-          rarity: rpgRarity !== 'auto' ? rpgRarity : undefined
+          rarity: rpgRarity !== 'auto' ? rpgRarity : undefined,
+          panX: rpgPanX,
+          panY: rpgPanY,
+          cropZoom: rpgCropZoom,
+          scaleMultiplier: 1.25 // Fast preview for studio UI
         });
         if (!cancelled) setRpgPreview(dataUrl);
       } catch (err) {
         console.error("RPG Card preview generation failed", err);
       }
-    }, 300);
+    }, 200);
 
     return () => {
       clearTimeout(timer);
       cancelled = true;
     };
-  }, [photo, exportMode, rpgTitle, rpgArchetype, rpgRarity]);
+  }, [photo, exportMode, rpgTitle, rpgConcept, rpgArchetype, rpgRarity, rpgPanX, rpgPanY, rpgCropZoom]);
 
   const handleScrubDownload = async () => {
     if (!photo) return;
@@ -279,8 +293,14 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     try {
       await downloadRpgCard(photo, {
         title: rpgTitle.trim() || undefined,
+        concept: rpgConcept,
         archetype: rpgArchetype !== 'auto' ? rpgArchetype : undefined,
-        rarity: rpgRarity !== 'auto' ? rpgRarity : undefined
+        rarity: rpgRarity !== 'auto' ? rpgRarity : undefined,
+        panX: rpgPanX,
+        panY: rpgPanY,
+        cropZoom: rpgCropZoom,
+        scaleMultiplier: rpgResolution,
+        format: rpgFormat
       });
     } catch (err) {
       console.error('Failed to generate RPG card:', err);
@@ -838,7 +858,7 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                     ) : (
                       <>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div className="ps-title" style={{ color: '#818cf8' }}>RPG Trading Card Generator</div>
+                          <div className="ps-title" style={{ color: '#d4af37' }}>Collectible Photography Card</div>
                           {rpgBaseInfo && (
                             <span className={`rpg-badge-pill rpg-badge-${(rpgRarity !== 'auto' ? rpgRarity : rpgBaseInfo.rarity).toLowerCase()}`}>
                               LVL {rpgBaseInfo.gearLevel} • {rpgRarity !== 'auto' ? rpgRarity : rpgBaseInfo.rarity}
@@ -846,49 +866,191 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                           )}
                         </div>
 
+                        {/* Concept Theme Swapping Bar */}
+                        <div className="ps-label" style={{ fontWeight: 'bold', color: 'var(--text)' }}>
+                          Design Concept & Atmosphere
+                        </div>
+                        <div className="concept-grid-bar">
+                          {Object.values(RPG_CONCEPTS).map((c) => (
+                            <button
+                              key={c.id}
+                              type="button"
+                              className={`concept-card-btn ${rpgConcept === c.id ? 'active' : ''}`}
+                              onClick={() => setRpgConcept(c.id)}
+                            >
+                              <div className="concept-btn-title">
+                                <span>{c.icon}</span>
+                                <span>{c.name}</span>
+                              </div>
+                              <div className="concept-btn-sub">{c.tagline}</div>
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Subject Framing & Positioning Controls (Solves Torso Problem) */}
+                        <div style={{
+                          background: 'var(--surface2)',
+                          border: '1px solid var(--border2)',
+                          borderRadius: '8px',
+                          padding: '10px 12px',
+                          marginTop: '4px'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div className="ps-label" style={{ margin: 0, fontWeight: 'bold', color: 'var(--text)' }}>
+                              🎯 Subject Framing & Repositioning
+                            </div>
+                            <span style={{ fontSize: '10px', color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>
+                              Y: {rpgPanY}% • Zoom: {rpgCropZoom.toFixed(1)}×
+                            </span>
+                          </div>
+
+                          {/* Quick Alignment Presets */}
+                          <div className="framing-preset-bar">
+                            <button
+                              type="button"
+                              className={`framing-preset-btn ${rpgPanY === 0 ? 'active' : ''}`}
+                              onClick={() => { setRpgPanY(0); setRpgPanX(50); }}
+                              title="Align top of photo with frame (Preserves faces & heads)"
+                            >
+                              👤 Face / Head (Top)
+                            </button>
+                            <button
+                              type="button"
+                              className={`framing-preset-btn ${rpgPanY === 15 ? 'active' : ''}`}
+                              onClick={() => { setRpgPanY(15); setRpgPanX(50); }}
+                              title="Slight head-room portrait framing"
+                            >
+                              ✨ Portrait (15%)
+                            </button>
+                            <button
+                              type="button"
+                              className={`framing-preset-btn ${rpgPanY === 50 ? 'active' : ''}`}
+                              onClick={() => { setRpgPanY(50); setRpgPanX(50); }}
+                              title="Center framing"
+                            >
+                              🎯 Center (50%)
+                            </button>
+                            <button
+                              type="button"
+                              className={`framing-preset-btn ${rpgPanY === 85 ? 'active' : ''}`}
+                              onClick={() => { setRpgPanY(85); setRpgPanX(50); }}
+                              title="Lower third / landscape ground"
+                            >
+                              📐 Lower (85%)
+                            </button>
+                          </div>
+
+                          {/* Fine-Tuning Sliders */}
+                          <div className="ps-slider-row">
+                            <div className="ps-slider-header">
+                              <span>Vertical Position (Pan Y)</span>
+                              <span>{rpgPanY === 0 ? 'Top (Face)' : rpgPanY === 100 ? 'Bottom' : `${rpgPanY}%`}</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              step="1"
+                              value={rpgPanY}
+                              onChange={(e) => setRpgPanY(Number(e.target.value))}
+                              className="ps-range"
+                            />
+                          </div>
+
+                          <div className="ps-slider-row">
+                            <div className="ps-slider-header">
+                              <span>Horizontal Position (Pan X)</span>
+                              <span>{rpgPanX}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              step="1"
+                              value={rpgPanX}
+                              onChange={(e) => setRpgPanX(Number(e.target.value))}
+                              className="ps-range"
+                            />
+                          </div>
+
+                          <div className="ps-slider-row">
+                            <div className="ps-slider-header">
+                              <span>Framing Zoom</span>
+                              <span>{rpgCropZoom.toFixed(1)}×</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="1.0"
+                              max="2.2"
+                              step="0.05"
+                              value={rpgCropZoom}
+                              onChange={(e) => setRpgCropZoom(Number(e.target.value))}
+                              className="ps-range"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Title and Metadata Inputs */}
                         <div className="ps-label">Card Title</div>
                         <input 
                           type="text" 
                           className="ps-input" 
-                          placeholder="Hero or Photo Name..."
+                          placeholder="Collector Card Name..."
                           value={rpgTitle}
                           onChange={(e) => setRpgTitle(e.target.value)}
                         />
 
-                        <div className="ps-label">Archetype Class</div>
+                        <div className="ps-label">Photographic Archetype</div>
                         <select 
                           className="ps-select"
                           value={rpgArchetype}
                           onChange={(e) => setRpgArchetype(e.target.value)}
                         >
                           <option value="auto">Auto-Detected ({rpgBaseInfo?.archetype || 'Street Vanguard'})</option>
-                          <option value="Bokeh Sorcerer">Bokeh Sorcerer (Aperture-focused)</option>
-                          <option value="Speed Berserker">Speed Berserker (High Shutter)</option>
-                          <option value="Photon Sniper">Photon Sniper (Telephoto Range)</option>
-                          <option value="Shadow Stalker">Shadow Stalker (High-ISO Low Light)</option>
-                          <option value="Chronomancer">Chronomancer (Long Exposure)</option>
-                          <option value="Horizon Warden">Horizon Warden (Ultra-Wide Panorama)</option>
-                          <option value="Hyperfocal Sage">Hyperfocal Sage (Deep Precision Field)</option>
-                          <option value="Street Vanguard">Street Vanguard (Spontaneous Action)</option>
+                          <option value="Planar Isolationist">Planar Isolationist (Wide Aperture Bokeh)</option>
+                          <option value="Chronos Freeze">Chronos Freeze (Microsecond Shutter)</option>
+                          <option value="Luminance Weaver">Luminance Weaver (Extended Exposure Silk)</option>
+                          <option value="Telephoto Stalker">Telephoto Stalker (Spatial Compression)</option>
+                          <option value="Horizon Expander">Horizon Expander (Ultra-Wide Panorama)</option>
+                          <option value="Hyperfocal Master">Hyperfocal Master (Deep Field Precision)</option>
+                          <option value="Low-Light Nocturne">Low-Light Nocturne (High-Gain Night Stalker)</option>
+                          <option value="Street Vanguard">Street Vanguard (Decisive Instant)</option>
                         </select>
 
-                        <div className="ps-label">Card Theme & Rarity Frame</div>
+                        <div className="ps-label">Curator Tier / Rarity Grade</div>
                         <select 
                           className="ps-select"
                           value={rpgRarity}
                           onChange={(e) => setRpgRarity(e.target.value)}
                         >
                           <option value="auto">Auto-Ranked ({rpgBaseInfo?.rarity || 'COMMON'})</option>
-                          <option value="MYTHIC">★ MYTHIC ★ (Prismatic Cosmic Hologram)</option>
-                          <option value="LEGENDARY">★ LEGENDARY ★ (Molten Gold Armor)</option>
-                          <option value="EPIC">✦ EPIC ✦ (Cyber Neon Amethyst)</option>
-                          <option value="RARE">◆ RARE ◆ (Cobalt Emerald Surge)</option>
-                          <option value="COMMON">● COMMON ● (Brushed Steel Plate)</option>
+                          <option value="MYTHIC">★ TIER 1 (Master / Apex Edition)</option>
+                          <option value="LEGENDARY">★ TIER 2 (Grand Prix / Press Select)</option>
+                          <option value="EPIC">✦ TIER 3 (Exhibition / Hero Proof)</option>
+                          <option value="RARE">◆ TIER 4 (Fine-Art / Field Verification)</option>
+                          <option value="COMMON">● TIER 5 (Contact / Reference Specimen)</option>
+                        </select>
+
+                        {/* High-Resolution & File Size Selector */}
+                        <div className="ps-label">Output Fidelity & Master Quality</div>
+                        <select
+                          className="ps-select"
+                          value={`${rpgResolution}-${rpgFormat}`}
+                          onChange={(e) => {
+                            const [res, fmt] = e.target.value.split('-');
+                            setRpgResolution(Number(res));
+                            setRpgFormat(fmt);
+                          }}
+                        >
+                          <option value="3-image/png">3× Ultra-HD Master (2400×3420 • Lossless PNG • ~8–16MB)</option>
+                          <option value="2-image/png">2× High-Def (1600×2280 • Lossless PNG • ~4–8MB)</option>
+                          <option value="1-image/png">1× Standard (800×1140 • PNG • ~1–3MB)</option>
+                          <option value="3-image/jpeg">3× Ultra-HD JPEG (2400×3420 • 100% Quality • ~4–7MB)</option>
                         </select>
 
                         {rpgBaseInfo && (
                           <div style={{ marginTop: '8px' }}>
-                            <div className="ps-label">Calculated Attributes</div>
+                            <div className="ps-label">Technical Optical Parameters</div>
                             <div className="rpg-stat-grid">
                               <div className="rpg-stat-chip">
                                 <div className="rpg-stat-chip-header">
@@ -937,11 +1099,11 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                               background: 'var(--surface2)', 
                               border: '1px solid var(--border2)', 
                               borderRadius: '6px',
-                              borderLeft: '3px solid #818cf8',
+                              borderLeft: '3px solid #d4af37',
                               fontSize: '11px',
                               lineHeight: '1.4'
                             }}>
-                              <div style={{ fontWeight: 'bold', color: '#a5b4fc', marginBottom: '2px' }}>
+                              <div style={{ fontWeight: 'bold', color: '#fbbf24', marginBottom: '2px' }}>
                                 ✦ {rpgBaseInfo.perkName}
                               </div>
                               <div style={{ color: 'var(--text-dim)', fontSize: '10px' }}>
@@ -956,9 +1118,15 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                           className="polaroid-btn rpg-download-btn"
                           onClick={handleRpgDownload}
                           disabled={isGeneratingRpg}
-                          style={{ marginTop: '16px' }}
+                          style={{
+                            marginTop: '16px',
+                            background: 'linear-gradient(135deg, #181916, #2d2b24)',
+                            borderColor: '#d4af37',
+                            color: '#fbbf24',
+                            boxShadow: '0 4px 15px rgba(212, 175, 55, 0.25)'
+                          }}
                         >
-                          {isGeneratingRpg ? 'Minting Card...' : '⚔️ Download RPG Card'}
+                          {isGeneratingRpg ? 'Minting Archival Print...' : '🏛️ Download Collector Card (Ultra-HD)'}
                         </button>
                       </>
                     )}

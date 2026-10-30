@@ -27,7 +27,7 @@
    * [Feature 15: Progressive Web App (PWA) Offline Engine & Tile Caching](#feature-15-progressive-web-app-pwa-offline-engine--tile-caching)
    * [Feature 16: Fault-Tolerant React Error Boundary](#feature-16-fault-tolerant-react-error-boundary)
    * [Feature 17: Hardened Telemetry Backend & Rate Limiter](#feature-17-hardened-telemetry-backend--rate-limiter)
-   * [Feature 18: RPG-Style "Stat Card" Generator (Collectible Trading Cards)](#feature-18-rpg-style-stat-card-generator-collectible-trading-cards)
+   * [Feature 18: Fine-Art & Historical Photography Collector Card Suite](#feature-18-fine-art--historical-photography-collector-card-suite)
 3. [Technology Cross-Reference Matrix](#3-technology-cross-reference-matrix)
 
 ---
@@ -330,10 +330,15 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 
 ---
 
-### Feature 18: RPG-Style "Stat Card" Generator (Collectible Trading Cards)
+### Feature 18: Fine-Art & Historical Photography Collector Card Suite
 
 * **Purpose & Workflow:**  
-  Transforms technical camera EXIF metadata into collectible trading cards. Calculates gamified attributes (Agility, Lumens/Power, Sensor Purity, Optical Reach), auto-detects character archetypes (*Bokeh Sorcerer*, *Speed Berserker*, *Photon Sniper*, *Shadow Stalker*, *Chronomancer*, *Horizon Warden*, *Hyperfocal Sage*, *Street Vanguard*), computes equipment levels (LVL 1–99), assigns rarity tiers (*COMMON*, *RARE*, *EPIC*, *LEGENDARY*, *MYTHIC*), and generates unique passive perks with technical lore. Provides interactive live previewing in `Lightbox.jsx` with customizable titles, archetypes, and holographic frames, exported as high-resolution 800×1140 px collectible prints.
+  Elevates technical camera metadata into museum-grade collectible photographic cards. Completely discards gaudy arcade/neon aesthetics in favor of 4 authentic darkroom, analog film, and optical science concepts:
+  1. **Archival Darkroom (`darkroom`):** Fine-art museum rag mat board with blind-embossed bevels, archival proof index, and darkroom curator notes.
+  2. **35mm Mounted Film Slide (`film_slide`):** Authentic ivory cardboard slide mount with film stock stamps (*Kodachrome 64*, *Tri-X Pan 400*, *Fujichrome Velvia*), frame counter stamps (`▶ 24A`), red Chinagraph grease-pencil crop framing brackets, and photojournalism press tiers.
+  3. **Optical Benchmark (`optical_benchmark`):** Precision matte obsidian rangefinder chassis with laser-engraved serial badges, edge vernier scale rulers, and DIN/Swiss typography.
+  4. **Heritage Field Guide (`heritage_guide`):** 19th-century naturalist expedition folio with aged gold-foil photo mounting corners, expedition seals, and astronomical capture timestamps.
+  Provides interactive live theme swapping, real-time subject framing/repositioning controls (preserving faces and heads over awkward torso crops), and Ultra-HD 3× Print Master exports (2400×3420 px, 300 DPI, lossless 24-bit/32-bit PNG exceeding 5MB–16MB+).
 * **Component & File Footprint:**  
   [`client/src/utils/rpgCard.js`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/utils/rpgCard.js), [`client/src/components/Lightbox.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/components/Lightbox.jsx), [`client/src/css/polaroid.css`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/css/polaroid.css).
 * **Algorithmic & Mathematical Basis:**  
@@ -342,12 +347,14 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
   * **Sensor Purity ($PUR$):** Quantum fidelity vs. ISO sensor gain ($ISO\ 100 \to 99$, $\dots$, $ISO\ 6400+ \to 25$).
   * **Optical Reach ($RCH$):** Telephoto focal distance metric ($400\text{mm}+ \to 99$, $\dots$, $14\text{mm} \to 32$).
   * **Weighted Gear Level:** $L = \text{clamp}\left(15, 99, \text{round}\left(\frac{1.1 AGI + 1.1 PWR + 0.9 PUR + 0.9 RCH}{4}\right)\right)$.
-  * **Rarity Tier Classifier:** Discretized power distribution ($\ge 85 \implies \text{MYTHIC}$, $\ge 75 \implies \text{LEGENDARY}$, $\ge 64 \implies \text{EPIC}$, $\ge 50 \implies \text{RARE}$, else $\text{COMMON}$).
+  * **Interactive Focal Point Repositioning:**  
+    Given artwork window $[x_{\text{art}}, y_{\text{art}}, w_{\text{art}}, h_{\text{art}}]$ and user-configured pan offsets $(\hat{x}, \hat{y}) \in [0, 1]$ and zoom factor $z \ge 1$:
+    $$s = z \cdot \max\left(\frac{w_{\text{art}}}{w_{\text{img}}}, \frac{h_{\text{art}}}{h_{\text{img}}}\right), \quad w_{\text{draw}} = s \cdot w_{\text{img}}, \quad h_{\text{draw}} = s \cdot h_{\text{img}}$$
+    $$x_{\text{draw}} = x_{\text{art}} - \hat{x} \cdot (w_{\text{draw}} - w_{\text{art}}), \quad y_{\text{draw}} = y_{\text{art}} - \hat{y} \cdot (h_{\text{draw}} - h_{\text{art}})$$
+    When $\hat{y} = 0$, the upper edge of the photo aligns flush with the upper border of the window, guaranteeing zero facial truncation in portraiture.
 * **Canvas Rendering Architecture:**  
-  * **Dual Border & Corner Bevels:** Multi-stop linear gradients mapped to rarity palettes with corner gem anchors.
-  * **Aspect-Fill Artwork Window:** High-resolution photo crop with inner vignette shading and floating archetype shield.
-  * **Glowing Stat Gauges:** Track and fill bars rendered with dynamic canvas linear gradients and soft drop-shadow glows.
-  * **Lore Inset Box:** Word-wrapped ability description with EXIF synergy footnote and serial verification tag.
+  * **Ultra-HD Vector Compositing:** Renders at $3\times$ scale multiplier ($2400 \times 3420\text{ px}$ buffer), producing razor-sharp fine paper grain, vector vernier scales, and crisp serif typography.
+  * **Lossless Archival Pipeline:** Exports directly as uncompressed 24-bit/32-bit PNG or 100% quality JPEG, preserving native sensor dynamic range and file sizes exceeding 5MB–16MB+.
 
 ---
 

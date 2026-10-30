@@ -2,7 +2,7 @@ import React, { useState, useRef, useMemo } from 'react';
 import { resolveSubfolder, resolveFileName } from '../utils/batchProcessor.js';
 
 export default function BatchSettingsModal({ photos = [], onCancel, onConfirm }) {
-  const [exportFormat, setExportFormat] = useState('polaroid'); // 'polaroid' | 'rpg' | 'scrubbed' | 'original'
+  const [exportFormat, setExportFormat] = useState('polaroid'); // 'polaroid' | 'scrubbed' | 'original'
   const [organizeBy, setOrganizeBy] = useState('date'); // 'none' | 'date' | 'camera' | 'focal' | 'iso' | 'solar'
   const [renameFiles, setRenameFiles] = useState(false);
   const [caption, setCaption] = useState('');
@@ -117,13 +117,6 @@ export default function BatchSettingsModal({ photos = [], onCancel, onConfirm })
           </button>
           <button
             type="button"
-            className={`batch-format-btn ${exportFormat === 'rpg' ? 'active' : ''}`}
-            onClick={() => setExportFormat('rpg')}
-          >
-            ⚔️ RPG Cards
-          </button>
-          <button
-            type="button"
             className={`batch-format-btn ${exportFormat === 'scrubbed' ? 'active' : ''}`}
             onClick={() => setExportFormat('scrubbed')}
           >
@@ -227,20 +220,6 @@ export default function BatchSettingsModal({ photos = [], onCancel, onConfirm })
                 </div>
               ))}
             </div>
-          </div>
-        )}
-
-        {exportFormat === 'rpg' && (
-          <div style={{
-            padding: '10px 12px',
-            background: 'rgba(99, 102, 241, 0.1)',
-            border: '1px solid rgba(99, 102, 241, 0.3)',
-            borderRadius: '6px',
-            fontSize: '11px',
-            color: '#c7d2fe',
-            marginBottom: '18px'
-          }}>
-            ⚔️ <strong>Batch RPG Minting:</strong> Automatically computes dynamic Agility, Lumens, Purity, and Reach stats, auto-detects character archetypes, and assigns holographic frames for every photo.
           </div>
         )}
 

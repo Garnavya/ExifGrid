@@ -27,7 +27,10 @@
    * [Feature 15: Progressive Web App (PWA) Offline Engine & Tile Caching](#feature-15-progressive-web-app-pwa-offline-engine--tile-caching)
    * [Feature 16: Fault-Tolerant React Error Boundary](#feature-16-fault-tolerant-react-error-boundary)
    * [Feature 17: Hardened Telemetry Backend & Rate Limiter](#feature-17-hardened-telemetry-backend--rate-limiter)
-   * [Feature 18: Fine-Art & Historical Photography Collector Card Suite](#feature-18-fine-art--historical-photography-collector-card-suite)
+   * [Feature 18: Radial RGB Chromatic Donut & Color Harmony Suite](#feature-18-radial-rgb-chromatic-donut--color-harmony-suite)
+   * [Feature 19: Golden Hour & Sun Elevation Path Tracker](#feature-19-golden-hour--sun-elevation-path-tracker)
+   * [Feature 20: Automated Folder Organization & Batch Export Suite](#feature-20-automated-folder-organization--batch-export-suite)
+   * [Feature 21: Visual EXIF Watermarking & Brand Stamp Suite](#feature-21-visual-exif-watermarking--brand-stamp-suite)
 3. [Technology Cross-Reference Matrix](#3-technology-cross-reference-matrix)
 
 ---
@@ -330,35 +333,7 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 
 ---
 
-### Feature 18: Fine-Art & Historical Photography Collector Card Suite
-
-* **Purpose & Workflow:**  
-  Elevates technical camera metadata into museum-grade collectible photographic cards. Completely discards gaudy arcade/neon aesthetics in favor of 4 authentic darkroom, analog film, and optical science concepts:
-  1. **Archival Darkroom (`darkroom`):** Fine-art museum rag mat board with blind-embossed bevels, archival proof index, and darkroom curator notes.
-  2. **35mm Mounted Film Slide (`film_slide`):** Authentic ivory cardboard slide mount with film stock stamps (*Kodachrome 64*, *Tri-X Pan 400*, *Fujichrome Velvia*), frame counter stamps (`▶ 24A`), red Chinagraph grease-pencil crop framing brackets, and photojournalism press tiers.
-  3. **Optical Benchmark (`optical_benchmark`):** Precision matte obsidian rangefinder chassis with laser-engraved serial badges, edge vernier scale rulers, and DIN/Swiss typography.
-  4. **Heritage Field Guide (`heritage_guide`):** 19th-century naturalist expedition folio with aged gold-foil photo mounting corners, expedition seals, and astronomical capture timestamps.
-  Provides interactive live theme swapping, real-time subject framing/repositioning controls (preserving faces and heads over awkward torso crops), and Ultra-HD 3× Print Master exports (2400×3420 px, 300 DPI, lossless 24-bit/32-bit PNG exceeding 5MB–16MB+).
-* **Component & File Footprint:**  
-  [`client/src/utils/rpgCard.js`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/utils/rpgCard.js), [`client/src/components/Lightbox.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/components/Lightbox.jsx), [`client/src/css/polaroid.css`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/css/polaroid.css).
-* **Algorithmic & Mathematical Basis:**  
-  * **Agility ($AGI$):** Shutter speed kinetics freeze scale ($1/8000\text{s} \to 99$, $1/4000\text{s} \to 95$, $\dots$, $\ge 1\text{s} \to 18$).
-  * **Power / Lumens ($PWR$):** Inverse optical aperture intake ($f/1.2 \to 100$, $f/1.4 \to 96$, $\dots$, $f/16 \to 24$).
-  * **Sensor Purity ($PUR$):** Quantum fidelity vs. ISO sensor gain ($ISO\ 100 \to 99$, $\dots$, $ISO\ 6400+ \to 25$).
-  * **Optical Reach ($RCH$):** Telephoto focal distance metric ($400\text{mm}+ \to 99$, $\dots$, $14\text{mm} \to 32$).
-  * **Weighted Gear Level:** $L = \text{clamp}\left(15, 99, \text{round}\left(\frac{1.1 AGI + 1.1 PWR + 0.9 PUR + 0.9 RCH}{4}\right)\right)$.
-  * **Interactive Focal Point Repositioning:**  
-    Given artwork window $[x_{\text{art}}, y_{\text{art}}, w_{\text{art}}, h_{\text{art}}]$ and user-configured pan offsets $(\hat{x}, \hat{y}) \in [0, 1]$ and zoom factor $z \ge 1$:
-    $$s = z \cdot \max\left(\frac{w_{\text{art}}}{w_{\text{img}}}, \frac{h_{\text{art}}}{h_{\text{img}}}\right), \quad w_{\text{draw}} = s \cdot w_{\text{img}}, \quad h_{\text{draw}} = s \cdot h_{\text{img}}$$
-    $$x_{\text{draw}} = x_{\text{art}} - \hat{x} \cdot (w_{\text{draw}} - w_{\text{art}}), \quad y_{\text{draw}} = y_{\text{art}} - \hat{y} \cdot (h_{\text{draw}} - h_{\text{art}})$$
-    When $\hat{y} = 0$, the upper edge of the photo aligns flush with the upper border of the window, guaranteeing zero facial truncation in portraiture.
-* **Canvas Rendering Architecture:**  
-  * **Ultra-HD Vector Compositing:** Renders at $3\times$ scale multiplier ($2400 \times 3420\text{ px}$ buffer), producing razor-sharp fine paper grain, vector vernier scales, and crisp serif typography.
-  * **Lossless Archival Pipeline:** Exports directly as uncompressed 24-bit/32-bit PNG or 100% quality JPEG, preserving native sensor dynamic range and file sizes exceeding 5MB–16MB+.
-
----
-
-### Feature 19: Radial RGB Chromatic Donut & Color Harmony Suite
+### Feature 18: Radial RGB Chromatic Donut & Color Harmony Suite
 
 * **Purpose & Workflow:**  
   An interactive color grading and color theory analysis suite integrated into the Lightbox sidebar. Decodes and downsamples the image off-thread to sample 10,000 pixels, constructing a 36-bin ($10^\circ$) angular hue histogram, calculating overall RGB channel saturation split percentages (Red, Green, Blue), determining warm-vs-cool spectrum balance, isolating top 5 dominant palette swatches with one-click HEX clipboard copying, and classifying classical color harmony (*Monochromatic*, *Analogous*, *Complementary*, *Split-Complementary*, *Triadic*, or *Polychromatic*).
@@ -379,7 +354,7 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 
 ---
 
-### Feature 20: Golden Hour & Sun Elevation Path Tracker
+### Feature 19: Golden Hour & Sun Elevation Path Tracker
 
 * **Purpose & Workflow:**  
   Computes exact celestial solar metrics from image capture timestamps and GPS coordinates. Evaluates solar altitude (elevation above/below the horizon in degrees), compass azimuth heading (0°–360°), and classifies natural lighting phases (*High Overhead Sun*, *Direct Daylight*, *Late Afternoon*, *Golden Hour ✨*, *Blue Hour 🌌*, *Nautical Twilight*, *Astronomical Twilight*, *True Night Astro Window*). Renders an SVG sky dome with horizon baseline, a glowing sun marker, photographic lighting guidance, and an expandable daily golden hour timetable (Sunrise, Morning Golden Hour, Solar Noon, Evening Golden Hour, Sunset, Blue Hour).
@@ -402,10 +377,10 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 
 ---
 
-### Feature 21: Automated Folder Organization & Batch Export Suite
+### Feature 20: Automated Folder Organization & Batch Export Suite
 
 * **Purpose & Workflow:**  
-  Solves flat SD card clutter by automatically organizing photo batches into hierarchical subfolder structures based on camera EXIF tags. Supports sorting by Capture Date (`YYYY-MM-DD/`), Camera Model (`Sony_A7RV/`, `Canon_EOS_R5/`), Focal Length (`35mm/`, `85mm/`), ISO Noise Gain Tiers (`ISO_100-400_LowNoise/`, `ISO_6400+_HighGain/`), or Solar Phase (`Golden_Hour/`, `Daylight/`). Enables format transformation (Polaroids, Collectible RPG Stat Cards, Privacy-Scrubbed assets, or Pristine Originals), optional metadata slug renaming (`[Date]_[Camera]_[Filename]`), and provides a live ASCII directory tree preview inside `BatchSettingsModal.jsx` before asynchronous ZIP compression and packaging.
+  Solves flat SD card clutter by automatically organizing photo batches into hierarchical subfolder structures based on camera EXIF tags. Supports sorting by Capture Date (`YYYY-MM-DD/`), Camera Model (`Sony_A7RV/`, `Canon_EOS_R5/`), Focal Length (`35mm/`, `85mm/`), ISO Noise Gain Tiers (`ISO_100-400_LowNoise/`, `ISO_6400+_HighGain/`), or Solar Phase (`Golden_Hour/`, `Daylight/`). Enables format transformation (Polaroids, Privacy-Scrubbed assets, or Pristine Originals), optional metadata slug renaming (`[Date]_[Camera]_[Filename]`), and provides a live ASCII directory tree preview inside `BatchSettingsModal.jsx` before asynchronous ZIP compression and packaging.
 * **Component & File Footprint:**  
   [`client/src/utils/batchProcessor.js`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/utils/batchProcessor.js), [`client/src/components/BatchSettingsModal.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/components/BatchSettingsModal.jsx), [`client/src/App.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/App.jsx), [`client/src/css/modal.css`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/css/modal.css).
 * **Algorithmic & Archival Basis:**  
@@ -416,7 +391,7 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 
 ---
 
-### Feature 22: Visual EXIF Watermarking & Brand Stamp Suite
+### Feature 21: Visual EXIF Watermarking & Brand Stamp Suite
 
 * **Purpose & Workflow:**  
   Generates social-media-ready branded letterbox stamps and metadata badges inspired by Leica, Hasselblad, and Xiaomi flagship cameras while preserving native photo aspect ratios. Renders vector typographic banners with brand emblems (Leica classic red dot, Hasselblad orange square), bold camera models, artist signatures, and clean exposure clusters (`focal | aperture | shutter | ISO`). Integrated into `Lightbox.jsx` with real-time reactive preview and multiple aesthetic presets (*Leica Minimalist White*, *Matte Obsidian Black Letterbox*, *Floating Frosted Glass Inset Badge*, and *Hasselblad Modern Border*).
@@ -439,7 +414,6 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 | **Dual Compare** | `ComparisonFeed.jsx` | React 18, GSAP | CSS Matrix, Pointer Events | Normalized Cursor Ratio Panning, Sync Zoom |
 | **Filter Matrix** | `FilterMatrix.jsx` | React 18 | ES6 `Set`, Array Methods | Compound Boolean Set Deduplication |
 | **Polaroid Gen** | `polaroid.js`, `batchProcessor.js`| `jszip` | Canvas 2D, Blob | Iterative Text Scaling, Zip Deflate Compression |
-| **RPG Stat Cards**| `rpgCard.js`, `Lightbox.jsx` | Canvas 2D, React 18 | HTML5 Canvas, Blob, DataURL | Weighted Stat Matrix, Tier Classifier, Word-Wrap Canvas |
 | **Brand Watermark**| `watermark.js`, `Lightbox.jsx` | Canvas 2D, React 18 | HTML5 Canvas, Blob, DataURL | Vector Kerning, Proportional Letterbox, Glass Overlay |
 | **Chromatic Donut**| `chromaticAnalysis.js`, `ChromaticDonut.jsx` | Canvas 2D, React 18 | `createImageBitmap`, ImageData | 36-Bin Angular Hue Histogram, Shortest Angular Distance |
 | **Sun Path Tracker**| `sunCalc.js`, `SunTracker.jsx` | SVG, React 18 | Native Math, Spherical Trig | Jean Meeus Solar Ephemeris, Elevation/Azimuth Vector |

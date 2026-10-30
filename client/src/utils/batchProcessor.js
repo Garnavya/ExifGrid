@@ -1,6 +1,5 @@
 import JSZip from 'jszip';
 import { generatePolaroidDataURL } from './polaroid.js';
-import { generateRpgCardDataURL } from './rpgCard.js';
 import { stripExifData } from './exifStripper.js';
 import { getSolarPosition } from './sunCalc.js';
 
@@ -84,7 +83,6 @@ export function resolveFileName(photo, index, options = {}) {
 
   let prefix = '';
   if (options.exportFormat === 'polaroid') prefix = 'Polaroid_';
-  else if (options.exportFormat === 'rpg') prefix = 'RPG_Card_';
   else if (options.exportFormat === 'scrubbed') prefix = 'Scrubbed_';
 
   let tag = '';
@@ -124,9 +122,6 @@ export async function createStructuredBatchZip(photos, options = {}, onProgress)
       // 1. Generate payload according to selected export format
       if (exportFormat === 'polaroid') {
         const dataUrl = await generatePolaroidDataURL(photo, options);
-        if (dataUrl) fileBlob = dataURLToBlob(dataUrl);
-      } else if (exportFormat === 'rpg') {
-        const dataUrl = await generateRpgCardDataURL(photo, options);
         if (dataUrl) fileBlob = dataURLToBlob(dataUrl);
       } else if (exportFormat === 'scrubbed') {
         const res = await fetch(photo.src);

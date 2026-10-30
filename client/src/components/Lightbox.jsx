@@ -8,7 +8,6 @@ import { useKeyboardNav } from '../hooks/useKeyboardNav.js';
 import { useDownload } from '../hooks/useDownload.js';
 import { stripExifData } from '../utils/exifStripper.js';
 import { downloadPolaroid, generatePolaroidDataURL } from '../utils/polaroid.js'; 
-import { calculateRpgStats, generateRpgCardDataURL, downloadRpgCard, RPG_CONCEPTS } from '../utils/rpgCard.js';
 import { WATERMARK_STYLES, generateWatermarkDataURL, downloadWatermarkedPhoto } from '../utils/watermark.js';
 import AIAnalysisModal from './AIAnalysisModal';
 import ChromaticDonut from './ChromaticDonut.jsx';
@@ -69,23 +68,10 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
   const [isGeneratingPolaroid, setIsGeneratingPolaroid] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
 
-  // Export Mode: 'polaroid' | 'stamp' | 'rpg'
+  // Export Mode: 'polaroid' | 'stamp'
   const [exportMode, setExportMode] = useState('polaroid');
   // Lightbox View Mode: 'photo' (full enlarged) | 'export' (full artifact) | 'split' (side-by-side)
   const [lightboxView, setLightboxView] = useState('photo');
-
-  // RPG Stat Card generator state
-  const [rpgPreview, setRpgPreview] = useState(null);
-  const [rpgTitle, setRpgTitle] = useState('');
-  const [rpgArchetype, setRpgArchetype] = useState('auto');
-  const [rpgRarity, setRpgRarity] = useState('auto');
-  const [rpgConcept, setRpgConcept] = useState('darkroom');
-  const [rpgPanY, setRpgPanY] = useState(15); // default 15% favors faces/portraits
-  const [rpgPanX, setRpgPanX] = useState(50);
-  const [rpgCropZoom, setRpgCropZoom] = useState(1.0);
-  const [rpgResolution, setRpgResolution] = useState(3); // 3x Ultra-HD Master (2400x3420)
-  const [rpgFormat, setRpgFormat] = useState('image/png'); // Lossless PNG
-  const [isGeneratingRpg, setIsGeneratingRpg] = useState(false);
 
   // Visual EXIF Watermark & Brand Stamp state
   const [watermarkPreview, setWatermarkPreview] = useState(null);
@@ -93,10 +79,6 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
   const [watermarkArtist, setWatermarkArtist] = useState('');
   const [watermarkCamera, setWatermarkCamera] = useState('');
   const [isGeneratingWatermark, setIsGeneratingWatermark] = useState(false);
-
-  const rpgBaseInfo = useMemo(() => {
-    return photo ? calculateRpgStats(photo) : null;
-  }, [photo]);
   
   // New state for handling multiple image filters
   const [activeFilter, setActiveFilter] = useState('none');
@@ -111,13 +93,6 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     setExifTextScale(1.0); 
     setShowAIModal(false);
     setActiveFilter('none'); // Reset to original image on change
-    setRpgPreview(null);
-    setRpgTitle(photo ? photo.name.replace(/\.[^/.]+$/, '') : '');
-    setRpgArchetype('auto');
-    setRpgRarity('auto');
-    setRpgPanY(15);
-    setRpgPanX(50);
-    setRpgCropZoom(1.0);
     setWatermarkPreview(null);
     setWatermarkArtist(photo?.exif?.Artist || '');
     setWatermarkCamera(photo?.exif?.Model || photo?.exif?.Make || '');
@@ -219,34 +194,6 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     };
   }, [photo, polaroidCaption, polaroidToggles, polaroidFont, exifBold, exifItalic, exifTextScale]);
 
-  useEffect(() => {
-    if (!photo?.src || exportMode !== 'rpg') return;
-    let cancelled = false;
-
-    const timer = setTimeout(async () => {
-      try {
-        const dataUrl = await generateRpgCardDataURL(photo, {
-          title: rpgTitle.trim() || undefined,
-          concept: rpgConcept,
-          archetype: rpgArchetype !== 'auto' ? rpgArchetype : undefined,
-          rarity: rpgRarity !== 'auto' ? rpgRarity : undefined,
-          panX: rpgPanX,
-          panY: rpgPanY,
-          cropZoom: rpgCropZoom,
-          scaleMultiplier: 1.25 // Fast preview for studio UI
-        });
-        if (!cancelled) setRpgPreview(dataUrl);
-      } catch (err) {
-        console.error("RPG Card preview generation failed", err);
-      }
-    }, 200);
-
-    return () => {
-      clearTimeout(timer);
-      cancelled = true;
-    };
-  }, [photo, exportMode, rpgTitle, rpgConcept, rpgArchetype, rpgRarity, rpgPanX, rpgPanY, rpgCropZoom]);
-
   const handleScrubDownload = async () => {
     if (!photo) return;
     setIsScrubbing(true);
@@ -284,29 +231,6 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
       alert('Failed to generate polaroid frame.');
     } finally {
       setIsGeneratingPolaroid(false);
-    }
-  };
-
-  const handleRpgDownload = async () => {
-    if (!photo) return;
-    setIsGeneratingRpg(true);
-    try {
-      await downloadRpgCard(photo, {
-        title: rpgTitle.trim() || undefined,
-        concept: rpgConcept,
-        archetype: rpgArchetype !== 'auto' ? rpgArchetype : undefined,
-        rarity: rpgRarity !== 'auto' ? rpgRarity : undefined,
-        panX: rpgPanX,
-        panY: rpgPanY,
-        cropZoom: rpgCropZoom,
-        scaleMultiplier: rpgResolution,
-        format: rpgFormat
-      });
-    } catch (err) {
-      console.error('Failed to generate RPG card:', err);
-      alert('Failed to generate collectible RPG card.');
-    } finally {
-      setIsGeneratingRpg(false);
     }
   };
 
@@ -490,21 +414,6 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                       </div>
                     )
                   )}
-
-                  {exportMode === 'rpg' && (
-                    rpgPreview ? (
-                      <img
-                        src={rpgPreview}
-                        alt="RPG Stat Card Preview"
-                        className="zoomable-img"
-                        style={{ cursor: 'default', filter: 'drop-shadow(0 20px 50px rgba(0,0,0,0.7))', maxHeight: '84vh' }}
-                      />
-                    ) : (
-                      <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>
-                        Synthesizing RPG Stat Card...
-                      </div>
-                    )
-                  )}
                 </div>
               )}
 
@@ -535,14 +444,6 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                         <img src={watermarkPreview} alt="Brand Stamp Live Preview" className="zoomable-img" style={{ cursor: 'default', filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))' }} />
                       ) : (
                         <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>Applying Stamp...</div>
-                      )
-                    )}
-
-                    {exportMode === 'rpg' && (
-                      rpgPreview ? (
-                        <img src={rpgPreview} alt="RPG Stat Card Live Preview" className="zoomable-img" style={{ cursor: 'default', filter: 'drop-shadow(0 15px 35px rgba(0,0,0,0.6))', maxHeight: '76vh' }} />
-                      ) : (
-                        <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>Synthesizing Card...</div>
                       )
                     )}
                   </div>
@@ -692,13 +593,6 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                         onClick={() => setExportMode('stamp')}
                       >
                         🏷️ Brand Stamp
-                      </button>
-                      <button 
-                        type="button" 
-                        className={`gen-tab-btn ${exportMode === 'rpg' ? 'active' : ''}`}
-                        onClick={() => setExportMode('rpg')}
-                      >
-                        ⚔️ RPG Card
                       </button>
                     </div>
 
@@ -853,280 +747,6 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                           }}
                         >
                           {isGeneratingWatermark ? 'Applying Stamp...' : '🏷️ Download Stamped Photo'}
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div className="ps-title" style={{ color: '#d4af37' }}>Collectible Photography Card</div>
-                          {rpgBaseInfo && (
-                            <span className={`rpg-badge-pill rpg-badge-${(rpgRarity !== 'auto' ? rpgRarity : rpgBaseInfo.rarity).toLowerCase()}`}>
-                              LVL {rpgBaseInfo.gearLevel} • {rpgRarity !== 'auto' ? rpgRarity : rpgBaseInfo.rarity}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Concept Theme Swapping Bar */}
-                        <div className="ps-label" style={{ fontWeight: 'bold', color: 'var(--text)' }}>
-                          Design Concept & Atmosphere
-                        </div>
-                        <div className="concept-grid-bar">
-                          {Object.values(RPG_CONCEPTS).map((c) => (
-                            <button
-                              key={c.id}
-                              type="button"
-                              className={`concept-card-btn ${rpgConcept === c.id ? 'active' : ''}`}
-                              onClick={() => setRpgConcept(c.id)}
-                            >
-                              <div className="concept-btn-title">
-                                <span>{c.icon}</span>
-                                <span>{c.name}</span>
-                              </div>
-                              <div className="concept-btn-sub">{c.tagline}</div>
-                            </button>
-                          ))}
-                        </div>
-
-                        {/* Subject Framing & Positioning Controls (Solves Torso Problem) */}
-                        <div style={{
-                          background: 'var(--surface2)',
-                          border: '1px solid var(--border2)',
-                          borderRadius: '8px',
-                          padding: '10px 12px',
-                          marginTop: '4px'
-                        }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div className="ps-label" style={{ margin: 0, fontWeight: 'bold', color: 'var(--text)' }}>
-                              🎯 Subject Framing & Repositioning
-                            </div>
-                            <span style={{ fontSize: '10px', color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>
-                              Y: {rpgPanY}% • Zoom: {rpgCropZoom.toFixed(1)}×
-                            </span>
-                          </div>
-
-                          {/* Quick Alignment Presets */}
-                          <div className="framing-preset-bar">
-                            <button
-                              type="button"
-                              className={`framing-preset-btn ${rpgPanY === 0 ? 'active' : ''}`}
-                              onClick={() => { setRpgPanY(0); setRpgPanX(50); }}
-                              title="Align top of photo with frame (Preserves faces & heads)"
-                            >
-                              👤 Face / Head (Top)
-                            </button>
-                            <button
-                              type="button"
-                              className={`framing-preset-btn ${rpgPanY === 15 ? 'active' : ''}`}
-                              onClick={() => { setRpgPanY(15); setRpgPanX(50); }}
-                              title="Slight head-room portrait framing"
-                            >
-                              ✨ Portrait (15%)
-                            </button>
-                            <button
-                              type="button"
-                              className={`framing-preset-btn ${rpgPanY === 50 ? 'active' : ''}`}
-                              onClick={() => { setRpgPanY(50); setRpgPanX(50); }}
-                              title="Center framing"
-                            >
-                              🎯 Center (50%)
-                            </button>
-                            <button
-                              type="button"
-                              className={`framing-preset-btn ${rpgPanY === 85 ? 'active' : ''}`}
-                              onClick={() => { setRpgPanY(85); setRpgPanX(50); }}
-                              title="Lower third / landscape ground"
-                            >
-                              📐 Lower (85%)
-                            </button>
-                          </div>
-
-                          {/* Fine-Tuning Sliders */}
-                          <div className="ps-slider-row">
-                            <div className="ps-slider-header">
-                              <span>Vertical Position (Pan Y)</span>
-                              <span>{rpgPanY === 0 ? 'Top (Face)' : rpgPanY === 100 ? 'Bottom' : `${rpgPanY}%`}</span>
-                            </div>
-                            <input
-                              type="range"
-                              min="0"
-                              max="100"
-                              step="1"
-                              value={rpgPanY}
-                              onChange={(e) => setRpgPanY(Number(e.target.value))}
-                              className="ps-range"
-                            />
-                          </div>
-
-                          <div className="ps-slider-row">
-                            <div className="ps-slider-header">
-                              <span>Horizontal Position (Pan X)</span>
-                              <span>{rpgPanX}%</span>
-                            </div>
-                            <input
-                              type="range"
-                              min="0"
-                              max="100"
-                              step="1"
-                              value={rpgPanX}
-                              onChange={(e) => setRpgPanX(Number(e.target.value))}
-                              className="ps-range"
-                            />
-                          </div>
-
-                          <div className="ps-slider-row">
-                            <div className="ps-slider-header">
-                              <span>Framing Zoom</span>
-                              <span>{rpgCropZoom.toFixed(1)}×</span>
-                            </div>
-                            <input
-                              type="range"
-                              min="1.0"
-                              max="2.2"
-                              step="0.05"
-                              value={rpgCropZoom}
-                              onChange={(e) => setRpgCropZoom(Number(e.target.value))}
-                              className="ps-range"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Title and Metadata Inputs */}
-                        <div className="ps-label">Card Title</div>
-                        <input 
-                          type="text" 
-                          className="ps-input" 
-                          placeholder="Collector Card Name..."
-                          value={rpgTitle}
-                          onChange={(e) => setRpgTitle(e.target.value)}
-                        />
-
-                        <div className="ps-label">Photographic Archetype</div>
-                        <select 
-                          className="ps-select"
-                          value={rpgArchetype}
-                          onChange={(e) => setRpgArchetype(e.target.value)}
-                        >
-                          <option value="auto">Auto-Detected ({rpgBaseInfo?.archetype || 'Street Vanguard'})</option>
-                          <option value="Planar Isolationist">Planar Isolationist (Wide Aperture Bokeh)</option>
-                          <option value="Chronos Freeze">Chronos Freeze (Microsecond Shutter)</option>
-                          <option value="Luminance Weaver">Luminance Weaver (Extended Exposure Silk)</option>
-                          <option value="Telephoto Stalker">Telephoto Stalker (Spatial Compression)</option>
-                          <option value="Horizon Expander">Horizon Expander (Ultra-Wide Panorama)</option>
-                          <option value="Hyperfocal Master">Hyperfocal Master (Deep Field Precision)</option>
-                          <option value="Low-Light Nocturne">Low-Light Nocturne (High-Gain Night Stalker)</option>
-                          <option value="Street Vanguard">Street Vanguard (Decisive Instant)</option>
-                        </select>
-
-                        <div className="ps-label">Curator Tier / Rarity Grade</div>
-                        <select 
-                          className="ps-select"
-                          value={rpgRarity}
-                          onChange={(e) => setRpgRarity(e.target.value)}
-                        >
-                          <option value="auto">Auto-Ranked ({rpgBaseInfo?.rarity || 'COMMON'})</option>
-                          <option value="MYTHIC">★ TIER 1 (Master / Apex Edition)</option>
-                          <option value="LEGENDARY">★ TIER 2 (Grand Prix / Press Select)</option>
-                          <option value="EPIC">✦ TIER 3 (Exhibition / Hero Proof)</option>
-                          <option value="RARE">◆ TIER 4 (Fine-Art / Field Verification)</option>
-                          <option value="COMMON">● TIER 5 (Contact / Reference Specimen)</option>
-                        </select>
-
-                        {/* High-Resolution & File Size Selector */}
-                        <div className="ps-label">Output Fidelity & Master Quality</div>
-                        <select
-                          className="ps-select"
-                          value={`${rpgResolution}-${rpgFormat}`}
-                          onChange={(e) => {
-                            const [res, fmt] = e.target.value.split('-');
-                            setRpgResolution(Number(res));
-                            setRpgFormat(fmt);
-                          }}
-                        >
-                          <option value="3-image/png">3× Ultra-HD Master (2400×3420 • Lossless PNG • ~8–16MB)</option>
-                          <option value="2-image/png">2× High-Def (1600×2280 • Lossless PNG • ~4–8MB)</option>
-                          <option value="1-image/png">1× Standard (800×1140 • PNG • ~1–3MB)</option>
-                          <option value="3-image/jpeg">3× Ultra-HD JPEG (2400×3420 • 100% Quality • ~4–7MB)</option>
-                        </select>
-
-                        {rpgBaseInfo && (
-                          <div style={{ marginTop: '8px' }}>
-                            <div className="ps-label">Technical Optical Parameters</div>
-                            <div className="rpg-stat-grid">
-                              <div className="rpg-stat-chip">
-                                <div className="rpg-stat-chip-header">
-                                  <span>⚡ AGI</span>
-                                  <span>Shutter</span>
-                                </div>
-                                <div className="rpg-stat-chip-score">
-                                  <span>{rpgBaseInfo.stats.agi}</span>
-                                  <span className="rpg-stat-chip-raw">{rpgBaseInfo.rawValues.shutter}</span>
-                                </div>
-                              </div>
-                              <div className="rpg-stat-chip">
-                                <div className="rpg-stat-chip-header">
-                                  <span>💥 PWR</span>
-                                  <span>Aperture</span>
-                                </div>
-                                <div className="rpg-stat-chip-score">
-                                  <span>{rpgBaseInfo.stats.pwr}</span>
-                                  <span className="rpg-stat-chip-raw">{rpgBaseInfo.rawValues.aperture}</span>
-                                </div>
-                              </div>
-                              <div className="rpg-stat-chip">
-                                <div className="rpg-stat-chip-header">
-                                  <span>🛡️ PUR</span>
-                                  <span>Purity</span>
-                                </div>
-                                <div className="rpg-stat-chip-score">
-                                  <span>{rpgBaseInfo.stats.pur}</span>
-                                  <span className="rpg-stat-chip-raw">{rpgBaseInfo.rawValues.iso}</span>
-                                </div>
-                              </div>
-                              <div className="rpg-stat-chip">
-                                <div className="rpg-stat-chip-header">
-                                  <span>🎯 RCH</span>
-                                  <span>Reach</span>
-                                </div>
-                                <div className="rpg-stat-chip-score">
-                                  <span>{rpgBaseInfo.stats.rch}</span>
-                                  <span className="rpg-stat-chip-raw">{rpgBaseInfo.rawValues.focal}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div style={{ 
-                              padding: '8px 10px', 
-                              background: 'var(--surface2)', 
-                              border: '1px solid var(--border2)', 
-                              borderRadius: '6px',
-                              borderLeft: '3px solid #d4af37',
-                              fontSize: '11px',
-                              lineHeight: '1.4'
-                            }}>
-                              <div style={{ fontWeight: 'bold', color: '#fbbf24', marginBottom: '2px' }}>
-                                ✦ {rpgBaseInfo.perkName}
-                              </div>
-                              <div style={{ color: 'var(--text-dim)', fontSize: '10px' }}>
-                                {rpgBaseInfo.perkDesc}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        <button 
-                          type="button" 
-                          className="polaroid-btn rpg-download-btn"
-                          onClick={handleRpgDownload}
-                          disabled={isGeneratingRpg}
-                          style={{
-                            marginTop: '16px',
-                            background: 'linear-gradient(135deg, #181916, #2d2b24)',
-                            borderColor: '#d4af37',
-                            color: '#fbbf24',
-                            boxShadow: '0 4px 15px rgba(212, 175, 55, 0.25)'
-                          }}
-                        >
-                          {isGeneratingRpg ? 'Minting Archival Print...' : '🏛️ Download Collector Card (Ultra-HD)'}
                         </button>
                       </>
                     )}

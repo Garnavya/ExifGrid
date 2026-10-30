@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Header from './components/Header.jsx';
 import StatsBar from './components/StatsBar.jsx';
 import DropZone from './components/DropZone.jsx';
@@ -11,6 +11,7 @@ import GridLoader from './components/GridLoader.jsx';
 import ConsentModal from './components/ConsentModal.jsx';
 import PrivacySettingsModal from './components/PrivacySettingsModal.jsx';
 import MainWorkspace from './components/MainWorkspace.jsx';
+import JourneyMap from './components/JourneyMap.jsx';
 import JSZip from 'jszip';
 import MetadataForm from './components/MetadataForm.jsx';
 
@@ -29,13 +30,17 @@ import { trackAction } from './api/telemetry.js';
 // --- Inner Application Logic ---
 function ExifGridMain() {
   const { 
-    isLight, setIsLight, viewMode, setViewMode, gridProgress, setGridProgress,
+    isLight, setIsLight, viewMode, setViewMode, 
+    showJourneyMap, setShowJourneyMap,
+    gridProgress, setGridProgress,
     showBatchModal, setShowBatchModal, showInsights, setShowInsights,
     isZipping, setIsZipping, zipProgress, setZipProgress,
     showMetadataModal, setShowMetadataModal
   } = useUI();
 
   const [showCopyrightToast, setShowCopyrightToast] = useState(false);
+  const [isWindowDragging, setIsWindowDragging] = useState(false);
+  const dragCounter = useRef(0);
 
   const { 
     showConsent, showPrivacySettings, isOptedIn, 
@@ -65,57 +70,125 @@ function ExifGridMain() {
   };
 
   const handleFiles = useCallback(async (fileList) => {
-  if (!fileList?.length) return;
-  const RAW_EXTENSIONS = ['.cr2', '.cr3', '.nef', '.arw', '.dng', '.raf', '.orf', '.rw2', '.pef'];
-  const incoming = Array.from(fileList).filter((f) => {
-    if (f.type && f.type.startsWith('image/')) return true;
-    const lowerName = (f.name || '').toLowerCase();
-    return RAW_EXTENSIONS.some(ext => lowerName.endsWith(ext));
-  });
-  if (!incoming.length) return;
-  
-  setGridProgress({ active: true, percent: 5 });
-  
-  const placeholders = incoming.map((file) => ({
-    id: createPhotoId(), file, src: URL.createObjectURL(file), status: 'loading', exif: {}, name: file.name, size: file.size
-  }));
-  
-  setPhotos((prev) => [...prev, ...placeholders]);
-  if (fileInputRef.current) fileInputRef.current.value = '';
-  
-  let processed = 0;
-  const protectedUploads = []; // 1. Array to track protected files
-  
-  for (const placeholder of placeholders) {
-    try {
-      const meta = await ingestPhotoMeta(placeholder.file, placeholder.src);
-      setPhotos((prev) => prev.map((p) => (p.id === placeholder.id ? { ...p, ...meta } : p)));
+    if (!fileList?.length) return;
+    const RAW_EXTENSIONS = ['.cr2', '.cr3', '.nef', '.arw', '.dng', '.raf', '.orf', '.rw2', '.pef'];
+    const incoming = Array.from(fileList).filter((f) => {
+      if (f.type && f.type.startsWith('image/')) return true;
+      const lowerName = (f.name || '').toLowerCase();
+      return RAW_EXTENSIONS.some(ext => lowerName.endsWith(ext));
+    });
+    if (!incoming.length) return;
+    
+    setGridProgress({ 
+      active: true, 
+      percent: 5, 
+      current: 1, 
+      total: incoming.length, 
+      currentName: incoming[0]?.name || '' 
+    });
+    
+    const placeholders = incoming.map((file) => ({
+      id: createPhotoId(), file, src: URL.createObjectURL(file), status: 'loading', exif: {}, name: file.name, size: file.size
+    }));
+    
+    setPhotos((prev) => [...prev, ...placeholders]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    
+    let processed = 0;
+    const protectedUploads = []; // Array to track protected files
+    
+    for (const placeholder of placeholders) {
+      setGridProgress({ 
+        active: true, 
+        percent: Math.round(5 + (processed / placeholders.length) * 90),
+        current: processed + 1,
+        total: placeholders.length,
+        currentName: placeholder.name
+      });
 
-      // 2. Check for industry-standard Copyright or Artist tags
-      if (meta.exif && (meta.exif.Copyright || meta.exif.Artist)) {
-        protectedUploads.push({
-          name: meta.name,
-          artist: meta.exif.Artist || 'Unknown Artist',
-          copyright: meta.exif.Copyright || 'Copyrighted'
-        });
+      try {
+        const meta = await ingestPhotoMeta(placeholder.file, placeholder.src);
+        setPhotos((prev) => prev.map((p) => (p.id === placeholder.id ? { ...p, ...meta } : p)));
+
+        // Check for industry-standard Copyright or Artist tags
+        if (meta.exif && (meta.exif.Copyright || meta.exif.Artist)) {
+          protectedUploads.push({
+            name: meta.name,
+            artist: meta.exif.Artist || 'Unknown Artist',
+            copyright: meta.exif.Copyright || 'Copyrighted'
+          });
+        }
+
+      } catch {
+        setPhotos((prev) => prev.map((p) => (p.id === placeholder.id ? { ...p, status: 'ready' } : p)));
       }
-
-    } catch {
-      setPhotos((prev) => prev.map((p) => (p.id === placeholder.id ? { ...p, status: 'ready' } : p)));
+      processed++;
+      setGridProgress({ 
+        active: true, 
+        percent: Math.round(5 + (processed / placeholders.length) * 95),
+        current: processed,
+        total: placeholders.length,
+        currentName: placeholder.name
+      });
     }
-    processed++;
-    setGridProgress({ active: true, percent: 5 + (processed / placeholders.length) * 95 });
-  }
 
-  // 3. Fire the custom toast if protected files exist
-  if (protectedUploads.length > 0) {
-    setShowCopyrightToast(true);
-  }
+    // Fire the custom toast if protected files exist
+    if (protectedUploads.length > 0) {
+      setShowCopyrightToast(true);
+    }
 
-  trackAction('image_drop', { count: placeholders.length });
-  setTimeout(() => setGridProgress(prev => ({ ...prev, active: false })), 400);
-  setTimeout(() => setGridProgress({ active: false, percent: 0 }), 700);
-}, [setPhotos, setGridProgress]); 
+    trackAction('image_drop', { count: placeholders.length });
+    setTimeout(() => setGridProgress(prev => ({ ...prev, active: false })), 500);
+    setTimeout(() => setGridProgress({ active: false, percent: 0, current: 0, total: 0, currentName: '' }), 800);
+  }, [setPhotos, setGridProgress]); 
+
+  // Window-Wide Drag-and-Drop Listener (Drop anywhere in the application)
+  useEffect(() => {
+    const handleDragEnter = (e) => {
+      e.preventDefault();
+      if (e.dataTransfer?.types && Array.from(e.dataTransfer.types).includes('Files')) {
+        dragCounter.current++;
+        setIsWindowDragging(true);
+      }
+    };
+
+    const handleDragLeave = (e) => {
+      e.preventDefault();
+      dragCounter.current--;
+      if (dragCounter.current <= 0) {
+        dragCounter.current = 0;
+        setIsWindowDragging(false);
+      }
+    };
+
+    const handleDragOver = (e) => {
+      e.preventDefault();
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = 'copy';
+      }
+    };
+
+    const handleDrop = (e) => {
+      e.preventDefault();
+      dragCounter.current = 0;
+      setIsWindowDragging(false);
+      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+        handleFiles(e.dataTransfer.files);
+      }
+    };
+
+    window.addEventListener('dragenter', handleDragEnter);
+    window.addEventListener('dragleave', handleDragLeave);
+    window.addEventListener('dragover', handleDragOver);
+    window.addEventListener('drop', handleDrop);
+
+    return () => {
+      window.removeEventListener('dragenter', handleDragEnter);
+      window.removeEventListener('dragleave', handleDragLeave);
+      window.removeEventListener('dragover', handleDragOver);
+      window.removeEventListener('drop', handleDrop);
+    };
+  }, [handleFiles]); 
 
   const handleRemovePhoto = useCallback((id) => {
     setGridProgress({ active: true, percent: 30 });
@@ -195,7 +268,27 @@ function ExifGridMain() {
 
   return (
     <>
-      <GridLoader active={gridProgress.active} percent={gridProgress.percent} />
+      <GridLoader 
+        active={gridProgress.active} 
+        percent={gridProgress.percent} 
+        current={gridProgress.current}
+        total={gridProgress.total}
+        currentName={gridProgress.currentName}
+      />
+
+      {isWindowDragging && (
+        <div className="window-drag-overlay">
+          <div className="window-drag-box">
+            <svg className="window-drag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <h3>Drop Photos Anywhere to Ingest</h3>
+            <p>Supports RAW (CR2, NEF, ARW, DNG, RAF), JPEG, TIFF, and WebP</p>
+          </div>
+        </div>
+      )}
       
       {showConsent && <ConsentModal onChoice={handleConsentChoice} />}
       
@@ -218,8 +311,7 @@ function ExifGridMain() {
         onOpenMetadata={() => setShowMetadataModal(true)} 
         fileInputRef={fileInputRef}
         onFilesSelected={handleFiles}
-        viewMode={viewMode}
-        onToggleView={() => setViewMode(prev => prev === 'gallery' ? 'map' : 'gallery')}
+        onOpenMap={() => setShowJourneyMap(true)}
         onOpenInsights={() => setShowInsights(true)}
       />
       
@@ -238,6 +330,13 @@ function ExifGridMain() {
       
       {hasPhotos && <MainWorkspace filteredPhotos={filteredPhotos} handleRemovePhoto={handleRemovePhoto} />}
       
+      {showJourneyMap && (
+        <JourneyMap 
+          photos={filteredPhotos} 
+          onClose={() => setShowJourneyMap(false)} 
+        />
+      )}
+
       {showInsights && <InsightsDashboard photos={photos} onClose={() => setShowInsights(false)} />}
       
       {showBatchModal && <BatchSettingsModal photos={photos} onCancel={() => setShowBatchModal(false)} onConfirm={executeBatchDownload} />}

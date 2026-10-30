@@ -31,6 +31,9 @@
    * [Feature 19: Golden Hour & Sun Elevation Path Tracker](#feature-19-golden-hour--sun-elevation-path-tracker)
    * [Feature 20: Automated Folder Organization & Batch Export Suite](#feature-20-automated-folder-organization--batch-export-suite)
    * [Feature 21: Visual EXIF Watermarking & Brand Stamp Suite](#feature-21-visual-exif-watermarking--brand-stamp-suite)
+   * [Feature 22: Optical Diagnostics & Exposure Analysis Suite (Sensor Dust Spotter & False-Color IRE / Zone System)](#feature-22-optical-diagnostics--exposure-analysis-suite)
+   * [Feature 23: Google Maps Multi-Layer Engine & Modal Journey Architecture](#feature-23-google-maps-multi-layer-engine--modal-journey-architecture)
+   * [Feature 24: Global Window Drag-and-Drop & Frosted Ingestion Pipeline](#feature-24-global-window-drag-and-drop--frosted-ingestion-pipeline)
 3. [Technology Cross-Reference Matrix](#3-technology-cross-reference-matrix)
 
 ---
@@ -404,6 +407,53 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 
 ---
 
+### Feature 22: Optical Diagnostics & Exposure Analysis Suite
+
+* **Purpose & Workflow:**  
+  Provides laboratory-grade optical and exposure evaluation directly inside the inspection Lightbox without round-tripping to desktop RAW editors:
+  1. **Sensor Dust Spotter (`dustSpotter.js`):** Specifically targets high $f$-stop photography ($f/8 - f/22$) where sensor particles, dust spots, and lens hairs become visible due to collimated light rays. Applies spatial 2D convolution and high-pass thresholding with configurable sensitivity (*Low*, *Medium*, *High*) and inspection modes (*Inverted Edge Detection*, *High-Contrast Monochrome*, *Edge Thresholding*).
+  2. **False-Color IRE & Zone Exposure Diagnostic (`falseColor.js`):** Translates pixel luminance into calibrated False-Color IRE heatmaps (broadcast / cinema standard, e.g. ARRI/RED) and Ansel Adams 11-step Zone System (Zone 0 pure black to Zone X pure white). Allows instant verification of specular clipping ($>100$ IRE Magenta/Purple), key skin-tone exposure ($50-60$ IRE Pink/Green), and shadow detail ($0-10$ IRE Blue/Black).
+* **Component & File Footprint:**  
+  [`client/src/utils/dustSpotter.js`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/utils/dustSpotter.js), [`client/src/utils/falseColor.js`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/utils/falseColor.js), [`client/src/components/Lightbox.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/components/Lightbox.jsx), [`client/src/css/polaroid.css`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/css/polaroid.css).
+* **Mathematical & Optical Foundations:**  
+  * **Rec.709 Relative Luminance Conversion:**  
+    $$Y = 0.2126R + 0.7152G + 0.0722B$$  
+    Mapped directly to IEEE Institute of Radio Engineers percentage: $\text{IRE} = \frac{Y}{255} \times 100\%$.
+  * **Laplacian Edge Convolution Kernel ($3 \times 3$):**  
+    $$K = \begin{bmatrix} -1 & -1 & -1 \\ -1 & 8 & -1 \\ -1 & -1 & -1 \end{bmatrix}$$  
+    Calculates spatial second derivatives $\nabla^2 f = \frac{\partial^2 f}{\partial x^2} + \frac{\partial^2 f}{\partial y^2}$ on luminance channels, highlighting minute dust ring gradients against uniform sky or studio backdrops.
+
+---
+
+### Feature 23: Google Maps Multi-Layer Engine & Modal Journey Architecture
+
+* **Purpose & Workflow:**  
+  Upgrades the geolocation mapping subsystem to full **Google Maps** integration across the application:
+  1. **Global Journey Map (`JourneyMap.jsx`):** Transformed into a high-performance modal overlay (`journey-modal-overlay`) with backdrop blurring and escape key navigation. Resolves previous layout lag by keeping the underlying photo masonry gallery alive in memory—closing the map restores the gallery instantly with **zero reload delay** and **no re-rendering**.
+  2. **Multi-Layer Basemap Switcher:** Dynamic, seamless tile swapping between **Google Maps Roadmap** (`lyrs=m`), **Google Satellite Hybrid** (`lyrs=y`), **Google Terrain** (`lyrs=p`), and optional **Obsidian Dark Mode** (`dark_all`). Swapping layers updates Leaflet's underlying tile tree without disrupting user route polyline paths, bounding boxes, or EXIF marker clusters.
+  3. **Lightbox MiniMap Synchronization:** Replaced unauthenticated fallback tiles with Google Maps tiles inside `Lightbox.jsx`, maintaining visual consistency with the external `Open in Google Maps` link.
+* **Component & File Footprint:**  
+  [`client/src/utils/mapConfig.js`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/utils/mapConfig.js), [`client/src/components/JourneyMap.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/components/JourneyMap.jsx), [`client/src/components/Lightbox.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/components/Lightbox.jsx), [`client/src/css/map.css`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/css/map.css).
+* **Underlying Standards & Architecture:**  
+  * **Multi-Domain Tile Pipeline:** Distributed subdomains (`mt0`, `mt1`, `mt2`, `mt3`) supporting zoom levels up to 20 without rate-limit throttling.
+  * **Non-Destructive Modal Lifecycle:** Eliminates DOM unmounting penalty via z-index layer isolation (`z-index: 99990`) and automated Leaflet `invalidateSize()` scheduling on modal display.
+
+---
+
+### Feature 24: Global Window Drag-and-Drop & Frosted Ingestion Pipeline
+
+* **Purpose & Workflow:**  
+  Eliminates drop target friction by making the entire browser window a receptive drag-and-drop ingestion target, coupled with an asynchronous frosted-glass progress modal:
+  1. **Window-Wide Drag Interception:** Window-level event listeners detect dragged files entering anywhere in the viewport, surfacing a sleek drag-over visual overlay (`window-drag-overlay`).
+  2. **Frosted-Glass Progress Modal (`GridLoader.jsx`):** As files are ingested and decoded, a centered frosted-glass dialog (`backdrop-filter: blur(10px)`) displays real-time itemized feedback (`Processing Image 4 of 24 (17%)`), active filename, and an animated progress bar. The photo grid dynamically populates behind the frosted blur, giving users instantaneous visual confirmation of ongoing ingestion.
+* **Component & File Footprint:**  
+  [`client/src/App.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/App.jsx), [`client/src/components/GridLoader.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/components/GridLoader.jsx), [`client/src/css/progress.css`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/css/progress.css).
+* **DOM Event & Compositor Architecture:**  
+  * **Drag Event Counter Synchronization:** Uses a counter-based state tracker on `dragenter` and `dragleave` to prevent flicker when crossing child element DOM boundaries.
+  * **Asynchronous Chunk Dispatch:** Decouples file buffer parsing in `exifWorker.js` from UI rendering, streaming newly parsed photos into `PhotoContext` without locking the main thread.
+
+---
+
 ## 3. Technology Cross-Reference Matrix
 
 | Feature | Primary Component / Util | Libraries / Frameworks | Web APIs / Standards | Algorithmic / Math Basis |
@@ -418,13 +468,15 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 | **Chromatic Donut**| `chromaticAnalysis.js`, `ChromaticDonut.jsx` | Canvas 2D, React 18 | `createImageBitmap`, ImageData | 36-Bin Angular Hue Histogram, Shortest Angular Distance |
 | **Sun Path Tracker**| `sunCalc.js`, `SunTracker.jsx` | SVG, React 18 | Native Math, Spherical Trig | Jean Meeus Solar Ephemeris, Elevation/Azimuth Vector |
 | **Auto Folders** | `batchProcessor.js`, `BatchSettingsModal.jsx` | `jszip`, React 18 | Blob, ArrayBuffer | EXIF Rule-Based Directory Mapping, Deflate Stream |
+| **Optical Diagnostics** | `dustSpotter.js`, `falseColor.js` | Canvas 2D, React 18 | `createImageBitmap`, `ImageData` | Discrete Laplacian Convolution $\nabla^2 f$, Rec.709 Luminance, IRE False Color |
+| **Google Maps & Journey** | `JourneyMap.jsx`, `mapConfig.js` | `leaflet`, React 18 | WGS 84, Leaflet TileLayers | Google Tile Subdomains (`mt0-mt3`), Non-Destructive Modal Lifecycle |
+| **Window Ingestion** | `App.jsx`, `GridLoader.jsx` | React 18 | Drag and Drop API, CSS Blur | Global Viewport Event Counter, Frosted Backdrop Filter |
 | **SVG Filters** | `ImageFilters.jsx` | Native SVG | `<feConvolveMatrix>`, `<feColorMatrix>` | $3\times3$ Discrete Laplacian Edge Matrix |
 | **EXIF Scrubber** | `exifStripper.js` | Native Canvas | Canvas `toBlob()`, Object URL | Binary Pixel Re-encoding (Dropping Segment APP1) |
 | **CMI Injector** | `exifInjector.js` | `piexifjs` | FileReader, Base64 | TIFF Tag IFD Segment Encoding (Artist, Copyright) |
-| **Journey Map** | `JourneyMap.jsx` | `leaflet` | WGS 84 Coordinates, Vector Polylines | Chronological Timestamp Sort, Bounding Box Fit |
 | **Analytics** | `InsightsDashboard.jsx` | `chart.js`, `react-chartjs-2` | SVG Arc Geometry, rAF | Trigonometric Arc Sweep, Ease-Out Cubic Decay |
 | **CSV Exporter** | `csvExport.js` | Native JS | Blob, UTF-8 Encoding | RFC 4180 CSV, Formula Injection Shielding |
 | **Local AI Engine**| `onnxWorker.js`, `adviceEngine.js`| `onnxruntime-web` | WebAssembly, OffscreenCanvas | ImageNet Normalization, MobileNetV2 Dual-Head |
-| **Offline PWA** | `vite.config.js` | `vite-plugin-pwa`, Workbox | ServiceWorker, Web App Manifest | CacheFirst Runtime Strategy (OSM & CartoDB) |
+| **Offline PWA** | `vite.config.js` | `vite-plugin-pwa`, Workbox | ServiceWorker, Web App Manifest | CacheFirst Runtime Strategy (OSM, Google & CartoDB) |
 | **Error Recovery**| `ErrorBoundary.jsx` | React 18 | IndexedDB Database Deletion | Error Lifecycle Interception |
 | **Telemetry** | `server.js`, `telemetryController.js`| Express 4, Mongoose 9 | HTTP/1.1, REST | Sliding-Window IP Rate Limiter, Atomic `$inc` |

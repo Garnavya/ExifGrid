@@ -15,6 +15,7 @@ export default function Header({
   onFilesSelected,
   viewMode,
   onToggleView,
+  onOpenMap,
   onOpenInsights
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -64,26 +65,17 @@ export default function Header({
 
         {hasPhotos && (
           <>
-            {/* Map/Gallery Toggle */}
+            {/* Journey Map Modal Trigger */}
             <button 
-              className={`icon-btn feature-btn ${viewMode === 'map' ? 'active-map-btn' : ''}`} 
-              onClick={onToggleView} 
-              title={viewMode === 'gallery' ? "View Global Journey" : "Return to Gallery"}
+              className="icon-btn feature-btn" 
+              onClick={onOpenMap || onToggleView} 
+              title="Open Global Photographic Journey Map"
             >
-              {viewMode === 'gallery' ? (
-                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                   <circle cx="12" cy="12" r="10"></circle>
-                   <line x1="2" y1="12" x2="22" y2="12"></line>
-                   <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                 </svg>
-              ) : (
-                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                   <rect x="3" y="3" width="7" height="7"></rect>
-                   <rect x="14" y="3" width="7" height="7"></rect>
-                   <rect x="14" y="14" width="7" height="7"></rect>
-                   <rect x="3" y="14" width="7" height="7"></rect>
-                 </svg>
-              )}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
             </button>
 
             {/* Quick Add Photos */}

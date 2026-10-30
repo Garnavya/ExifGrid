@@ -130,4 +130,49 @@ html.light-theme .polaroid-settings {
   border: 1px solid var(--border);
 }
 
+/* Diagnostic HUD & Toolbar */
+.diagnostic-hud {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(18, 19, 24, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 30px;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+  z-index: 20;
+  max-width: 92%;
+  overflow-x: auto;
+}
+
+.diagnostic-chip {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.diagnostic-chip.active {
+  background: rgba(88, 166, 255, 0.2);
+  color: #58a6ff;
+  border-color: rgba(88, 166, 255, 0.5);
+}
+
+.diagnostic-chip:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
+
 

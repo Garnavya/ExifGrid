@@ -38,7 +38,9 @@ This document maps the **chronological development roadmap from scratch to the c
         │
 [ Phase 7 ] ─────────> Architectural Audit & Hardening (OWASP Security, Memory Leaks, P0 Fixes)
         │
-[ Phase 8: Present ] ─> Pro Ingestion Upgrades (Embedded RAW Extraction, Dual Sync Focus Zoom)
+[ Phase 8 ] ─────────> Pro Ingestion Upgrades (Embedded RAW Extraction, Dual Sync Focus Zoom)
+        │
+[ Phase 9: Present ] ─> Optical Science, Multi-Layer Geospatial Mapping & Studio Ingestion UX
 ```
 
 ---
@@ -158,7 +160,7 @@ This document maps the **chronological development roadmap from scratch to the c
 
 ---
 
-### Phase 8: Advanced Photography Capabilities (Current State)
+### Phase 8: Advanced Photography Capabilities
 * **Core Objective:** Implement high-value features for professional photographer workflows.
 * **What Was Built:**
   * **Embedded RAW Preview Extraction:** Enabled instant, zero-lag loading of uncompressed camera RAW formats (Sony `.ARW`, Canon `.CR2`/`.CR3`, Nikon `.NEF`, Adobe `.DNG`, etc.) by reading factory JPEG previews directly from binary chunks.
@@ -166,6 +168,20 @@ This document maps the **chronological development roadmap from scratch to the c
 * **Topics & Skills Applied:**
   * **Low-Level Binary Stream Parsing:** Reading raw preview chunks via `exifr` inside Web Workers.
   * **Interactive Transform Mathematics:** Dynamic coordinate ratio mapping and hardware-accelerated CSS `transform-origin` synchronization.
+
+---
+
+### Phase 9: Optical Science Diagnostics, Multi-Layer Geospatial Mapping & Studio Ingestion UX (Current State)
+* **Core Objective:** Deliver laboratory-grade optical and exposure evaluation tools, high-speed multi-layer Google Maps tracing, and friction-free window-wide drag ingestion.
+* **What Was Built:**
+  * **Sensor Dust Spotter:** $3 \times 3$ inverted Laplacian convolution filter with adjustable high-pass sensitivity (*Low*, *Medium*, *High*) to reveal lens dust and sensor particles at small apertures ($f/8 - f/22$).
+  * **False-Color IRE & Zone Exposure Diagnostic:** Broadcast-grade 10-step IRE False-Color (ARRI/RED standard) and Ansel Adams 11-step Zone System heatmaps mapping Rec.709 luminance to verify specular highlight clipping, middle-gray skin tones, and shadow recovery.
+  * **Google Maps Multi-Layer Engine & Modal Journey Architecture:** Integrated Google Maps tile servers (`mt0`–`mt3` subdomains) across JourneyMap and Lightbox MiniMap. Built dynamic basemap switching (Google Roadmap, Google Satellite Hybrid, Google Terrain, Dark Mode) and transformed JourneyMap into a non-destructive modal overlay that eliminates gallery unmount/remount delays.
+  * **Window-Wide Drag & Drop + Frosted Modal Loader:** Viewport-wide drag interception paired with a frosted-glass progress modal (`backdrop-filter: blur(10px)`) providing real-time image-by-image counter (`Processing Image X of Y (Z%)`) and filename feedback.
+* **Topics & Skills Applied:**
+  * **Optical & Colorimetric Science:** Rec.709 luminance translation ($Y = 0.2126R + 0.7152G + 0.0722B$), discrete spatial Laplacian second derivatives, and Ansel Adams zone mapping.
+  * **Multi-Layer Tile GIS:** Leaflet tile layer orchestration across distributed subdomains, dynamic layer swapping without route disruption, and modal viewport invalidation (`map.invalidateSize()`).
+  * **Compositor & Viewport Event Engineering:** Window-level drag event boundary counter synchronization and CSS backdrop-filter compositor acceleration.
 
 ---
 
@@ -197,6 +213,9 @@ This document maps the **chronological development roadmap from scratch to the c
 | **SVG Filter Pipelines** | `ImageFilters.jsx` | Hardware-accelerated GPU duotone, glitch, and thermal vision effects. |
 | **Trigonometric SVG Geometry** | `GaugeDial.jsx` | Dynamic circle arc sweeps using polar coordinate angle mapping. |
 | **Dominant Color Extraction** | `colorExtract.js` | Resampling images to $1 \times 1$ via `createImageBitmap` for card glow styling. |
+| **Optical Edge Convolution** | `dustSpotter.js` | Inverted spatial Laplacian filtering $\nabla^2 f$ to detect sensor particles and dust rings. |
+| **Colorimetric Exposure Analysis** | `falseColor.js` | Rec.709 luminance translation into 10-step IRE False-Color and Ansel Adams Zone System. |
+| **Multi-Layer GIS Mapping** | `JourneyMap.jsx`, `mapConfig.js` | Google Maps distributed tile layers (`mt0-mt3`) and modal layer isolation. |
 
 ### D. Machine Learning & Computer Vision (Edge AI)
 | Skill / Topic | Where Used in Project | Purpose / Implementation Detail |

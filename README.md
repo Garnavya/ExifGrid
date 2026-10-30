@@ -49,7 +49,11 @@ Checking basic camera metadata — aperture, shutter speed, ISO — across a bat
   Protect your work before exporting. Inject custom "Artist" and "Copyright" tags directly into the EXIF data of your batch. An "Advanced Mode" toggle unlocks professional fields like Image Title, Contact Info, Usage Terms, and Job Identifiers—ensuring compatibility with industry-standard software like Lightroom.
 - **Asset Protection & CMI Alerts**
   ExifGrid actively detects existing Copyright Management Information (CMI) on uploaded batches. Protected assets are flagged with high-contrast UI badges in the Lightbox, complete with educational tooltips regarding DMCA 17 U.S.C. § 1202 compliance, and trigger a legal disclaimer toast upon upload.
-- **Interactive Journey Map** — For geotagged photos, plots GPS points on an interactive map and traces the route between them, powered by Leaflet.
+- **Interactive Journey Map & Google Maps Engine** — For geotagged photos, plots chronological travel routes and GPS coordinates on an interactive map. Features live basemap switching between **Google Maps (Streets)**, **Google Satellite (Hybrid)**, **Google Terrain**, and **Obsidian Dark Mode**. Built with a non-destructive modal architecture that never unmounts the underlying photo gallery, ensuring instant close without image reloading.
+- **Window-Wide Drag & Drop + Frosted-Glass Ingestion Loader** — Drop single photos or deep folder trees anywhere onto the window. A frosted-glass dialog (`backdrop-filter: blur(10px)`) displays real-time progress (`Processing Image 4 of 24 (17%)`), active filename, and an animated progress bar while gallery cards populate in real-time in the background.
+- **Optical Diagnostics & Exposure Analysis Suite**
+  - **Sensor Dust Spotter:** Uses inverted Laplacian convolution matrices and high-pass spatial edge thresholding (*Low*, *Medium*, *High* sensitivity) to expose sensor debris and lens hairs typical of narrow aperture ($f/8 - f/22$) shots.
+  - **False-Color IRE & Ansel Adams Zone Exposure:** Calibrated Rec.709 luminance translation into cinema 10-step IRE False-Color (ARRI/RED standard) and 11-step Ansel Adams Zone heatmaps to audit specular highlight clipping ($>100$ IRE), 18% middle-gray skin tones ($50-60$ IRE), and crushed shadows.
 - **Radial RGB Chromatic Donut & Harmony Suite** — Interactive color grading analysis in the Lightbox. Samples 10,000 pixels on background decoder threads to project a 36-bin ($10^\circ$) angular hue spectrum, computes true RGB channel saturation ratios (Red, Green, Blue %), evaluates warm vs. cool balance, extracts a top-5 color palette with click-to-copy HEX codes, and classifies classical color harmony (*Monochromatic*, *Analogous*, *Complementary*, *Split-Complementary*, *Triadic*).
 - **Golden Hour & Sun Elevation Path Tracker** — Computes exact solar altitude, compass azimuth heading, and astronomical lighting phases (*Golden Hour*, *Blue Hour*, *Zenith Overhead*, *Astro Night*) using Jean Meeus solar ephemeris algorithms. Renders an interactive SVG sky dome with sun positioning and a daily celestial timetable.
 - **Diagnostic & Creative SVG Filters**
@@ -166,7 +170,7 @@ The model is a custom dual-head architecture (`ExifGridDualHead`) built in PyTor
 
 The only thing sent to the server is an anonymous count of **how many images were processed in a session** — a single incrementing number, with no EXIF content, camera data, or file information attached. This count resets client-side on refresh or tab close and is used solely to track aggregate, anonymous usage across all users. It can be fully disabled anytime via the opt-out toggle in **Settings → Privacy**.
 
-Map tiles for the Journey feature are loaded from OpenStreetMap and CartoDB, which — like any mapping service — see your IP address when tiles are requested. This is standard for any app using map tiles and isn't something the app can avoid while rendering interactive maps.
+Map tiles for the Journey feature are loaded from Google Maps and CartoDB, which — like any mapping service — see your IP address when tiles are requested. This is standard for any app using map tiles and isn't something the app can avoid while rendering interactive maps.
 
 ---
 
@@ -187,7 +191,7 @@ ExifGrid underwent a zero-sugarcoating technical and architectural audit address
 **Styling & Processing:** CSS3 (Custom Properties, CSS Columns, Backdrop-Filter) and Native SVG (`<feConvolveMatrix>`, `<feColorMatrix>`) for zero-latency GPU image processing.
 **Metadata Parsing:** [exifr](https://github.com/MikeKovarik/exifr)
 **Animation:** [GSAP](https://gsap.com/)
-**Mapping:** [Leaflet.js](https://leafletjs.com/)
+**Mapping:** [Leaflet.js](https://leafletjs.com/) & Google Maps Tile Engine
 **Batch Export:** [JSZip](https://stuk.github.io/jszip/)
 **AI Engine (separate repo):** PyTorch (training), ONNX + [onnxruntime-web](https://onnxruntime.ai/) (inference)
 

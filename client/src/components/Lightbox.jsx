@@ -9,6 +9,9 @@ import { useDownload } from '../hooks/useDownload.js';
 import { stripExifData } from '../utils/exifStripper.js';
 import { downloadPolaroid, generatePolaroidDataURL } from '../utils/polaroid.js'; 
 import { WATERMARK_STYLES, generateWatermarkDataURL, downloadWatermarkedPhoto } from '../utils/watermark.js';
+import { processDustDiagnostic, DUST_MODES, SENSITIVITY_LEVELS } from '../utils/dustSpotter.js';
+import { processFalseColorDiagnostic, FALSE_COLOR_MODES, IRE_LEGEND, ZONE_LEGEND } from '../utils/falseColor.js';
+import { createMapTileLayer, MAP_STYLES } from '../utils/mapConfig.js';
 import AIAnalysisModal from './AIAnalysisModal';
 import ChromaticDonut from './ChromaticDonut.jsx';
 import SunTracker from './SunTracker.jsx';
@@ -34,7 +37,7 @@ function MiniMap({ lat, lon }) {
   useEffect(() => {
     if (!containerRef.current) return;
     const map = L.map(containerRef.current, { zoomControl: false, attributionControl: false }).setView([lat, lon], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    createMapTileLayer(MAP_STYLES.GOOGLE_STREETS).addTo(map);
     const markerHtml = '<div style="background:var(--accent);width:14px;height:14px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 10px var(--accent);"></div>';
     L.marker([lat, lon], { icon: L.divIcon({ html: markerHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] }) }).addTo(map);
     mapRef.current = map;
@@ -68,7 +71,7 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
   const [isGeneratingPolaroid, setIsGeneratingPolaroid] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
 
-  // Export Mode: 'polaroid' | 'stamp'
+  // Export Mode: 'polaroid' | 'stamp' | 'museum' | 'film'
   const [exportMode, setExportMode] = useState('polaroid');
   // Lightbox View Mode: 'photo' (full enlarged) | 'export' (full artifact) | 'split' (side-by-side)
   const [lightboxView, setLightboxView] = useState('photo');
@@ -79,6 +82,22 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
   const [watermarkArtist, setWatermarkArtist] = useState('');
   const [watermarkCamera, setWatermarkCamera] = useState('');
   const [isGeneratingWatermark, setIsGeneratingWatermark] = useState(false);
+
+  // Optical & Exposure Diagnostic Tool States (R3 & R4)
+  const [diagnosticMode, setDiagnosticMode] = useState('off'); // 'off' | 'dust' | 'false_color'
+
+  // Sensor & Lens Dust Spotter State (R3)
+  const [dustDataUrl, setDustDataUrl] = useState(null);
+  const [dustMode, setDustMode] = useState(DUST_MODES.INVERTED);
+  const [dustSensitivity, setDustSensitivity] = useState(SENSITIVITY_LEVELS.HIGH);
+  const [dustStats, setDustStats] = useState({ spotCount: 0, cleanlinessRating: '' });
+  const [isProcessingDust, setIsProcessingDust] = useState(false);
+
+  // Cinematic False-Color Exposure & Zone System State (R4)
+  const [falseColorDataUrl, setFalseColorDataUrl] = useState(null);
+  const [falseColorMode, setFalseColorMode] = useState(FALSE_COLOR_MODES.CINEMA_IRE);
+  const [falseColorStats, setFalseColorStats] = useState(null);
+  const [isProcessingFalseColor, setIsProcessingFalseColor] = useState(false);
   
   // New state for handling multiple image filters
   const [activeFilter, setActiveFilter] = useState('none');
@@ -96,6 +115,9 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     setWatermarkPreview(null);
     setWatermarkArtist(photo?.exif?.Artist || '');
     setWatermarkCamera(photo?.exif?.Model || photo?.exif?.Make || '');
+    setDiagnosticMode('off');
+    setDustDataUrl(null);
+    setFalseColorDataUrl(null);
     setLightboxView('photo'); // Always open in full enlarged photo view
     
     if (photo?.exif) {
@@ -274,6 +296,74 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
     }
   };
 
+  // Sensor Dust Spotting Analysis (R3)
+  useEffect(() => {
+    if (!photo?.src || diagnosticMode !== 'dust') return;
+    let cancelled = false;
+    setIsProcessingDust(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await processDustDiagnostic(photo.src, {
+          mode: dustMode,
+          sensitivity: dustSensitivity
+        });
+        if (!cancelled) {
+          setDustDataUrl(res.dataUrl);
+          setDustStats({ spotCount: res.spotCount, cleanlinessRating: res.cleanlinessRating });
+        }
+      } catch (err) {
+        console.error('Dust spotting analysis failed:', err);
+      } finally {
+        if (!cancelled) setIsProcessingDust(false);
+      }
+    }, 200);
+
+    return () => {
+      clearTimeout(timer);
+      cancelled = true;
+    };
+  }, [photo, diagnosticMode, dustMode, dustSensitivity]);
+
+  // Cinematic False-Color & Zone System Exposure Analysis (R4)
+  useEffect(() => {
+    if (!photo?.src || diagnosticMode !== 'false_color') return;
+    let cancelled = false;
+    setIsProcessingFalseColor(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await processFalseColorDiagnostic(photo.src, {
+          mode: falseColorMode
+        });
+        if (!cancelled) {
+          setFalseColorDataUrl(res.dataUrl);
+          setFalseColorStats(res.stats);
+        }
+      } catch (err) {
+        console.error('False-color exposure analysis failed:', err);
+      } finally {
+        if (!cancelled) setIsProcessingFalseColor(false);
+      }
+    }, 200);
+
+    return () => {
+      clearTimeout(timer);
+      cancelled = true;
+    };
+  }, [photo, diagnosticMode, falseColorMode]);
+
+  const handleDownloadDiagnostic = () => {
+    const activeUrl = diagnosticMode === 'dust' ? dustDataUrl : falseColorDataUrl;
+    if (!activeUrl) return;
+    const baseName = (photo.name || 'image').replace(/\.[^/.]+$/, '');
+    const tag = diagnosticMode === 'dust' ? 'Dust_Inspection' : 'FalseColor_IRE';
+    const link = document.createElement('a');
+    link.download = `${tag}_${baseName}.jpg`;
+    link.href = activeUrl;
+    link.click();
+  };
+
   const togglePolaroidExif = (field) => {
     setPolaroidToggles(prev => 
       prev.includes(field) ? prev.filter(f => f !== field) : [...prev, field]
@@ -362,6 +452,77 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
               </button>
             </div>
 
+            {/* Optical & Exposure Diagnostic Tool Switcher */}
+            <div style={{
+              display: 'flex',
+              background: 'rgba(0, 0, 0, 0.45)',
+              border: '1px solid var(--border2)',
+              borderRadius: '6px',
+              padding: '2px',
+              gap: '2px'
+            }}>
+              <button
+                type="button"
+                onClick={() => setDiagnosticMode('off')}
+                title="Standard photographic view"
+                style={{
+                  padding: '4px 8px',
+                  background: diagnosticMode === 'off' ? 'var(--surface)' : 'transparent',
+                  border: diagnosticMode === 'off' ? '1px solid var(--border)' : 'none',
+                  borderRadius: '4px',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '11px',
+                  fontWeight: diagnosticMode === 'off' ? 'bold' : 'normal',
+                  color: diagnosticMode === 'off' ? 'var(--text)' : 'var(--text-dim)',
+                  cursor: 'pointer'
+                }}
+              >
+                👁️ Normal
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDiagnosticMode('dust');
+                  if (lightboxView !== 'photo') setLightboxView('photo');
+                }}
+                title="Sensor & Lens Dust Spotting Aid (Laplacian Filter)"
+                style={{
+                  padding: '4px 8px',
+                  background: diagnosticMode === 'dust' ? 'rgba(239, 68, 68, 0.25)' : 'transparent',
+                  border: diagnosticMode === 'dust' ? '1px solid #ef4444' : 'none',
+                  borderRadius: '4px',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '11px',
+                  fontWeight: diagnosticMode === 'dust' ? 'bold' : 'normal',
+                  color: diagnosticMode === 'dust' ? '#ef4444' : 'var(--text-dim)',
+                  cursor: 'pointer'
+                }}
+              >
+                🔍 Dust Spotter
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDiagnosticMode('false_color');
+                  if (lightboxView !== 'photo') setLightboxView('photo');
+                }}
+                title="Cinematic False-Color & Ansel Adams Zone System Exposure Heatmap"
+                style={{
+                  padding: '4px 8px',
+                  background: diagnosticMode === 'false_color' ? 'rgba(0, 220, 0, 0.25)' : 'transparent',
+                  border: diagnosticMode === 'false_color' ? '1px solid #00dc00' : 'none',
+                  borderRadius: '4px',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '11px',
+                  fontWeight: diagnosticMode === 'false_color' ? 'bold' : 'normal',
+                  color: diagnosticMode === 'false_color' ? '#00dc00' : 'var(--text-dim)',
+                  cursor: 'pointer'
+                }}
+              >
+                🎨 False-Color IRE
+              </button>
+            </div>
+
             <button type="button" className="lb-close" onClick={handleClose}>✕</button>
           </div>
       
@@ -370,16 +531,167 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
             {/* LEFT SIDE: Image Preview Area */}
             <div className="lb-img-wrap" ref={imgWrapRef}>
               {lightboxView === 'photo' && (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>
-                  <img
-                    ref={imgRef}
-                    id="lb-img"
-                    className={`zoomable-img ${filterClass}`}
-                    src={photo.src}
-                    alt={photo.name}
-                    onClick={() => setEnlarged(true)}
-                    style={{ maxHeight: '82vh', width: 'auto', maxWidth: '100%', objectFit: 'contain' }}
-                  />
+                <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>
+                  {diagnosticMode === 'dust' ? (
+                    dustDataUrl ? (
+                      <img
+                        src={dustDataUrl}
+                        alt="Dust Diagnostic"
+                        className="zoomable-img"
+                        style={{ maxHeight: '82vh', width: 'auto', maxWidth: '100%', objectFit: 'contain' }}
+                      />
+                    ) : (
+                      <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '13px' }}>
+                        {isProcessingDust ? '🔬 Running Laplacian High-Frequency Equalization...' : 'Initializing Dust Diagnostic...'}
+                      </div>
+                    )
+                  ) : diagnosticMode === 'false_color' ? (
+                    falseColorDataUrl ? (
+                      <img
+                        src={falseColorDataUrl}
+                        alt="False Color Exposure"
+                        className="zoomable-img"
+                        style={{ maxHeight: '82vh', width: 'auto', maxWidth: '100%', objectFit: 'contain' }}
+                      />
+                    ) : (
+                      <div style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '13px' }}>
+                        {isProcessingFalseColor ? '🎨 Computing Cinema IRE & Zone System Heatmap...' : 'Initializing Exposure Heatmap...'}
+                      </div>
+                    )
+                  ) : (
+                    <img
+                      ref={imgRef}
+                      id="lb-img"
+                      className={`zoomable-img ${filterClass}`}
+                      src={photo.src}
+                      alt={photo.name}
+                      onClick={() => setEnlarged(true)}
+                      style={{ maxHeight: '82vh', width: 'auto', maxWidth: '100%', objectFit: 'contain' }}
+                    />
+                  )}
+
+                  {/* Floating Diagnostic HUD when Dust Spotter is active */}
+                  {diagnosticMode === 'dust' && (
+                    <div className="diagnostic-hud">
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: '#ef4444', fontWeight: 'bold' }}>
+                        🔍 DUST AID
+                      </span>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button
+                          type="button"
+                          className={`diagnostic-chip ${dustMode === DUST_MODES.INVERTED ? 'active' : ''}`}
+                          onClick={() => setDustMode(DUST_MODES.INVERTED)}
+                        >
+                          Inverted (B&W)
+                        </button>
+                        <button
+                          type="button"
+                          className={`diagnostic-chip ${dustMode === DUST_MODES.FLUORESCENT ? 'active' : ''}`}
+                          onClick={() => setDustMode(DUST_MODES.FLUORESCENT)}
+                        >
+                          Neon Pink
+                        </button>
+                        <button
+                          type="button"
+                          className={`diagnostic-chip ${dustMode === DUST_MODES.DARKFIELD ? 'active' : ''}`}
+                          onClick={() => setDustMode(DUST_MODES.DARKFIELD)}
+                        >
+                          Darkfield
+                        </button>
+                      </div>
+
+                      <div style={{ width: '1px', height: '18px', background: 'rgba(255,255,255,0.2)' }} />
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '10px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>SENSITIVITY:</span>
+                        {[SENSITIVITY_LEVELS.LOW, SENSITIVITY_LEVELS.MEDIUM, SENSITIVITY_LEVELS.HIGH, SENSITIVITY_LEVELS.EXTREME].map(lvl => (
+                          <button
+                            key={lvl}
+                            type="button"
+                            className={`diagnostic-chip ${dustSensitivity === lvl ? 'active' : ''}`}
+                            onClick={() => setDustSensitivity(lvl)}
+                            style={{ padding: '2px 7px', fontSize: '10px' }}
+                          >
+                            {lvl.toUpperCase()}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div style={{ width: '1px', height: '18px', background: 'rgba(255,255,255,0.2)' }} />
+
+                      <button
+                        type="button"
+                        onClick={handleDownloadDiagnostic}
+                        style={{
+                          background: 'rgba(239, 68, 68, 0.25)',
+                          border: '1px solid #ef4444',
+                          color: '#fff',
+                          borderRadius: '16px',
+                          padding: '3px 10px',
+                          fontSize: '11px',
+                          cursor: 'pointer',
+                          fontFamily: 'var(--font-mono)'
+                        }}
+                      >
+                        💾 Save Report
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Floating Diagnostic HUD when False-Color IRE is active */}
+                  {diagnosticMode === 'false_color' && (
+                    <div className="diagnostic-hud">
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: '#00dc00', fontWeight: 'bold' }}>
+                        🎨 EXPOSURE
+                      </span>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button
+                          type="button"
+                          className={`diagnostic-chip ${falseColorMode === FALSE_COLOR_MODES.CINEMA_IRE ? 'active' : ''}`}
+                          onClick={() => setFalseColorMode(FALSE_COLOR_MODES.CINEMA_IRE)}
+                        >
+                          Cinema IRE
+                        </button>
+                        <button
+                          type="button"
+                          className={`diagnostic-chip ${falseColorMode === FALSE_COLOR_MODES.ZONE_SYSTEM ? 'active' : ''}`}
+                          onClick={() => setFalseColorMode(FALSE_COLOR_MODES.ZONE_SYSTEM)}
+                        >
+                          Ansel Adams 10-Zone
+                        </button>
+                      </div>
+
+                      <div style={{ width: '1px', height: '18px', background: 'rgba(255,255,255,0.2)' }} />
+
+                      {falseColorStats && (
+                        <div style={{ display: 'flex', gap: '8px', fontSize: '10px', fontFamily: 'var(--font-mono)' }}>
+                          <span style={{ color: '#ff4444' }}>Clip: {falseColorStats.blownPercent}%</span>
+                          <span style={{ color: '#00dc00' }}>18% Gray: {falseColorStats.midGrayPercent}%</span>
+                          <span style={{ color: '#ff69b4' }}>Skin: {falseColorStats.skinTonePercent}%</span>
+                          <span style={{ color: '#c084fc' }}>Crush: {falseColorStats.crushedPercent}%</span>
+                        </div>
+                      )}
+
+                      <div style={{ width: '1px', height: '18px', background: 'rgba(255,255,255,0.2)' }} />
+
+                      <button
+                        type="button"
+                        onClick={handleDownloadDiagnostic}
+                        style={{
+                          background: 'rgba(0, 220, 0, 0.25)',
+                          border: '1px solid #00dc00',
+                          color: '#fff',
+                          borderRadius: '16px',
+                          padding: '3px 10px',
+                          fontSize: '11px',
+                          cursor: 'pointer',
+                          fontFamily: 'var(--font-mono)'
+                        }}
+                      >
+                        💾 Save Map
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -583,14 +895,20 @@ export default function Lightbox({ photo, photoIds, onClose, onNavigate }) {
                       <button 
                         type="button" 
                         className={`gen-tab-btn ${exportMode === 'polaroid' ? 'active' : ''}`}
-                        onClick={() => setExportMode('polaroid')}
+                        onClick={() => {
+                          setExportMode('polaroid');
+                          if (lightboxView === 'photo') setLightboxView('export');
+                        }}
                       >
                         🖼️ Polaroid
                       </button>
                       <button 
                         type="button" 
                         className={`gen-tab-btn ${exportMode === 'stamp' ? 'active' : ''}`}
-                        onClick={() => setExportMode('stamp')}
+                        onClick={() => {
+                          setExportMode('stamp');
+                          if (lightboxView === 'photo') setLightboxView('export');
+                        }}
                       >
                         🏷️ Brand Stamp
                       </button>

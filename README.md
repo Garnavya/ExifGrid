@@ -114,7 +114,13 @@ Checking basic camera metadata — aperture, shutter speed, ISO — across a bat
 </table>
 
 ### UI & Layout Engineering
-- **Decoupled "Glassmorphism" Theming** — Structural CSS is fully separated from the visual theme layer via a modular `theme.css` system, with cinematic color grades (e.g. "Tungsten & Brass" for dark mode).
+- **"Master Atelier" Flagship Theme Engine** — A complete UI synthesis uniting 4 distinct photographic design directions:
+  - **Leica Monochrom (🔴):** Matte carbon obsidian chassis (`#090a0e`), surgical hairline borders, and the iconic Leica Signal Red indicator dot (`●`).
+  - **Copenhagen Gallery (🏛️):** High-contrast editorial display serif titles (`DM Serif Display`), warm sandstone gray metadata, and generous museum negative space.
+  - **Fujifilm Analogue Lab (🎞️):** Tungsten amber safelight glow (`#ffaa33`) and Kodak gold highlights for solar ephemeris and exposure clipping alerts.
+  - **Tokyo Cyber-Studio (⚡):** Frosted glass panels (`backdrop-filter: blur(14px)`), electric cyan precision measurement accents (`#00f0ff`), and micro-pill status telemetry.
+- **Studio Theme Direction Switcher** — Floating header selector allowing instant 1-click previewing of the unified **Master Atelier** alongside all 4 individual studio directions, with responsive light/dark mode variations and `localStorage` persistence.
+- **Micro-Telemetry Photo Cards** — Photo cards feature a top-left status cluster showcasing the camera make & model with the Leica red dot (`● SONY A7R V`), auto-detected `[RAW]` format badge, and `[⌖ GPS]` geotag indicator, paired with frosted micro-pill exposure clusters (`[ƒ/1.4]`, `[1/250s]`, `[ISO 100]`, `[35mm]`).
 - **WhatsApp-Style Keyboard UX** — Custom `onFocus` handling (React `useRef` + `scrollIntoView`) ensures the mobile OS keyboard never covers an active text field.
 - **Dynamic Smart Filters** — Filter UI automatically maps to the active theme's CSS variables for consistent contrast across light/dark modes.
 

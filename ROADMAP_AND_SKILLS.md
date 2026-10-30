@@ -172,13 +172,16 @@ This document maps the **chronological development roadmap from scratch to the c
 ---
 
 ### Phase 9: Optical Science Diagnostics, Multi-Layer Geospatial Mapping & Studio Ingestion UX (Current State)
-* **Core Objective:** Deliver laboratory-grade optical and exposure evaluation tools, high-speed multi-layer Google Maps tracing, and friction-free window-wide drag ingestion.
+* **Core Objective:** Deliver laboratory-grade optical and exposure evaluation tools, high-speed multi-layer Google Maps tracing, friction-free window-wide drag ingestion, and a complete UI transformation.
 * **What Was Built:**
+  * **"Master Atelier" Flagship Theme Engine:** Master synthesis uniting 4 distinct design directions: Leica carbon chassis & red dot precision, Copenhagen editorial serif titles, Fuji tungsten amber safelight glow, and Tokyo frosted glass telemetry. Integrated via an interactive floating theme selector with `localStorage` persistence.
+  * **Micro-Telemetry Photo Cards:** Restructured photo cards with a top-left status cluster (Leica red dot camera badge, dynamic `[RAW]` format detection, `[⌖ GPS]` indicator) and bottom frosted micro-pill exposure clusters (`[ƒ/1.4]`, `[1/250s]`, `[ISO 100]`, `[35mm]`).
   * **Sensor Dust Spotter:** $3 \times 3$ inverted Laplacian convolution filter with adjustable high-pass sensitivity (*Low*, *Medium*, *High*) to reveal lens dust and sensor particles at small apertures ($f/8 - f/22$).
   * **False-Color IRE & Zone Exposure Diagnostic:** Broadcast-grade 10-step IRE False-Color (ARRI/RED standard) and Ansel Adams 11-step Zone System heatmaps mapping Rec.709 luminance to verify specular highlight clipping, middle-gray skin tones, and shadow recovery.
   * **Google Maps Multi-Layer Engine & Modal Journey Architecture:** Integrated Google Maps tile servers (`mt0`–`mt3` subdomains) across JourneyMap and Lightbox MiniMap. Built dynamic basemap switching (Google Roadmap, Google Satellite Hybrid, Google Terrain, Dark Mode) and transformed JourneyMap into a non-destructive modal overlay that eliminates gallery unmount/remount delays.
   * **Window-Wide Drag & Drop + Frosted Modal Loader:** Viewport-wide drag interception paired with a frosted-glass progress modal (`backdrop-filter: blur(10px)`) providing real-time image-by-image counter (`Processing Image X of Y (Z%)`) and filename feedback.
 * **Topics & Skills Applied:**
+  * **Design Systems & Token Synthesis:** Dynamic CSS custom properties binding via `data-theme`, composite shadows, and multi-mode typography pairing (`DM Serif Display` + `DM Mono`).
   * **Optical & Colorimetric Science:** Rec.709 luminance translation ($Y = 0.2126R + 0.7152G + 0.0722B$), discrete spatial Laplacian second derivatives, and Ansel Adams zone mapping.
   * **Multi-Layer Tile GIS:** Leaflet tile layer orchestration across distributed subdomains, dynamic layer swapping without route disruption, and modal viewport invalidation (`map.invalidateSize()`).
   * **Compositor & Viewport Event Engineering:** Window-level drag event boundary counter synchronization and CSS backdrop-filter compositor acceleration.

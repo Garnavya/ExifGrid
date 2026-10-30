@@ -1,33 +1,455 @@
-/* --- THEME: TUNGSTEN & BRASS --- */
-:root {
-  --bg-main: #1c1d1a; /* Solid dark fallback for dropdowns */
-  --bg-gradient: linear-gradient(-45deg, #121312, #1c1d1a, #0b0b0a, #262723);
-  --surface: rgba(28, 29, 26, 0.4);
-  --surface2: rgba(42, 43, 38, 0.7);
-  --border: rgba(181, 166, 132, 0.05); /* Faint Brass */
-  --border2: rgba(181, 166, 132, 0.15);
-  --text: #edece8;
-  --text-muted: #9e9c93;
-  --text-dim: #616059;
-  --accent: #b5a684; /* Desaturated Brass */
-  --accent2: #7a7059;
-  --red: #c96b5a;
-  --glass-overlay: rgba(18, 19, 18, 0.85);
+/* ==========================================================
+   EXIFGRID FLAGSHIP THEME ENGINE
+   Unified 4-in-1 Master Atelier + Individual Studio Directions:
+   ★ Master Atelier (Combined Flagship Synthesis)
+   1. Leica Monochrom (Obsidian & Leica Signal Red)
+   2. Copenhagen Gallery (Scandinavian Museum & Serif)
+   3. Fuji Safelight (Analogue Tungsten Darkroom Chemistry)
+   4. Tokyo Cyber-Studio (Capture One Pro × Linear Dark Glass)
+========================================================== */
+
+/* ----------------------------------------------------------
+   ★ THE MASTER ATELIER (All 4 Directions Combined into 1)
+   - Obsidian carbon chassis & Leica Signal Red dot (Leica)
+   - Editorial serif accents & museum negative space (Copenhagen)
+   - Warm tungsten amber safelight glow (Fujifilm)
+   - Frosted glass HUD with cyan precision tracers (Tokyo)
+---------------------------------------------------------- */
+:root,
+html[data-theme="master"] {
+  --theme-name: "Master Atelier";
+  --bg-main: #090a0e;
+  --bg-gradient: radial-gradient(circle at 50% 0%, #11141f 0%, #08090d 60%, #050608 100%);
+  --surface: rgba(16, 20, 30, 0.68);
+  --surface2: rgba(24, 29, 44, 0.88);
+  --border: rgba(255, 255, 255, 0.09);
+  --border2: rgba(255, 255, 255, 0.18);
+  --text: #f5f5f7;
+  --text-muted: #a1a5b4;
+  --text-dim: #5c6274;
+  --accent: #e11d27;        /* Leica Signal Red primary */
+  --accent-amber: #ffaa33;  /* Fuji Safelight Amber */
+  --accent-cyan: #00f0ff;   /* Tokyo Electric Cyan */
+  --accent-bronze: #c9aa71; /* Copenhagen Gallery Bronze */
+  --accent2: #00f0ff;
+  --accent-rgb: 225, 29, 39;
+  --red: #e11d27;
+  --glass-overlay: rgba(8, 10, 15, 0.93);
+  --font-display: "DM Serif Display", serif;
+  --font-body: "DM Sans", -apple-system, sans-serif;
+  --font-mono: "DM Mono", monospace;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-md: 6px;
+  --card-glow: rgba(0, 240, 255, 0.18);
+  --card-glow-shadow: rgba(0, 0, 0, 0.75);
+  --badge-bg: rgba(225, 29, 39, 0.12);
+  --badge-border: rgba(225, 29, 39, 0.35);
 }
 
-/* --- LIGHT THEME: IVORY & CHAMPAGNE --- */
-html.light-theme {
-  --bg-main: #f5f6f4; /* Solid light fallback for dropdowns */
-  --bg-gradient: linear-gradient(-45deg, #fcfbf9, #f4f1ea, #fdfdfc, #ebe6db);
-  --surface: rgba(255, 255, 255, 0.5);
-  --surface2: rgba(252, 251, 249, 0.85);
-  --border: rgba(212, 196, 168, 0.3); /* Subtle Champagne */
-  --border2: rgba(212, 196, 168, 0.6);
-  --text: #36332e; /* Espresso / Dark Taupe */
-  --text-muted: #857f75;
-  --text-dim: #b8b1a5;
-  --accent: #b09e80; /* Champagne Gold */
-  --accent2: #d6cfc4;
-  --red: #bd4b4b;
-  --glass-overlay: rgba(252, 251, 249, 0.75);
+/* Master Atelier Light Mode (Exhibition Daylight & Warm Ivory) */
+html[data-theme="master"].light-theme {
+  --bg-main: #f8f6f2;
+  --bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #f4eee2 60%, #eee6d6 100%);
+  --surface: rgba(255, 255, 255, 0.84);
+  --surface2: rgba(246, 241, 232, 0.94);
+  --border: rgba(180, 155, 115, 0.22);
+  --border2: rgba(180, 155, 115, 0.42);
+  --text: #1d1b18;
+  --text-muted: #6e675d;
+  --text-dim: #9e9587;
+  --accent: #d31620;        /* Crimson Red */
+  --accent-amber: #d98218;  /* Warm Gold */
+  --accent-cyan: #0284c7;   /* Deep Cerulean */
+  --accent-bronze: #9c7a3c; /* Museum Bronze */
+  --accent2: #0284c7;
+  --accent-rgb: 211, 22, 32;
+  --glass-overlay: rgba(248, 246, 242, 0.94);
+  --card-glow: rgba(211, 22, 32, 0.14);
+  --card-glow-shadow: rgba(0, 0, 0, 0.12);
+}
+
+/* ----------------------------------------------------------
+   THEME 1: OBSIDIAN & LEICA MONOCHROM (Precision Rangefinder)
+---------------------------------------------------------- */
+html[data-theme="leica"] {
+  --theme-name: "Leica Monochrom";
+  --bg-main: #090a0d;
+  --bg-gradient: linear-gradient(180deg, #07080a 0%, #0d0f14 50%, #08090c 100%);
+  --surface: rgba(16, 18, 24, 0.70);
+  --surface2: rgba(24, 27, 36, 0.88);
+  --border: rgba(255, 255, 255, 0.08);
+  --border2: rgba(255, 255, 255, 0.16);
+  --text: #f4f4f7;
+  --text-muted: #9fa3af;
+  --text-dim: #5a5f6e;
+  --accent: #e11d27;
+  --accent2: #ff5722;
+  --accent-rgb: 225, 29, 39;
+  --red: #e11d27;
+  --glass-overlay: rgba(8, 9, 12, 0.92);
+  --font-display: "DM Sans", -apple-system, sans-serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-mono: "DM Mono", monospace;
+  --radius: 4px;
+  --radius-lg: 6px;
+  --radius-md: 4px;
+  --card-glow: rgba(225, 29, 39, 0.20);
+  --card-glow-shadow: rgba(0, 0, 0, 0.75);
+  --badge-bg: rgba(225, 29, 39, 0.12);
+  --badge-border: rgba(225, 29, 39, 0.35);
+}
+
+html[data-theme="leica"].light-theme {
+  --bg-main: #f4f5f7;
+  --bg-gradient: linear-gradient(180deg, #ffffff 0%, #f0f2f5 50%, #e8ebef 100%);
+  --surface: rgba(255, 255, 255, 0.80);
+  --surface2: rgba(244, 245, 247, 0.94);
+  --border: rgba(0, 0, 0, 0.09);
+  --border2: rgba(0, 0, 0, 0.18);
+  --text: #18191c;
+  --text-muted: #5c606a;
+  --text-dim: #9499a5;
+  --accent: #d31620;
+  --accent2: #e64a19;
+  --accent-rgb: 211, 22, 32;
+  --glass-overlay: rgba(255, 255, 255, 0.92);
+  --card-glow: rgba(211, 22, 32, 0.15);
+  --card-glow-shadow: rgba(0, 0, 0, 0.15);
+}
+
+/* ----------------------------------------------------------
+   THEME 2: COPENHAGEN GALLERY (Nordic Art Museum & Serif)
+---------------------------------------------------------- */
+html[data-theme="copenhagen"] {
+  --theme-name: "Copenhagen Gallery";
+  --bg-main: #141518;
+  --bg-gradient: linear-gradient(180deg, #121315 0%, #1a1c20 50%, #131417 100%);
+  --surface: rgba(26, 28, 34, 0.60);
+  --surface2: rgba(36, 39, 46, 0.90);
+  --border: rgba(206, 189, 158, 0.14);
+  --border2: rgba(206, 189, 158, 0.28);
+  --text: #ede7dc;
+  --text-muted: #a69f93;
+  --text-dim: #6d665a;
+  --accent: #c9aa71;
+  --accent2: #9b7e47;
+  --accent-rgb: 201, 170, 113;
+  --red: #c95c54;
+  --glass-overlay: rgba(18, 19, 23, 0.90);
+  --font-display: "DM Serif Display", serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-mono: "DM Mono", monospace;
+  --radius: 8px;
+  --radius-lg: 14px;
+  --radius-md: 8px;
+  --card-glow: rgba(201, 170, 113, 0.16);
+  --card-glow-shadow: rgba(0, 0, 0, 0.55);
+  --badge-bg: rgba(201, 170, 113, 0.14);
+  --badge-border: rgba(201, 170, 113, 0.35);
+}
+
+html[data-theme="copenhagen"].light-theme {
+  --bg-main: #faf8f4;
+  --bg-gradient: linear-gradient(180deg, #fcfbf8 0%, #f4eee3 50%, #faf7f2 100%);
+  --surface: rgba(255, 255, 255, 0.82);
+  --surface2: rgba(247, 243, 235, 0.94);
+  --border: rgba(168, 142, 98, 0.22);
+  --border2: rgba(168, 142, 98, 0.45);
+  --text: #24211d;
+  --text-muted: #746c60;
+  --text-dim: #a79f91;
+  --accent: #9c7a3c;
+  --accent2: #bda474;
+  --accent-rgb: 156, 122, 60;
+  --glass-overlay: rgba(250, 248, 244, 0.92);
+  --card-glow: rgba(156, 122, 60, 0.15);
+  --card-glow-shadow: rgba(0, 0, 0, 0.12);
+}
+
+/* ----------------------------------------------------------
+   THEME 3: FUJIFILM ANALOGUE LAB (Tungsten Amber Safelight)
+---------------------------------------------------------- */
+html[data-theme="fujifilm"] {
+  --theme-name: "Fuji Safelight";
+  --bg-main: #13100e;
+  --bg-gradient: linear-gradient(180deg, #100d0b 0%, #1c1713 50%, #0e0c0a 100%);
+  --surface: rgba(29, 24, 20, 0.68);
+  --surface2: rgba(44, 36, 29, 0.90);
+  --border: rgba(255, 170, 51, 0.16);
+  --border2: rgba(255, 170, 51, 0.32);
+  --text: #f6ecdc;
+  --text-muted: #b3a490;
+  --text-dim: #716452;
+  --accent: #ffaa33;
+  --accent2: #e58e26;
+  --accent-rgb: 255, 170, 51;
+  --red: #d94b41;
+  --glass-overlay: rgba(17, 14, 11, 0.92);
+  --font-display: "DM Sans", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-mono: "DM Mono", monospace;
+  --radius: 6px;
+  --radius-lg: 10px;
+  --radius-md: 6px;
+  --card-glow: rgba(255, 170, 51, 0.24);
+  --card-glow-shadow: rgba(0, 0, 0, 0.68);
+  --badge-bg: rgba(255, 170, 51, 0.14);
+  --badge-border: rgba(255, 170, 51, 0.38);
+}
+
+html[data-theme="fujifilm"].light-theme {
+  --bg-main: #f8f5ee;
+  --bg-gradient: linear-gradient(180deg, #fdfbf7 0%, #f4eee2 50%, #f7f3ea 100%);
+  --surface: rgba(255, 255, 255, 0.82);
+  --surface2: rgba(246, 239, 227, 0.94);
+  --border: rgba(212, 143, 38, 0.25);
+  --border2: rgba(212, 143, 38, 0.48);
+  --text: #2d261e;
+  --text-muted: #7d6e5d;
+  --text-dim: #b0a18e;
+  --accent: #d98218;
+  --accent2: #8f601b;
+  --accent-rgb: 217, 130, 24;
+  --glass-overlay: rgba(248, 245, 238, 0.92);
+  --card-glow: rgba(217, 130, 24, 0.18);
+  --card-glow-shadow: rgba(0, 0, 0, 0.12);
+}
+
+/* ----------------------------------------------------------
+   THEME 4: TOKYO CYBER-STUDIO (Capture One Pro × Linear Glass)
+---------------------------------------------------------- */
+html[data-theme="tokyo"] {
+  --theme-name: "Tokyo Pro Studio";
+  --bg-main: #090b10;
+  --bg-gradient: linear-gradient(180deg, #07080d 0%, #0e121c 50%, #06080c 100%);
+  --surface: rgba(16, 21, 32, 0.68);
+  --surface2: rgba(25, 33, 50, 0.88);
+  --border: rgba(0, 240, 255, 0.12);
+  --border2: rgba(0, 240, 255, 0.26);
+  --text: #f0f6fc;
+  --text-muted: #8c9cb6;
+  --text-dim: #475569;
+  --accent: #00f0ff;
+  --accent2: #10b981;
+  --accent-rgb: 0, 240, 255;
+  --red: #f43f5e;
+  --glass-overlay: rgba(7, 9, 15, 0.94);
+  --font-display: "DM Sans", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-mono: "DM Mono", monospace;
+  --radius: 8px;
+  --radius-lg: 14px;
+  --radius-md: 8px;
+  --card-glow: rgba(0, 240, 255, 0.24);
+  --card-glow-shadow: rgba(0, 0, 0, 0.78);
+  --badge-bg: rgba(0, 240, 255, 0.12);
+  --badge-border: rgba(0, 240, 255, 0.35);
+}
+
+html[data-theme="tokyo"].light-theme {
+  --bg-main: #f0f4f9;
+  --bg-gradient: linear-gradient(180deg, #ffffff 0%, #e8f0f8 50%, #e2ecf5 100%);
+  --surface: rgba(255, 255, 255, 0.84);
+  --surface2: rgba(235, 243, 252, 0.94);
+  --border: rgba(0, 150, 180, 0.20);
+  --border2: rgba(0, 150, 180, 0.40);
+  --text: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #94a3b8;
+  --accent: #0284c7;
+  --accent2: #059669;
+  --accent-rgb: 2, 132, 199;
+  --glass-overlay: rgba(240, 244, 249, 0.92);
+  --card-glow: rgba(2, 132, 199, 0.18);
+  --card-glow-shadow: rgba(0, 0, 0, 0.12);
+}
+
+/* ==========================================================
+   DYNAMIC THEME-SPECIFIC ELEMENT STYLING
+========================================================== */
+
+/* Smooth Transition on Theme Switch */
+html,
+body,
+.app-header,
+.photo-card,
+.filter-controls-bar,
+.journey-modal-container,
+.lightbox-content,
+.modal-box {
+  transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease,
+              color 0.25s ease,
+              box-shadow 0.25s ease;
+}
+
+/* ★ MASTER ATELIER (Combined Flagship) */
+html[data-theme="master"] .header-title {
+  letter-spacing: 0.08em;
+  font-family: var(--font-body);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+html[data-theme="master"] .header-brand .logo-icon {
+  color: var(--accent);
+  filter: drop-shadow(0 0 8px rgba(225, 29, 39, 0.6));
+}
+html[data-theme="master"] .photo-card {
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+html[data-theme="master"] .photo-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 240, 255, 0.35);
+  box-shadow: 0 14px 42px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 240, 255, 0.16);
+}
+html[data-theme="master"] .camera-badge {
+  background: rgba(14, 17, 26, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-left: 2px solid var(--accent);
+  border-radius: 4px;
+}
+html[data-theme="master"] .photo-filename {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: #ede7dc;
+}
+html[data-theme="master"] .exif-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+html[data-theme="master"] .exif-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 4px;
+  padding: 2px 6px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+html[data-theme="master"] .exif-label {
+  font-size: 8px;
+  color: var(--text-dim);
+}
+html[data-theme="master"] .exif-val {
+  font-size: 10px;
+  font-weight: 600;
+  color: #f5f5f7;
+}
+
+/* 1. Leica: Mechanical Precision */
+html[data-theme="leica"] .header-title {
+  letter-spacing: 0.08em;
+  font-family: var(--font-body);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+html[data-theme="leica"] .header-brand .logo-icon {
+  color: var(--accent);
+  filter: drop-shadow(0 0 6px rgba(225, 29, 39, 0.6));
+}
+html[data-theme="leica"] .photo-card {
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+html[data-theme="leica"] .photo-card:hover {
+  border-color: rgba(225, 29, 39, 0.45);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8), 0 0 16px rgba(225, 29, 39, 0.18);
+}
+html[data-theme="leica"] .camera-badge {
+  border-radius: 2px;
+  border-left: 2px solid var(--accent);
+  letter-spacing: 0.12em;
+}
+html[data-theme="leica"] .filter-controls-bar {
+  border-radius: 4px;
+}
+
+/* 2. Copenhagen: Art Museum Serenity & Editorial Serif */
+html[data-theme="copenhagen"] .header-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.55rem;
+  letter-spacing: 0.02em;
+}
+html[data-theme="copenhagen"] .photo-card {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 14px 40px -10px rgba(0, 0, 0, 0.45);
+}
+html[data-theme="copenhagen"] .photo-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent);
+  box-shadow: 0 20px 50px -12px rgba(201, 170, 113, 0.25);
+}
+html[data-theme="copenhagen"] .photo-filename {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--accent);
+}
+html[data-theme="copenhagen"] .camera-badge {
+  border-radius: 20px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  background: var(--surface2);
+}
+
+/* 3. Fujifilm: Analogue Safelight Chemistry */
+html[data-theme="fujifilm"] .app-header {
+  border-bottom: 1px solid rgba(255, 170, 51, 0.25);
+  box-shadow: 0 4px 20px rgba(255, 170, 51, 0.06);
+}
+html[data-theme="fujifilm"] .header-title {
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+html[data-theme="fujifilm"] .photo-card {
+  border-radius: 6px;
+  border: 1px solid rgba(255, 170, 51, 0.20);
+}
+html[data-theme="fujifilm"] .photo-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7), 0 0 22px rgba(255, 170, 51, 0.24);
+}
+html[data-theme="fujifilm"] .camera-badge {
+  background: rgba(28, 23, 19, 0.90);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+html[data-theme="fujifilm"] .photo-filename {
+  color: var(--accent);
+}
+
+/* 4. Tokyo: Capture One / Pro Workstation */
+html[data-theme="tokyo"] .header-brand .logo-icon {
+  color: var(--accent);
+  filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.6));
+}
+html[data-theme="tokyo"] .photo-card {
+  border-radius: 10px;
+  border: 1px solid rgba(0, 240, 255, 0.16);
+  backdrop-filter: blur(16px);
+}
+html[data-theme="tokyo"] .photo-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 240, 255, 0.25);
+}
+html[data-theme="tokyo"] .camera-badge {
+  background: rgba(16, 21, 32, 0.90);
+  border: 1px solid rgba(0, 240, 255, 0.40);
+  color: var(--accent);
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+}
+html[data-theme="tokyo"] .photo-filename {
+  color: var(--accent);
 }

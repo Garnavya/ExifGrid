@@ -34,6 +34,7 @@
    * [Feature 22: Optical Diagnostics & Exposure Analysis Suite (Sensor Dust Spotter & False-Color IRE / Zone System)](#feature-22-optical-diagnostics--exposure-analysis-suite)
    * [Feature 23: Google Maps Multi-Layer Engine & Modal Journey Architecture](#feature-23-google-maps-multi-layer-engine--modal-journey-architecture)
    * [Feature 24: Global Window Drag-and-Drop & Frosted Ingestion Pipeline](#feature-24-global-window-drag-and-drop--frosted-ingestion-pipeline)
+   * [Feature 25: Master Atelier Flagship Theme Engine & Micro-Telemetry Card Architecture](#feature-25-master-atelier-flagship-theme-engine--micro-telemetry-card-architecture)
 3. [Technology Cross-Reference Matrix](#3-technology-cross-reference-matrix)
 
 ---
@@ -454,10 +455,34 @@ ExifGrid follows a **Local-First, Zero-Knowledge Computing Paradigm**. Photograp
 
 ---
 
+### Feature 25: Master Atelier Flagship Theme Engine & Micro-Telemetry Card Architecture
+
+* **Purpose & Workflow:**  
+  Elevates ExifGrid's visual identity through **The Master Atelier**—a synthesis of 4 distinct photographic design directions into a unified flagship studio UI:
+  1. **Flagship 4-in-1 Synthesis:**
+     - **Leica Monochrom (🔴):** Deep carbon matte obsidian chassis (`#090a0e`), surgical $1\text{px}$ hairline specular borders, and the iconic Leica Signal Red indicator dot (`●`) for active triggers and status badges.
+     - **Copenhagen Gallery (🏛️):** High-contrast editorial display serif titles ([`DM Serif Display`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/css/theme.css#L31)), warm sandstone gray metadata, and generous museum negative space.
+     - **Fujifilm Analogue Lab (🎞️):** Warm tungsten safelight amber (`#ffaa33`) and Kodak gold (`#e58e26`) highlights for solar ephemeris analysis, clipping warnings, and darkroom warmth.
+     - **Tokyo Cyber-Studio (⚡):** Frosted glass panels (`backdrop-filter: blur(14px)`), electric cyan precision measurement accents (`#00f0ff`), and micro-pill status telemetry.
+  2. **Micro-Telemetry Photo Cards (`PhotoCard.jsx`):**
+     - **Top-Left Status Cluster:** Frosted glass capsule featuring the camera make & model with the Leica red dot (`● SONY A7R V`), dynamic format detection badge (`[RAW]`), and geotag indicator (`[⌖ GPS]`).
+     - **Bottom Plaque Overlay:** Frosted glass blur with photo filename and individual micro-pill exposure capsules (`[ƒ/1.4]`, `[1/250s]`, `[ISO 100]`, `[35mm]`).
+  3. **Studio Theme Switcher (`ThemeSwitcher.jsx`):**
+     - Floating selector in the header allowing 1-click toggling between the unified **Master Atelier** and all 4 individual design directions, complete with instant light/dark mode variations and `localStorage` persistence.
+* **Component & File Footprint:**  
+  [`client/src/css/theme.css`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/css/theme.css), [`client/src/components/ThemeSwitcher.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/components/ThemeSwitcher.jsx), [`client/src/css/theme-switcher.css`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/css/theme-switcher.css), [`client/src/context/UIContext.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/context/UIContext.jsx), [`client/src/components/PhotoCard.jsx`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/components/PhotoCard.jsx), [`client/src/css/gallery.css`](file:///c:/Users/garna/Desktop/Projects/Personal%20Shenanigans/ExifGrid-1/client/src/css/gallery.css).
+* **Architecture & State Persistence:**  
+  * **Document Data-Theme Binding:** Reactive `data-theme` attribute synchronization on `<html>` providing instant, zero-reload CSS variable propagation across the entire DOM tree.
+  * **Persistent Token Storage:** Immediate serialization of theme choices and light-mode states to `localStorage` with graceful SSR/CSR hydration fallbacks.
+
+---
+
 ## 3. Technology Cross-Reference Matrix
 
 | Feature | Primary Component / Util | Libraries / Frameworks | Web APIs / Standards | Algorithmic / Math Basis |
 |---|---|---|---|---|
+| **Master Atelier Theme** | `theme.css`, `ThemeSwitcher.jsx` | React 18, CSS3 | CSS Custom Properties, LocalStorage | 4-Direction Token Synthesis, Dynamic `data-theme` |
+| **Card Micro-Telemetry** | `PhotoCard.jsx`, `gallery.css` | React 18 | Canvas 2D, RegExp | RAW Binary Detection, Geotag Coordinates |
 | **Masonry Gallery** | `Gallery.jsx`, `PhotoCard.jsx` | React 18, GSAP | CSS Multi-Column, CSS Transforms | GPU Compositing, CLS = 0 |
 | **EXIF Parsing** | `exifReader.js`, `exifWorker.js` | `exifr` | Web Workers, Transferables | TIFF Segment Offsets, Rational Decimals |
 | **RAW Previews** | `rawParser.js`, `exifWorker.js` | `exifr` | Blob, Object URL, ArrayBuffer | Magic Bytes (`0x4949`, `0x4D4D`), Thumbnail Extraction |

@@ -1,0 +1,222 @@
+/* ==========================================================
+   THEME SWITCHER COMPONENT STYLING
+========================================================== */
+
+.theme-switcher-container {
+  position: relative;
+  display: inline-block;
+}
+
+.theme-trigger-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  white-space: nowrap;
+}
+
+.theme-trigger-btn:hover,
+.theme-trigger-btn.active {
+  background: var(--surface2);
+  border-color: var(--accent);
+  color: var(--text);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+}
+
+.theme-trigger-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.theme-trigger-name {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.theme-trigger-arrow {
+  font-size: 10px;
+  color: var(--text-dim);
+  transition: transform 0.2s ease;
+}
+
+.theme-trigger-btn.active .theme-trigger-arrow {
+  transform: rotate(180deg);
+}
+
+/* Floating Dropdown */
+.theme-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 340px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--glass-overlay);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.65);
+  padding: 12px;
+  z-index: 10000;
+  animation: themeMenuPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes themeMenuPop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.theme-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.theme-dropdown-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.theme-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.theme-option-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s ease;
+  width: 100%;
+}
+
+.theme-option-card:hover {
+  background: var(--surface2);
+  border-color: var(--border2);
+}
+
+.theme-option-card.active {
+  background: var(--surface2);
+  border-color: var(--accent);
+  box-shadow: 0 4px 16px var(--card-glow);
+}
+
+.theme-card-icon {
+  font-size: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.theme-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.theme-card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.theme-card-name {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.theme-card-active-check {
+  color: var(--accent);
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.theme-card-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.theme-card-desc {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+
+/* Footer: Quick Light/Dark Mode Switch */
+.theme-dropdown-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.theme-mode-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.theme-mode-pills {
+  display: flex;
+  gap: 4px;
+  background: var(--surface);
+  padding: 2px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.theme-mode-pill {
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.theme-mode-pill.active {
+  background: var(--surface2);
+  color: var(--accent);
+  font-weight: 600;
+}

@@ -70,8 +70,8 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 40px 14px 14px;
-  background: linear-gradient(to top, rgba(8, 8, 7, 0.92) 0%, rgba(8, 8, 7, 0.6) 50%, transparent 100%);
+  padding: 38px 14px 14px;
+  background: linear-gradient(to top, var(--glass-overlay) 0%, rgba(0, 0, 0, 0.45) 60%, transparent 100%);
   transform: translateY(4px);
   opacity: 0;
   transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
@@ -133,26 +133,66 @@
   display: inline-block;
 }
 
-.camera-badge {
+.card-top-badges {
   position: absolute;
   top: 10px;
   left: 10px;
-  background: rgba(8, 8, 7, 0.75);
-  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.photo-card:hover .card-top-badges {
+  opacity: 1;
+}
+
+.camera-badge {
+  background: var(--surface2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--border2);
-  border-radius: 2px;
+  border-radius: var(--radius);
   padding: 3px 8px;
   font-family: var(--font-mono);
   font-size: 9px;
   color: var(--accent);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  opacity: 0;
-  transition: opacity 0.25s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.photo-card:hover .camera-badge {
-  opacity: 1;
+.camera-badge-dot {
+  color: var(--accent);
+  font-size: 8px;
+  line-height: 1;
+}
+
+.format-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 6px;
+  border-radius: var(--radius);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.raw-badge {
+  background: rgba(255, 170, 51, 0.18);
+  border: 1px solid rgba(255, 170, 51, 0.45);
+  color: #ffaa33;
+}
+
+.gps-badge {
+  background: rgba(0, 240, 255, 0.18);
+  border: 1px solid rgba(0, 240, 255, 0.45);
+  color: #00f0ff;
 }
 
 .comparison-feed {

@@ -51,6 +51,8 @@ export default function PhotoCard({ photo, index, onOpen, onRemove, isComparing,
   }
 
   const cameraBadge = exif.Make ? `${exif.Make}${exif.Model ? ` ${exif.Model}` : ''}`.trim().substring(0, 24) : null;
+  const isRaw = photo?.isRaw || /\.(cr2|cr3|nef|arw|dng|raf|orf|rw2|pef)$/i.test(photo?.name || '');
+  const hasGps = (exif.latitude != null || exif.gpsLat != null) && !isNaN(Number(exif.latitude ?? exif.gpsLat));
 
   return (
     <div
@@ -77,8 +79,17 @@ export default function PhotoCard({ photo, index, onOpen, onRemove, isComparing,
       
       <img src={photo?.src} alt={photo?.name || 'Photo'} />
       
-      {/* THE RESTORED CODE: Camera Badge (Top Left) */}
-      {cameraBadge && <div className="camera-badge">{cameraBadge}</div>}
+      {/* Top Left Badges: Camera, RAW, GPS */}
+      <div className="card-top-badges">
+        {cameraBadge && (
+          <div className="camera-badge">
+            <span className="camera-badge-dot">●</span>
+            <span>{cameraBadge}</span>
+          </div>
+        )}
+        {isRaw && <span className="format-badge raw-badge">RAW</span>}
+        {hasGps && <span className="format-badge gps-badge" title="Geotagged Photo">⌖ GPS</span>}
+      </div>
 
       {/* THE RESTORED CODE: EXIF Overlay (Bottom) */}
       <div className="photo-overlay">

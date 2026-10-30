@@ -2,17 +2,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  background-color: #1a1a1a; 
+  padding: 0.85rem 2rem;
+  background-color: var(--surface2); 
   border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   position: relative; 
   z-index: 100;
-  transition: background-color var(--transition);
+  transition: background-color var(--transition), border-color var(--transition);
 }
 
-/* Ensure light theme also has a solid, non-transparent background */
 html.light-theme .app-header {
-  background-color: #ffffff;
+  background-color: var(--surface2);
 }
 
 .header-brand {
